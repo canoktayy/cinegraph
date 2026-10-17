@@ -18,7 +18,8 @@ pytestmark = pytest.mark.integration
 
 @pytest.fixture(scope="module")
 def store():
-    database = GraphStore(get_settings())
+    # GDS projection jobs run here; like `make analytics`, they need more than the API's 5 s budget on slow CI runners.
+    database = GraphStore(get_settings().model_copy(update={"query_timeout_seconds": 120}))
     database.healthy()
     yield database
     database.close()
