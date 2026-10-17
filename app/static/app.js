@@ -80,29 +80,76 @@ function notice(text) {
   $("#notice").textContent = text;
   $("#notice").hidden = !text;
 }
-async function setView(view) {
-  if (view === "recommendations" && !taste.personal && !taste.demo) {
-    if (!taste.rounds.length) startTaste();
-    $("#taste-section").scrollIntoView({ behavior: "instant" });
-    return;
-  }
-  $("#collection").hidden = false;
-  $("#demo-user-control").hidden = taste.personal && view === "recommendations";
+const descriptions = {
+  recommendations:
+    "Choose films you love to get recommendations with visible reasons. Your choices stay in this tab.",
+  discover:
+    "Explore unseen films in an anonymous MovieLens user's strongest taste communities. This is a research demonstration.",
+  trending:
+    "Activity during the historical snapshot's final year. These rankings are not live trends.",
+  catalog:
+    "Search the complete MovieLens film catalog, filter by genre and explore similar films.",
+};
+async function setView(view, updateAddress = true) {
+  if (!(view in copy) && view !== "ask") view = "recommendations";
+  const changed = state.view !== view;
   state.view = view;
-  state.offset = 0;
-  document
-    .querySelectorAll(".nav-item")
-    .forEach((button) =>
-      button.classList.toggle("active", button.dataset.view === view),
-    );
-  $("#breadcrumb").textContent = copy[view][0];
-  $("#collection-title").textContent = copy[view][1].replace(/\.$/, "") + ".";
-  $("#hero-title").innerHTML = copy[view][2];
-  $("#show-more").hidden = view !== "catalog";
-  $("#genre").disabled = !["catalog", "recommendations"].includes(view);
-  if ($("#genre").disabled) $("#genre").value = "";
-  return loadFilms();
+  state.requestId++;
+  state.loading = false;
+  if (changed) {
+    state.offset = 0;
+    $("#genre").value = "";
+    $("#search").value = "";
+    state.rows = [];
+    $("#movie-grid").innerHTML = "";
+    if ($("#detail-dialog").open) $("#detail-dialog").close();
+  }
+  if (updateAddress && location.hash !== "#" + view)
+    history.pushState(null, "", "#" + view);
+  document.querySelectorAll(".nav-item").forEach((button) => {
+    const active = button.dataset.view === view;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-current", active ? "page" : "false");
+  });
+  const home = view === "recommendations";
+  const results = view !== "ask" && (!home || taste.personal || taste.demo);
+  $("#welcome-screen").hidden = !home || taste.rounds.length > 0 || taste.demo;
+  $("#graph-stats").hidden = !home || taste.rounds.length > 0 || taste.demo;
+  $("#taste-section").hidden = !home;
+  $("#taste-quiz").hidden =
+    !home || !taste.rounds.length || taste.personal || taste.demo;
+  $("#collection").hidden = !results;
+  $("#ask-screen").hidden = view !== "ask";
+  $("#demo-user-control").hidden = !(
+    view === "discover" ||
+    (home && taste.demo)
+  );
+  $("#genre-control").hidden = !["catalog", "recommendations"].includes(view);
+  $("#search-control").hidden = view !== "catalog";
+  $("#filter-form").hidden = view === "trending";
+  $("#breadcrumb").textContent =
+    view === "ask" ? "Ask the graph" : copy[view][0];
+  if (view !== "ask") {
+    $("#collection-title").textContent =
+      home && taste.demo
+        ? "Anonymous user recommendations."
+        : copy[view][1].replace(/\.$/, "") + ".";
+    $("#page-description").textContent =
+      home && taste.demo
+        ? "Research demo using the selected MovieLens user, not your personal choices."
+        : descriptions[view];
+    $("#page-caption").textContent = home
+      ? "YOUR NEXT FRAME"
+      : "RESEARCH / " + copy[view][0].toUpperCase();
+  }
+  notice("");
+  window.scrollTo({ top: 0, behavior: "instant" });
+  if (results) return loadFilms();
 }
+window.addEventListener("hashchange", () =>
+  setView(location.hash.slice(1), false),
+);
+
 function card(movie, index) {
   const palette = palettes[Math.abs(movie.movie_id) % palettes.length];
   const title = movie.title.replace(/\s*\(\d{4}\)\s*$/, "");
@@ -313,8 +360,7 @@ document
 $("#filter-form").addEventListener("submit", (event) => {
   event.preventDefault();
   state.offset = 0;
-  if ($("#search").value.trim() && state.view !== "catalog") setView("catalog");
-  else loadFilms();
+  loadFilms();
 });
 $("#show-previous").addEventListener("click", () => {
   if (state.view !== "catalog" || state.loading) return;
@@ -386,10 +432,8 @@ function renderRound() {
     .join("");
   $("#taste-status").textContent =
     "Pick one favourite, or skip. No account needed.";
-  $("#taste-quiz").scrollIntoView({ behavior: "instant", block: "start" });
 }
 async function startTaste() {
-  $("#taste-section").scrollIntoView({ behavior: "instant" });
   const button = $("#start-taste");
   if (button.disabled) return;
   button.disabled = true;
@@ -408,6 +452,7 @@ async function startTaste() {
     $("#taste-quiz").hidden = false;
     $("#start-taste").textContent = "Start again ↻";
     renderRound();
+    if (state.view === "recommendations") await setView("recommendations");
   } catch (error) {
     $("#taste-status").textContent = error.message;
   } finally {
@@ -435,9 +480,9 @@ async function advanceTaste(movieId) {
   $("#genre").value = "";
   $("#search").value = "";
   await setView("recommendations");
-  $("#collection").scrollIntoView({ behavior: "instant" });
 }
 $("#start-taste").addEventListener("click", startTaste);
+$("#hero-start").addEventListener("click", startTaste);
 $("#taste-skip").addEventListener("click", () => advanceTaste(null));
 $("#taste-back").addEventListener("click", () => {
   if (taste.index > 0) {
@@ -453,7 +498,6 @@ $("#demo-mode").addEventListener("click", () => {
   $("#taste-status").textContent =
     "Research demo: recommendations now use the selected anonymous MovieLens user.";
   setView("recommendations");
-  $("#collection").scrollIntoView({ behavior: "instant" });
 });
 document.addEventListener("click", (event) => {
   const pick = event.target.closest("[data-pick]");
@@ -467,6 +511,7 @@ document.addEventListener(
   true,
 );
 async function initialize() {
+  setView(location.hash.slice(1), false);
   // Optional decoration must not block graph statistics or the preference quiz.
   loadStats();
   const controller = new AbortController();
