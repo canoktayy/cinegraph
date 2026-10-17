@@ -1,4 +1,4 @@
-"""Generate editable vector diagrams, data figures and a reproducible demonstration notebook."""
+"""Generate editable vector diagrams and source data figures."""
 
 from html import escape
 from xml.etree import ElementTree as ET
@@ -86,7 +86,11 @@ def diagram(name: str, title: str, subtitle: str, nodes: list, edges: list):
     for index, (source, target, label) in enumerate(edges):
         _, left, top, _ = nodes[source]
         _, right, bottom, _ = nodes[target]
-        if top == bottom:
+        if name == "architecture" and source == 3:
+            path = f"M{left+125} {top+90} V560 H{right+125} V{bottom+90}"
+            tx = 530
+            ty = 580
+        elif top == bottom:
             path = f"M{left+250} {top+45} L{right} {bottom+45}"
             tx = (left + 250 + right) / 2
             ty = top + 30
@@ -98,10 +102,6 @@ def diagram(name: str, title: str, subtitle: str, nodes: list, edges: list):
             path = f"M{left+125} {top+90 if bottom>top else top} L{right+125} {bottom if bottom>top else bottom+90}"
             tx = left + 135
             ty = (top + 90 + bottom) / 2
-        elif name == "architecture" and source == 3:
-            path = f"M{left+125} {top+90} V560 H{right+125} V{bottom+90}"
-            tx = 530
-            ty = 580
         else:
             path = f"M{left+125} {top+90 if bottom>top else top} L{right+125} {bottom if bottom>top else bottom+90}"
             tx = (left + right) / 2 + 125

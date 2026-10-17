@@ -44,8 +44,8 @@ External dependencies
 ---------------------
 ::
 
-    app 
-      \-agent 
+    app
+      \-agent
       | \-client (app.agent.workflow,app.main,scripts.evaluate_llm)
       | \-compiler (app.agent.workflow)
       | \-plans (app.agent.client,app.agent.compiler)
@@ -70,11 +70,11 @@ External dependencies
     pandas (app.ml.experiment,scripts.data)
     pydantic (app.agent.client,app.agent.plans,app.models)
     pydantic_settings (app.config)
-    scipy 
+    scipy
       \-sparse (app.ml.experiment)
-    scripts 
+    scripts
       \-data (app.analytics.build,app.ml.experiment,scripts.benchmark,scripts.documentation,scripts.evaluate_llm,scripts.record_modeling_baseline,scripts.smoke)
-    sklearn 
+    sklearn
       \-dummy (app.ml.experiment)
       \-impute (app.ml.experiment)
       \-linear_model (app.ml.experiment)
@@ -174,4 +174,3 @@ Messages
 
 ------------------------------------------------------------------
 Your code has been rated at 9.88/10 (previous run: 9.88/10, +0.00)
-
