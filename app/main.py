@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from neo4j.exceptions import Neo4jError, ServiceUnavailable, SessionExpired
 
+from app.agent.assistant import AssistantClient, AssistantTurn, answer_turn
 from app.agent.client import LLMClient
 from app.agent.workflow import answer
 from app.config import get_settings
@@ -90,8 +91,9 @@ def protect_ask(request: Request, x_api_key: Annotated[str | None, Header()] = N
     now = monotonic()
     while budget and budget[0] <= now - 60:
         budget.popleft()
-    if len(budget) >= 12:
-        raise HTTPException(429, "At most 12 model requests per minute")
+    maximum = 24 if request.url.path == "/api/assistant/turn" else 12
+    if len(budget) >= maximum:
+        raise HTTPException(429, "Model request limit reached. Wait one minute; your choices are kept.")
     budget.append(now)
 
 
@@ -200,3 +202,9 @@ def taste_options(recommender: Service, seed: Annotated[int, Query(ge=0, le=2147
 def personal_recommendations(body: TasteRequest, recommender: Service):
     """Recommend from visitor-selected seeds without modifying research data."""
     return taste_recommend(recommender, body)
+
+
+@app.post("/api/assistant/turn", dependencies=[Depends(protect_ask)], tags=["Film assistant"])
+def assistant_turn(body: AssistantTurn, request: Request, recommender: Service):
+    """Conversational onboarding and refinements through validated graph tools."""
+    return answer_turn(body, recommender, AssistantClient(get_settings()), request.state.trace_id)

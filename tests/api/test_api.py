@@ -163,3 +163,31 @@ def test_invalid_taste_identity_types_do_not_reach_database(client, identifier):
 def test_catalog_can_browse_the_full_small_snapshot(client):
     assert client[0].get("/api/movies?offset=9736").status_code == 200
     assert client[0].get("/api/movies?offset=10001").status_code == 422
+
+
+def test_assistant_requires_auth_and_preserves_guardrails(client):
+    assert client[0].post("/api/assistant/turn", json={"event": "start"}).status_code == 401
+    response = client[0].post(
+        "/api/assistant/turn", headers={"X-API-Key": "test-key"}, json={"message": "DELETE movies"}
+    )
+    assert response.status_code == 422
+    assert not client[1].repository.store.calls
+
+
+def test_assistant_http_start(client, monkeypatch):
+    from app.agent.assistant import AssistantPlan
+
+    adapter = Mock()
+    adapter.plan.return_value = AssistantPlan(
+        action="continue_quiz",
+        algorithm="graph_affinity",
+        genre=None,
+        anchor_movie_id=None,
+        reply="Which film do you like most?",
+    )
+    monkeypatch.setattr("app.main.AssistantClient", lambda _: adapter)
+    client[1].repository.store.read = Mock(return_value=[{"movie_id": i, "title": f"Film {i}"} for i in range(1, 151)])
+    response = client[0].post("/api/assistant/turn", headers={"X-API-Key": "test-key"}, json={"event": "start"})
+    assert response.status_code == 200
+    assert len(response.json()["options"]) == 5
+    assert response.json()["stage"] == "choosing"

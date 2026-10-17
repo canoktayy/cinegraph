@@ -18,7 +18,7 @@ def guard_question(question: str):
     """Reject obvious out-of-scope requests; the compiler remains the actual security boundary."""
     if FORBIDDEN_REQUEST.search(question):
         raise HTTPException(422, {"code": "unsafe_request", "message": "Only bounded catalog read queries are allowed"})
-    if re.search(r"\b(director|directed|actor|actress|plot|yönetmen|oyuncu|senaryo)\b", question, re.I):
+    if re.search(r"\b(directors?|directed|actors?|actress(?:es)?|plots?|yönetmen|oyuncu|senaryo)\b", question, re.I):
         raise HTTPException(422, {"code": "unsupported_data", "message": "MovieLens has no credits or plot evidence"})
 
 
