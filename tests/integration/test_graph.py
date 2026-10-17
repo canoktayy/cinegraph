@@ -111,3 +111,22 @@ def test_real_projection_direction_and_algorithm_jobs(store):
         assert all(row["pagerank"] >= 0 for row in ranks)
     finally:
         drop_projection(store, name)
+
+
+def test_visitor_taste_rounds_and_actual_graph_evidence(store):
+    """Visitor ranking excludes picks and conserves actual similarity contributions."""
+    from app.taste import TasteRequest, recommend, rounds
+
+    service = RecommendationService(CatalogRepository(store))
+    before = service.repository.statistics()
+    options = rounds(service, 123)
+    picks = [group[0]["movie_id"] for group in options["rounds"]]
+    result = recommend(service, TasteRequest(movie_ids=picks))
+    assert result["items"]
+    assert not set(picks) & {row["movie_id"] for row in result["items"]}
+    for movie in result["items"]:
+        assert movie["score"] == pytest.approx(sum(reason["similarity"] for reason in movie["reasons"]) / len(picks))
+        assert all(reason["seed_id"] in picks and reason["support"] >= 3 for reason in movie["reasons"])
+    filtered = recommend(service, TasteRequest(movie_ids=picks, genre="Sci-Fi"))
+    assert all("Sci-Fi" in movie["genres"] for movie in filtered["items"])
+    assert before == service.repository.statistics()

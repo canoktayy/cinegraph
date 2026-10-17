@@ -189,3 +189,23 @@ Run `make help`, `make lint`, `make test`, `make docker-run`. Open the UI/Swagge
 Solo contributor: **Can Oktay**. Feature branches and merged PRs document actual work. Self-review observations are not represented as independent peer approval. Group balancing and individual-review rules require instructor interpretation for a solo submission. See [scope](docs/solo-scope.md) and [release evidence](docs/release-checklist.md).
 
 Known limits: historical development dataset, selection-biased implicit relevance, approximate top-K similarity, many sparse/isolated movies, local-only API key protection, pinned legacy projection API, no high-availability/SLA claim, no independently obtained human review, and private image visibility. These are explicit boundaries rather than hidden exceptions.
+
+## Personal recommendations for new visitors
+
+The default experience is now **Find my films → ten rounds of five films → personal recommendations → Why this film?** No MovieLens user ID or model key is needed for this flow. Each round offers distinct, sufficiently supported films; skip unfamiliar rounds and go back to revise choices. At least one selection is required. The research demo remains available separately for the instructor's existing-user/community/ranking demonstrations; the advanced natural-language panel is collapsed by default.
+
+`GET /api/taste/rounds?seed=42` returns 50 distinct options from a bounded 150-film supported pool, shuffled reproducibly for a given seed. `POST /api/taste/recommendations` accepts 1–10 distinct positive movie IDs, an optional canonical genre and a bounded result limit. The selected movies are positive seeds, not synthetic 5-star ratings; unchosen alternatives are not negative labels. Candidate score is the sum of active-run shrunk-Jaccard similarities divided by the number of selected seeds. This rewards connections across the selected set; selected films are excluded. Returned reasons contain the exact seed identities, similarities and shared-rater support. Scores are affinity, not probabilities or star predictions. This onboarding has functional/integration verification, not a claimed user-study accuracy result.
+
+Visitor selections stay in the current page's memory and reset on reload. No account, visitor node, persisted preference profile or research-data mutation is created. Standard graph ranking remains independent of the local LLM.
+
+### Optional film images
+
+`scripts/fetch_posters.py` downloads the public [Full TMDB Movies Dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies), verifies a pinned SHA-256 and joins poster references using **both exact TMDB and IMDb IDs** from MovieLens. Display metadata never changes the rating graph. The source snapshot and match counts are recorded in `artifacts/reports/posters.json`. `app/static/posters.json` records image URLs and source pages; no image binaries or full third-party metadata dump are committed. Historical image references may disappear: failed or missing images retain the designed cover. External image loading requires internet access.
+
+Poster images are provided by TMDB and remain with their respective rights holders. This product uses TMDB imagery but is not endorsed or certified by TMDB. Poster display does not imply a blanket image reuse license. No TMDB API credential is required for this frozen metadata snapshot; recommendation calculations use MovieLens, not TMDB ratings.
+
+Recorded display enrichment: **9,586 / 9,742** films have identity-matched poster references; 156 retain designed covers. This is metadata coverage, not a guarantee every external URL remains available. The optional refresh downloads a large CSV (~638 MiB for this snapshot); it is not part of installation, CI or normal use. An existing local file can be passed with `--metadata PATH`. Snapshot changes fail checksum validation instead of being silently accepted.
+
+![Ten-round personal taste selection](docs/evidence/taste-round.jpg)
+
+![Personal recommendations from selected films](docs/evidence/taste-recommendations.jpg)

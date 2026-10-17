@@ -1,6 +1,7 @@
 /* MovieGraph demo. All titles, scores, paths and statistics come from the API. */
 'use strict';
 const $ = selector => document.querySelector(selector);
+const taste = {demo:false, rounds:[], answers:[], index:0, personal:false, posters:{}};
 const state = {view:'recommendations', offset:0, limit:8, rows:[], loading:false};
 const palettes = [
   ['#c4cfc3','#718b7b','#213f37'],['#e3cbb1','#be7858','#4f3529'],
@@ -22,19 +23,22 @@ async function api(path, options={}){
   return result;
 }
 function notice(text){$('#notice').textContent=text;$('#notice').hidden=!text;}
-function setView(view){
+async function setView(view){
+  if(view==='recommendations'&&!taste.personal&&!taste.demo){if(!taste.rounds.length)startTaste();$('#taste-section').scrollIntoView({behavior:'instant'});return;}
+  $('#collection').hidden=false;
+  $('#demo-user-control').hidden=taste.personal&&view==='recommendations';
   state.view=view;state.offset=0;
   document.querySelectorAll('.nav-item').forEach(button=>button.classList.toggle('active',button.dataset.view===view));
   $('#breadcrumb').textContent=copy[view][0];$('#collection-title').textContent=copy[view][1].replace(/\.$/,'')+'.';
   $('#hero-title').innerHTML=copy[view][2];$('#show-more').hidden=view!=='catalog';
-  $('#genre').disabled=!['catalog','recommendations'].includes(view);if($('#genre').disabled)$('#genre').value='';loadFilms();
+  $('#genre').disabled=!['catalog','recommendations'].includes(view);if($('#genre').disabled)$('#genre').value='';return loadFilms();
 }
 function card(movie,index){
   const palette=palettes[Math.abs(movie.movie_id)%palettes.length];
   const title=movie.title.replace(/\s*\(\d{4}\)\s*$/,'');
-  const score=Number.isFinite(movie.score)?movie.score.toFixed(2):null;
+  const score=Number.isFinite(movie.score)&&!(taste.personal&&state.view==='recommendations')?movie.score.toFixed(2):null;
   const activeGenre=$('#genre').value;const genres=[...(movie.genres||[])].sort((a,b)=>a===activeGenre?-1:b===activeGenre?1:a.localeCompare(b)).slice(0,2).join(' / ')||'Unclassified';
-  return `<article class="movie-card"><button class="movie-art variant-${movie.movie_id%5}" data-detail="${movie.movie_id}" aria-label="Explore ${escapeText(movie.title)}" style="--poster-bg:${palette[0]};--poster-color:${palette[1]};--poster-ink:${palette[2]}"><span class="art-stripes"></span><span class="film-number">FRAME / ${String(index+1+state.offset).padStart(2,'0')}</span><span class="film-year">${movie.year||'—'}</span><span class="poster-type ${title.length>50?'long-title':''}"><span class="poster-caption">A MOVIEGRAPH SELECTION</span>${escapeText(title)}</span></button><div class="movie-meta"><div><span class="movie-title">${escapeText(title)}</span><span class="movie-genre">${escapeText(genres)}</span></div>${score?`<span class="movie-score">✧ ${score}</span>`:''}</div><div class="movie-bottom"><button class="why-button" ${state.view==='recommendations'?'data-evidence':'data-detail'}="${movie.movie_id}">${state.view==='recommendations'?'Why this film?':'Follow the connection'} ↗</button><span class="support-label">${movie.support?escapeText(movie.support)+' signals':'CATALOG'}</span></div></article>`;
+  return `<article class="movie-card"><button class="movie-art variant-${movie.movie_id%5}" data-detail="${movie.movie_id}" aria-label="Explore ${escapeText(movie.title)}" style="--poster-bg:${palette[0]};--poster-color:${palette[1]};--poster-ink:${palette[2]}">${taste.posters[movie.movie_id]?`<img class="real-poster" src="${escapeText(taste.posters[movie.movie_id].image)}" alt="${escapeText(title)} film image" loading="lazy" referrerpolicy="no-referrer">`:""}<span class="art-stripes"></span><span class="film-number">FRAME / ${String(index+1+state.offset).padStart(2,'0')}</span><span class="film-year">${movie.year||'—'}</span><span class="poster-type ${title.length>50?'long-title':''}"><span class="poster-caption">A MOVIEGRAPH SELECTION</span>${escapeText(title)}</span></button><div class="movie-meta"><div><span class="movie-title">${escapeText(title)}</span><span class="movie-genre">${escapeText(genres)}</span></div>${score?`<span class="movie-score">✧ ${score}</span>`:''}</div><div class="movie-bottom"><button class="why-button" ${state.view==='recommendations'?'data-evidence':'data-detail'}="${movie.movie_id}">${state.view==='recommendations'?'Why this film?':'Follow the connection'} ↗</button><span class="support-label">${taste.personal&&state.view==='recommendations'?escapeText(movie.supporting_seeds)+' of your picks':movie.support?escapeText(movie.support)+' signals':'CATALOG'}</span></div></article>`;
 }
 async function loadFilms(){
   if(state.loading)return;state.loading=true;$('#movie-grid').classList.add('loading');notice('');
@@ -47,11 +51,12 @@ async function loadFilms(){
     else path=`/api/users/${user}/recommendations?limit=${state.limit}${genre?'&genre='+encodeURIComponent(genre):''}`;
     // An absent filter must remain absent, rather than the empty string genre.
     path=path.replace(/&genre=$/,'');
-    const result=await api(path);state.rows=result.items;$('#show-more').hidden=state.view!=='catalog'||result.items.length<state.limit;$('#show-previous').hidden=state.view!=='catalog'||state.offset===0;
+    const result=taste.personal&&state.view==='recommendations'?await api('/api/taste/recommendations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({movie_ids:taste.answers.filter(id=>id!==null),genre:genre||null,limit:state.limit})}):await api(path);state.rows=result.items;$('#show-more').hidden=state.view!=='catalog'||result.items.length<state.limit;$('#show-previous').hidden=state.view!=='catalog'||state.offset===0;
     $('#movie-grid').innerHTML=result.items.length?result.items.map(card).join(''):'<div class="empty-state">No matching stories yet. Try another genre or user.</div>';
     const method=(result.method||'catalog').replaceAll('_',' ');
-    $('#method-note').textContent=method.charAt(0).toUpperCase()+method.slice(1);
+    $('#method-note').textContent=taste.personal&&state.view==='recommendations'?'Based on your choices':method.charAt(0).toUpperCase()+method.slice(1);
     $('#result-note').textContent=`${result.items.length} films · ${state.view==='catalog'?'catalog snapshot':state.view==='trending'?'historical snapshot':'user '+user+' · '+method}`;
+    if(taste.personal&&state.view==='recommendations'){$('#collection-title').textContent='Your next watch.';$('#result-note').textContent=`${result.items.length} recommendations · based on ${taste.answers.filter(id=>id!==null).length} films you chose`; }
     if(result.fallback_reason)notice('Fallback: '+result.fallback_reason);
   }catch(error){notice(error.message);$('#movie-grid').innerHTML='<div class="empty-state">We couldn’t follow that connection.<br><small>Check the graph service or try another user.</small></div>';$('#result-note').textContent='Request could not be completed';}
   finally{state.loading=false;$('#movie-grid').classList.remove('loading');}
@@ -68,6 +73,7 @@ async function loadStats(){
 }
 function openDetail(html){$('#detail-content').innerHTML=html;$('#detail-dialog').showModal();}
 async function showSimilar(movieId){
+  if(taste.personal&&state.view==='recommendations'){showTasteEvidence(movieId);return;}
   const film=state.rows.find(row=>row.movie_id===movieId);
   openDetail(`<div class="detail-label">FOLLOW THE CONNECTION</div><h2 class="detail-heading">${escapeText(film?.title||'Movie '+movieId)}</h2><p class="detail-copy">Finding films with overlapping positive raters…</p>`);
   try{
@@ -76,6 +82,7 @@ async function showSimilar(movieId){
   }catch(error){$('#detail-content').insertAdjacentHTML('beforeend',`<p class="error-text">${escapeText(error.message)}</p>`);}
 }
 async function showEvidence(movieId){
+  if(taste.personal&&state.view==='recommendations'){showTasteEvidence(movieId);return;}
   const user=Number($('#user-id').value);openDetail('<div class="detail-label">VISIBLE REASONS</div><h2 class="detail-heading">Every recommendation has a path.</h2><p class="detail-copy">Following the graph…</p>');
   try{
     const result=await api(`/api/users/${user}/recommendations/${movieId}/explanation`);
@@ -101,4 +108,45 @@ $('#close-detail').addEventListener('click',()=>$('#detail-dialog').close());
 $('#detail-dialog').addEventListener('click',event=>{if(event.target===$('#detail-dialog'))$('#detail-dialog').close();});
 $('#ask-button').addEventListener('click',askGraph);
 document.querySelectorAll('[data-question]').forEach(button=>button.addEventListener('click',()=>{$('#question').value=button.dataset.question;$('#question').focus();}));
-loadStats();loadFilms();
+function showTasteEvidence(movieId){
+  const movie=state.rows.find(row=>row.movie_id===movieId);
+  if(!movie)return;
+  openDetail(`<div class="detail-label">YOUR CHOICES → GRAPH CONNECTIONS → THIS FILM</div><h2 class="detail-heading">Why ${escapeText(movie.title)}?</h2><p class="detail-copy">You selected these films. MovieLens viewers who liked them also liked this recommendation.</p>${(movie.reasons||[]).slice(0,3).map(reason=>`<div class="evidence-path"><h4>Because you chose ${escapeText(reason.seed_title)}</h4><p>${reason.support} shared positive raters connect the two films.</p><small>Graph similarity: ${reason.similarity.toFixed(3)}</small></div>`).join('')}${taste.posters[movieId]?`<p class="detail-copy"><a href="${escapeText(taste.posters[movieId].source)}" target="_blank" rel="noopener noreferrer">Film image source: ${escapeText(taste.posters[movieId].page_title)} on TMDB ↗</a></p>`:''}<p class="detail-copy">The score combines graph similarities across all your selections. It is not a star rating or a probability. Unchosen films were not treated as dislikes.</p>`);
+}
+function renderRound(){
+  $('#taste-back').disabled=taste.index===0;
+  $('#round-label').textContent=`Round ${taste.index+1} of 10 · ${taste.answers.filter(id=>id!==null).length} favourites selected`;
+  $('#round-progress').value=taste.index;
+  $('#taste-options').innerHTML=taste.rounds[taste.index].map((movie,index)=>card(movie,index).replaceAll('data-detail=', 'data-pick=').replaceAll('aria-label="Explore ', 'aria-label="Choose ').replace(/<div class="movie-bottom">[\s\S]*?<\/div><\/article>/,'</article>')).join('');
+  $('#taste-status').textContent='Pick one favourite, or skip. No account needed.';
+  $('#taste-quiz').scrollIntoView({behavior:'instant',block:'start'});
+}
+async function startTaste(){
+  $('#taste-section').scrollIntoView({behavior:'instant'});
+  const button=$('#start-taste');button.disabled=true;
+  try{
+    const seed=crypto.getRandomValues(new Uint32Array(1))[0]%2147483647;
+    const result=await api(`/api/taste/rounds?seed=${seed}`);
+    taste.rounds=result.rounds;taste.answers=[];taste.index=0;taste.personal=false;$('#collection').hidden=true;
+    $('#taste-quiz').hidden=false;$('#start-taste').textContent='Start again ↻';renderRound();
+  }catch(error){$('#taste-status').textContent=error.message;}
+  finally{button.disabled=false;}
+}
+async function advanceTaste(movieId){
+  taste.answers[taste.index]=movieId;
+  if(taste.index<9){taste.index++;renderRound();return;}
+  if(!taste.answers.some(id=>id!==null)){$('#taste-status').textContent='Choose at least one film to get personal recommendations. Go back or start again.';return;}
+  taste.personal=true;$('#collection').hidden=false;$('#taste-quiz').hidden=true;$('#taste-status').textContent='Your picks are ready. Your selections stay in this tab; no account or source ratings are created.';
+  $('#demo-user-control').hidden=true;$('#genre').value='';$('#search').value='';await setView('recommendations');$('#collection').scrollIntoView({behavior:'instant'});
+}
+$('#start-taste').addEventListener('click',startTaste);
+$('#taste-skip').addEventListener('click',()=>advanceTaste(null));
+$('#taste-back').addEventListener('click',()=>{if(taste.index>0){taste.index--;taste.answers.length=taste.index;renderRound();}});
+$('#demo-mode').addEventListener('click',()=>{taste.personal=false;taste.demo=true;$('#demo-user-control').hidden=false;$('#taste-status').textContent='Research demo: recommendations now use the selected anonymous MovieLens user.';setView('recommendations');$('#collection').scrollIntoView({behavior:'instant'});});
+document.addEventListener('click',event=>{const pick=event.target.closest('[data-pick]');if(pick)advanceTaste(Number(pick.dataset.pick));});
+document.addEventListener('error',event=>{if(event.target.matches?.('.real-poster'))event.target.remove();},true);
+async function initialize(){
+  try{const response=await fetch('/static/posters.json');if(response.ok)taste.posters=await response.json();}catch{/* Poster availability never blocks recommendations. */}
+  loadStats();
+}
+initialize();

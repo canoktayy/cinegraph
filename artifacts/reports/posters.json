@@ -1,0 +1,12 @@
+{
+  "source": "https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies",
+  "download": "https://www.kaggle.com/api/v1/datasets/download/asaniczka/tmdb-movies-dataset-2023-930k-movies/TMDB_movie_dataset_v11.csv",
+  "metadata_sha256": "f629bccb91ab3e8871f6baabfc02b0b496ab61ffe389daee26e5ee92ef4688d6",
+  "catalog_movies": 9742,
+  "matched_posters": 9586,
+  "unmatched_movies": 156,
+  "join": "exact TMDB ID AND IMDb ID",
+  "image_binaries_stored": false,
+  "provider": "TMDB",
+  "limitation": "Historical references can be unavailable; the UI retains a designed fallback."
+}

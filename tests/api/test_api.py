@@ -101,3 +101,37 @@ def test_rate_limit(client):
     for _ in range(12):
         client[0].post("/api/ask", headers=headers, json={"question": "DELETE nodes"})
     assert client[0].post("/api/ask", headers=headers, json={"question": "anything"}).status_code == 429
+
+
+def test_taste_round_endpoint(client):
+    client[1].repository.store.read = Mock(return_value=[{"movie_id": i} for i in range(1, 151)])
+    response = client[0].get("/api/taste/rounds?seed=12")
+    assert response.status_code == 200
+    assert len(response.json()["rounds"]) == 10
+    assert client[0].get("/api/taste/rounds?seed=-1").status_code == 422
+
+
+@pytest.mark.parametrize("payload", [[], [1, 1], [0], list(range(1, 12))])
+def test_taste_request_bounds(client, payload):
+    assert client[0].post("/api/taste/recommendations", json={"movie_ids": payload}).status_code == 422
+
+
+def test_taste_success_and_unknown_movie(client):
+    client[1].repository.store.read = Mock(
+        side_effect=[
+            [{"movie_id": 1}],
+            [
+                {
+                    "movie_id": 2,
+                    "title": "Candidate",
+                    "score": 0.3,
+                    "reasons": [{"seed_id": 1, "similarity": 0.3, "support": 5}],
+                }
+            ],
+            [],
+        ]
+    )
+    response = client[0].post("/api/taste/recommendations", json={"movie_ids": [1]})
+    assert response.status_code == 200
+    assert response.json()["items"][0]["reasons"][0]["seed_id"] == 1
+    assert client[0].post("/api/taste/recommendations", json={"movie_ids": [999]}).status_code == 404

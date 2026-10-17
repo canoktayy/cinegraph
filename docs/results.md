@@ -4,9 +4,9 @@ Measured locally on 17 October 2026. These are observed results, not promised fu
 
 ## Quality gates
 
-- **101 tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
-- **79.40% combined statement/branch coverage**, minimum enforced: 60%.
-- **Pylint 9.88/10**, teacher configuration, minimum enforced: 9.5.
+- **117 tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
+- **80.58% combined statement/branch coverage**, minimum enforced: 60%.
+- **Pylint 9.89/10**, teacher configuration, minimum enforced: 9.5.
 - **40/40 reliability cases passed**. The 20 supported questions check intent, exact entity/filter/budget parameters and returned genre membership. Other cases distinguish scope/guardrail rejection from controlled malformed-provider fault injection.
 - Every notebook cell executed; real model HTTP 200, exact Sci-Fi filtering and unsafe-operation HTTP 422 are assertions.
 - Desktop and 390px mobile checked; measured document width equals viewport width. Mobile navigation is functional and no key is embedded in screenshots.
@@ -45,3 +45,7 @@ Thirty identical source-movie IDs, five warm-up calls, sequential local-client t
 ## Boundaries that remain external
 
 The owner requested a private repository and private image; the public-registry rubric criterion is not claimed. Independent human peer review and solo-submission approval require the instructor/another person. No grade, external approval, collaboration balance or human review is fabricated.
+
+## New-visitor taste discovery
+
+Ten rounds of five distinct supported films; skip/back states; selected-film exclusion; exact sum-of-similarities normalization; canonical genre filtering; actual graph reasons; no new source users or ratings. HTTP contract and real graph tests exercise the visitor path. This is functional validation, not an independently measured accuracy/user-study claim. Film display metadata has 9,586 identity-matched references of 9,742 catalog movies; both TMDB and IMDb IDs must match. Source SHA-256 and counts are in `artifacts/reports/posters.json`.
