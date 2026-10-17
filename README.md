@@ -1,5 +1,7 @@
 # MovieGraph
 
+**Can Oktay — Öğrenci No: B00818187**
+
 **Follow your taste. Find your next story.**
 
 An explainable movie recommendation application built on Neo4j, FastAPI and real MovieLens ratings. Discover similar films, follow taste communities and inspect the exact graph paths behind a recommendation. Natural-language questions use a real local language model, a constrained plan compiler and read-only query templates.
