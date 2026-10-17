@@ -147,7 +147,7 @@ Set the shell variable from your local configuration without publishing its valu
 
 ## Validation and evaluation
 
-The recorded local suite passes **154 Python tests and 9 frontend behavioral tests**, with **81.34% Python statement/branch coverage**. Teacher-configured Pylint scored **9.89/10**. Frontend tests cover delayed requests, obsolete errors, closed dialogs, pagination, optional image metadata and screen isolation with quiz preservation. Actual desktop/mobile browser checks complement these simulations.
+The recorded local suite passes **154 Python tests and 10 frontend behavioral tests**, with **81.34% Python statement/branch coverage**. Teacher-configured Pylint scored **9.89/10**. Frontend tests cover delayed requests, obsolete errors, closed dialogs, pagination, optional image metadata and screen isolation with quiz preservation. Actual desktop/mobile browser checks complement these simulations.
 
 CI starts the real three-service stack, imports MovieLens twice, runs GDS and executes the suite. Integration tests fail preflight when seeded Neo4j is absent rather than silently skipping. Coverage enforces ≥60%; teacher lint enforces ≥9.5. Local-model evaluation is separate because hosted CI has no LM Studio model.
 

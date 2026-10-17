@@ -452,7 +452,7 @@ async function startTaste() {
     $("#taste-quiz").hidden = false;
     $("#start-taste").textContent = "Start again ↻";
     renderRound();
-    if (state.view === "recommendations") await setView("recommendations");
+    await setView(state.view, false);
   } catch (error) {
     $("#taste-status").textContent = error.message;
   } finally {

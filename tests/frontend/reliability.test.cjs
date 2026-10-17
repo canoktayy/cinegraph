@@ -55,6 +55,12 @@ function page({ posters = Promise.resolve(response({})) } = {}) {
     setTimeout,
     clearTimeout,
     AbortController,
+    crypto: {
+      getRandomValues(array) {
+        array[0] = 42;
+        return array;
+      },
+    },
     location: { hash: "" },
     history: { pushState() {} },
     window: { addEventListener() {}, scrollTo() {} },
@@ -249,4 +255,17 @@ test("leaving a pending list for the question screen invalidates its response", 
   await catalog;
   assert.doesNotMatch(browser.element("#movie-grid").innerHTML, /OBSOLETE/);
   assert.equal(browser.element("#collection").hidden, true);
+});
+
+test("a delayed quiz start cannot move the visitor away from the question screen", async () => {
+  const browser = page();
+  const quiz = browser.run("startTaste()");
+  await browser.run("setView('ask')");
+  browser.pending
+    .get("/api/taste/rounds?seed=42")
+    .resolve(response({ rounds: [[item("FILM", 1)]] }));
+  await quiz;
+  assert.equal(browser.element("#ask-screen").hidden, false);
+  assert.equal(browser.element("#taste-section").hidden, true);
+  assert.equal(browser.run("state.view"), "ask");
 });
