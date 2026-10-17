@@ -116,6 +116,7 @@ async function setView(view, updateAddress = true) {
   $("#welcome-screen").hidden = !home || taste.rounds.length > 0 || taste.demo;
   $("#graph-stats").hidden = !home || taste.rounds.length > 0 || taste.demo;
   $("#taste-section").hidden = !home;
+  $("#start-taste").hidden = !taste.rounds.length && !taste.demo;
   $("#taste-quiz").hidden =
     !home || !taste.rounds.length || taste.personal || taste.demo;
   $("#collection").hidden = !results;
