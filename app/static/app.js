@@ -85,10 +85,19 @@ function notice(text) {
 }
 
 /* ---------- Film cards ---------- */
-function posterArt(movie) {
-  const poster = taste.posters[movie.movie_id];
+/* posters.json maps movie_id → [TMDB file name, TMDB ID]; request only the size a slot needs. */
+const TMDB_IMAGES = "https://image.tmdb.org/t/p/";
+function posterUrl(movieId, size = "w342") {
+  const entry = taste.posters[movieId];
+  return entry ? `${TMDB_IMAGES}${size}/${entry[0]}` : null;
+}
+function posterImage(movieId, size) {
+  const url = posterUrl(movieId, size);
+  return url ? `<img src="${escapeText(url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : "";
+}
+function posterArt(movie, size = "w342") {
   const hue = (Number(movie.movie_id) * 47) % 360;
-  return `<span class="poster" style="--hue:${hue}">${poster ? `<img src="${escapeText(poster.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}<span class="poster-fallback">${escapeText(cleanTitle(movie.title))}</span></span>`;
+  return `<span class="poster" data-size="${size}" style="--hue:${hue}">${posterImage(movie.movie_id, size)}<span class="poster-fallback">${escapeText(cleanTitle(movie.title))}</span></span>`;
 }
 function genreLine(movie, limit = 3) {
   return escapeText((movie.genres || []).slice(0, limit).join(" · ") || "No genre listed");
@@ -165,7 +174,7 @@ function renderRanking(items) {
   return items
     .map(
       (movie, index) =>
-        `<li class="rank-row"><span class="rank">${index + 1}</span><button class="rank-poster" data-detail="${movie.movie_id}" aria-label="Open ${escapeText(cleanTitle(movie.title))}">${posterArt(movie)}</button><div class="rank-text"><button class="film-title link-title" data-detail="${movie.movie_id}">${escapeText(cleanTitle(movie.title))}</button><span class="film-meta">${movie.year || ""} · ${genreLine(movie)}</span></div><div class="rank-value">${pagerank ? `<strong>${Number(movie.score).toFixed(2)}</strong><span>centrality</span>` : `<strong>★ ${Number(movie.score).toFixed(2)}</strong><span>${formatNumber(movie.support)} ratings</span>`}</div></li>`,
+        `<li class="rank-row"><span class="rank">${index + 1}</span><button class="rank-poster" data-detail="${movie.movie_id}" aria-label="Open ${escapeText(cleanTitle(movie.title))}">${posterArt(movie, "w92")}</button><div class="rank-text"><button class="film-title link-title" data-detail="${movie.movie_id}">${escapeText(cleanTitle(movie.title))}</button><span class="film-meta">${movie.year || ""} · ${genreLine(movie)}</span></div><div class="rank-value">${pagerank ? `<strong>${Number(movie.score).toFixed(2)}</strong><span>centrality</span>` : `<strong>★ ${Number(movie.score).toFixed(2)}</strong><span>${formatNumber(movie.support)} ratings</span>`}</div></li>`,
     )
     .join("");
 }
@@ -185,6 +194,7 @@ async function loadFilms() {
     grid.innerHTML = emptyState("Enter a rater ID between 1 and 610.");
     return;
   }
+  if (view === "users") loadFavourites(userId, requestId);
   try {
     const result = await api(listPath(view));
     if (requestId !== state.requestId) return;
@@ -235,6 +245,24 @@ async function loadFilms() {
   }
 }
 
+async function loadFavourites(userId, requestId) {
+  try {
+    const result = await api(`/api/users/${userId}/favorites?limit=8`);
+    if (requestId !== state.requestId) return;
+    result.items.forEach((row) => state.rows.includes(row) || state.rows.push(row));
+    $("#users-context-title").textContent = `What rater ${userId} loved`;
+    $("#users-favourites").innerHTML = result.items
+      .map(
+        (movie) =>
+          `<button class="strip-film" data-detail="${movie.movie_id}" aria-label="Open ${escapeText(cleanTitle(movie.title))}">${posterArt(movie, "w185")}<span class="strip-title">${escapeText(cleanTitle(movie.title))}</span><span class="strip-score">★ ${Number(movie.score).toFixed(1)}</span></button>`,
+      )
+      .join("");
+    $("#users-context").hidden = !result.items.length;
+  } catch {
+    if (requestId === state.requestId) $("#users-context").hidden = true;
+  }
+}
+
 /* ---------- Dialogs ---------- */
 function openDetail(html) {
   const requestId = ++detailRequestId;
@@ -260,7 +288,7 @@ function findMovie(movieId) {
 }
 function dialogHead(movie, movieId, label) {
   const base = movie || { movie_id: movieId, title: "Film " + movieId, genres: [] };
-  return `<div class="detail-head">${posterArt(base)}<div><p class="kicker">${escapeText(label)}</p><h2 id="detail-title">${escapeText(cleanTitle(base.title))}</h2><p class="muted">${base.year || ""} ${base.genres?.length ? "· " + genreLine(base, 4) : ""}</p></div></div>`;
+  return `<div class="detail-head">${posterArt(base, "w185")}<div><p class="kicker">${escapeText(label)}</p><h2 id="detail-title">${escapeText(cleanTitle(base.title))}</h2><p class="muted">${base.year || ""} ${base.genres?.length ? "· " + genreLine(base, 4) : ""}</p></div></div>`;
 }
 async function showSimilar(movieId) {
   const movie = findMovie(movieId);
@@ -276,11 +304,11 @@ async function showSimilar(movieId) {
         ? `<p class="muted">People who rated this film 4★ or more also loved these. “Shared fans” counts those people.</p><ul class="similar-list">${result.items
             .map(
               (row) =>
-                `<li><button class="similar-item" data-detail="${row.movie_id}">${posterArt(row)}<span><strong>${escapeText(cleanTitle(row.title))}</strong><small>${row.year || ""} · ${formatNumber(row.support)} shared fans</small></span><span class="meter" title="Similarity ${Number(row.score).toFixed(3)}" style="--value:${barWidth(row.score, result.items.map((r) => r.score))}%"></span></button></li>`,
+                `<li><button class="similar-item" data-detail="${row.movie_id}">${posterArt(row, "w92")}<span><strong>${escapeText(cleanTitle(row.title))}</strong><small>${row.year || ""} · ${formatNumber(row.support)} shared fans</small></span><span class="meter" title="Similarity ${Number(row.score).toFixed(3)}" style="--value:${barWidth(row.score, result.items.map((r) => r.score))}%"></span></button></li>`,
             )
             .join("")}</ul>`
         : '<p class="muted">Not enough shared fans in this snapshot to link this film to others.</p>') +
-      (taste.posters[movieId] ? `<p class="small muted"><a href="${escapeText(taste.posters[movieId].source)}" target="_blank" rel="noopener noreferrer">Poster source on TMDB ↗</a></p>` : "");
+      (taste.posters[movieId] ? `<p class="small muted"><a href="https://www.themoviedb.org/movie/${Number(taste.posters[movieId][1])}" target="_blank" rel="noopener noreferrer">Poster source on TMDB ↗</a></p>` : "");
   } catch (error) {
     if (currentDetail(requestId))
       $("#detail-content").innerHTML = heading + `<p class="error-text">${escapeText(error.message)}</p>`;
@@ -322,7 +350,7 @@ function reasonList(items) {
   return `<ul class="reason-list">${items
     .map(
       (item) =>
-        `<li>${posterArt(item)}<span><strong>${escapeText(cleanTitle(item.title))}</strong><small>${formatNumber(item.support)} people loved both films${item.note ? " · " + escapeText(item.note) : ""}</small></span><span class="meter" title="Similarity ${Number(item.similarity).toFixed(3)}" style="--value:${barWidth(item.similarity, items.map((i) => i.similarity))}%"></span></li>`,
+        `<li>${posterArt(item, "w92")}<span><strong>${escapeText(cleanTitle(item.title))}</strong><small>${formatNumber(item.support)} people loved both films${item.note ? " · " + escapeText(item.note) : ""}</small></span><span class="meter" title="Similarity ${Number(item.similarity).toFixed(3)}" style="--value:${barWidth(item.similarity, items.map((i) => i.similarity))}%"></span></li>`,
     )
     .join("")}</ul>`;
 }
@@ -357,6 +385,7 @@ function renderRound() {
   $("#round-bar").style.width = `${taste.index * 10}%`;
   $("#taste-finish").hidden = picked === 0;
   $("#taste-options").innerHTML = taste.rounds[taste.index].map((movie) => card(movie, "pick")).join("");
+  $("#quiz-chosen").innerHTML = picked ? chosenHTML() : "";
 }
 function showPicksStage(stage) {
   $("#picks-intro").hidden = stage !== "intro";
@@ -407,11 +436,15 @@ async function finishTaste() {
   renderGenreChips();
   await loadPicks();
 }
-function renderChosen() {
+function chosenHTML() {
   const chosen = taste.rounds.flat().filter((movie) => selectedPicks().includes(movie.movie_id));
-  $("#picks-chosen").innerHTML =
+  return (
     '<span class="muted small">Your picks:</span>' +
-    chosen.map((movie) => `<span class="chosen" title="${escapeText(movie.title)}">${posterArt(movie)}<span>${escapeText(cleanTitle(movie.title))}</span></span>`).join("");
+    chosen.map((movie) => `<span class="chosen" title="${escapeText(movie.title)}">${posterArt(movie, "w92")}<span>${escapeText(cleanTitle(movie.title))}</span></span>`).join("")
+  );
+}
+function renderChosen() {
+  $("#picks-chosen").innerHTML = chosenHTML();
 }
 function renderGenreChips() {
   $("#picks-genres").innerHTML = ["", ...state.genres]
@@ -578,6 +611,18 @@ $("#taste-back").addEventListener("click", () => {
     renderRound();
   }
 });
+/* Keyboard shortcuts while a quick-pick round is on screen. */
+document.addEventListener("keydown", (event) => {
+  if (state.view !== "picks" || $("#taste-quiz").hidden || event.metaKey || event.ctrlKey || event.altKey) return;
+  if (event.target?.matches?.("input, textarea, select") || $("#detail-dialog").open) return;
+  const options = taste.rounds[taste.index] || [];
+  const number = Number(event.key);
+  if (number >= 1 && number <= options.length) advanceTaste(options[number - 1].movie_id);
+  else if (event.key === "s" || event.key === "S") advanceTaste(null);
+  else if (event.key === "ArrowLeft") $("#taste-back").click?.();
+  else return;
+  event.preventDefault();
+});
 $("#picks-restart").addEventListener("click", () => {
   taste.requestId++;
   taste.rounds = [];
@@ -651,9 +696,8 @@ function refreshPosters() {
   $$(".poster").forEach((node) => {
     const holder = node.closest("[data-pick],[data-detail]");
     const id = holder?.dataset.pick || holder?.dataset.detail;
-    const poster = taste.posters[id];
-    if (poster && !node.querySelector("img"))
-      node.insertAdjacentHTML("afterbegin", `<img src="${escapeText(poster.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">`);
+    if (taste.posters[id] && !node.querySelector("img"))
+      node.insertAdjacentHTML("afterbegin", posterImage(id, node.dataset.size));
   });
 }
 async function initialize() {
