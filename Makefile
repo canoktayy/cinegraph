@@ -56,3 +56,7 @@ test-ui: ## Check delayed-request UI regressions with the Node built-in test run
 .PHONY: notebook
 notebook: ## Execute and save every demo notebook cell with the project Python
 	$(PYTHON) -m scripts.execute_notebook
+
+.PHONY: assistant-eval
+assistant-eval: ## Exercise the real local assistant, full quiz and graph refinements
+	$(PYTHON) -m scripts.evaluate_assistant

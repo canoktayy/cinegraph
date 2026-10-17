@@ -3,310 +3,383 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>MovieGraph — Follow your taste.</title>
+    <meta name="color-scheme" content="dark" />
+    <title>MovieGraph — find your next film</title>
+    <meta
+      name="description"
+      content="Pick films you love and get recommendations with a visible reason, built on a Neo4j graph of MovieLens ratings."
+    />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' rx='16' fill='%23e66f45'/%3E%3Cpath d='M17 43V17l13 16 13-16v26' fill='none' stroke='white' stroke-width='5'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f5b84b'/%3E%3Ccircle cx='20' cy='42' r='7' fill='%2314161c'/%3E%3Ccircle cx='44' cy='22' r='7' fill='%2314161c'/%3E%3Cpath d='M20 42L44 22' stroke='%2314161c' stroke-width='5'/%3E%3C/svg%3E"
     />
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
-    <aside class="sidebar">
-      <a class="brand" href="/" aria-label="MovieGraph home"
-        ><span class="brand-icon">m<span>·</span></span
-        ><span>moviegraph<span class="brand-dot">.</span></span></a
-      >
-      <div class="workspace">
-        <span class="workspace-dot"></span> YOUR CINEMA, CONNECTED
-        <span>↗</span>
-      </div>
-      <div class="nav-caption">THE COLLECTION</div>
-      <nav aria-label="Main navigation">
-        <button class="nav-item active" data-view="recommendations">
-          <span>◈</span> Your recommendations <i>01</i>
-        </button>
-        <button class="nav-item" data-view="discover">
-          <span>⌘</span> Research: communities <i>02</i>
-        </button>
-        <button class="nav-item" data-view="trending">
-          <span>↗</span> Research: rankings <i>03</i>
-        </button>
-        <button class="nav-item" data-view="catalog">
-          <span>▤</span> Explore the catalog <i>04</i>
-        </button>
-        <button class="nav-item" data-view="ask">
-          <span>◇</span> Ask the graph <i>05</i>
-        </button>
-      </nav>
-      <div class="sidebar-note">
-        <div class="mini-network" aria-hidden="true">
-          <b></b><b></b><b></b><b></b><b></b
-          ><svg viewBox="0 0 180 70">
-            <path d="M15 35L70 10L110 55L165 20M15 35L110 55M70 10L165 20" />
-          </svg>
-        </div>
-        <span>MORE THAN AN ALGORITHM</span>
-        <h3>A little less guessing.<br />A lot more connection.</h3>
-        <p>Every recommendation has a path. We show you yours.</p>
-        <a href="/docs" target="_blank" rel="noopener"
-          >Explore the API <span>↗</span></a
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#home" data-view="home" aria-label="MovieGraph home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><circle cx="9" cy="22" r="4" /><circle cx="23" cy="10" r="4" /><circle cx="24" cy="25" r="3" /><path d="M9 22L23 10M9 22L24 25" /></svg>
+          </span>
+          <span>MovieGraph</span>
+        </a>
+        <button
+          id="menu-toggle"
+          class="menu-toggle"
+          aria-expanded="false"
+          aria-controls="site-nav"
         >
+          <span aria-hidden="true">☰</span> Menu
+        </button>
+        <nav id="site-nav" class="site-nav" aria-label="Main">
+          <div class="nav-group">
+            <span class="nav-label">Get recommendations</span>
+            <button class="nav-item" data-view="picks">Quick picks</button>
+            <button class="nav-item" data-view="assistant">Film assistant</button>
+          </div>
+          <div class="nav-group">
+            <span class="nav-label">Explore the data</span>
+            <button class="nav-item" data-view="catalog">Catalog</button>
+            <button class="nav-item" data-view="top">Top films</button>
+            <button class="nav-item" data-view="users">Dataset users</button>
+            <button class="nav-item" data-view="lab">Query lab</button>
+          </div>
+        </nav>
       </div>
-      <div class="sidebar-bottom">
-        <span class="avatar">ML</span>
-        <div>
-          MovieLens small<small>Research snapshot · not live data</small>
-        </div>
-        <span class="health-dot" title="API connection status"></span>
-      </div>
-    </aside>
-    <nav class="mobile-nav" aria-label="Mobile navigation">
-      <button class="nav-item active" data-view="recommendations">
-        <span>◈</span>For you
-      </button>
-      <button class="nav-item" data-view="discover">
-        <span>⌘</span>Communities
-      </button>
-      <button class="nav-item" data-view="trending">
-        <span>↗</span>History
-      </button>
-      <button class="nav-item" data-view="catalog">
-        <span>▤</span>Catalog
-      </button>
-      <button class="nav-item" data-view="ask"><span>◇</span>Ask</button>
-    </nav>
-    <main>
-      <header class="topbar">
-        <div class="breadcrumb">
-          YOUR SPACE <span>/</span> <strong id="breadcrumb">For you</strong>
-        </div>
-        <div class="topbar-right">
-          <span class="live-badge"><span></span> LOCAL-FIRST</span
-          ><a href="/docs" target="_blank" rel="noopener">API docs ↗</a>
-        </div>
-      </header>
-      <div class="content">
-        <section class="hero" id="welcome-screen">
-          <div class="hero-copy">
-            <div class="eyebrow">
-              <span class="small-line"></span> GOOD STORIES FIND THEIR PEOPLE
-            </div>
-            <h1 id="hero-title">
-              Follow your taste.<br /><em>Find your next story.</em>
-            </h1>
-            <p id="hero-description">
-              Films connected by the people who love them.<br />Recommendations
-              with a reason, not just a rating.
+    </header>
+
+    <div id="notice" class="notice" role="alert" hidden></div>
+
+    <main id="main">
+      <!-- HOME -->
+      <section id="screen-home" class="screen" data-screen="home">
+        <div class="hero">
+          <div class="hero-text">
+            <p class="kicker">Movie recommendations you can check</p>
+            <h1>Tell us a few films you love.<br /><span>We’ll show you what to watch next — and why.</span></h1>
+            <p class="lead">
+              MovieGraph connects films through 100,000 real ratings. When people
+              who loved your favourites also loved another film, that link becomes
+              a recommendation — and you can see the exact connection behind it.
             </p>
             <div class="hero-actions">
-              <button id="hero-start" class="primary-link">
-                Find my films <span>↗</span></button
-              ><span class="hero-footnote"
-                >Built on connections.<br />Grounded in real ratings.</span
-              >
+              <button class="button primary large" data-view="picks">
+                Start quick picks <span aria-hidden="true">→</span>
+              </button>
+              <button class="button ghost large" data-view="assistant">
+                Chat with the film assistant
+              </button>
             </div>
+            <p class="hero-note">No account. Takes about two minutes. Your picks stay in this tab.</p>
           </div>
-          <div
-            class="hero-art"
-            aria-label="An abstract cinematic constellation"
-          >
-            <div class="art-grain"></div>
-            <div class="art-circle circle-a"></div>
-            <div class="art-circle circle-b"></div>
-            <div class="art-orbit"></div>
-            <svg viewBox="0 0 400 300" class="constellation">
-              <path
-                d="M62 204L136 124L234 172L331 74M136 124L280 48M234 172L314 252"
-              />
-              <circle cx="62" cy="204" r="5" />
-              <circle cx="136" cy="124" r="7" />
-              <circle cx="234" cy="172" r="5" />
-              <circle cx="331" cy="74" r="6" />
-              <circle cx="280" cy="48" r="4" />
-              <circle cx="314" cy="252" r="4" />
+          <div class="hero-posters" id="hero-posters" aria-hidden="true"></div>
+        </div>
+
+        <div class="stats" aria-label="Dataset at a glance">
+          <div><strong id="stat-movies">—</strong><span>films</span></div>
+          <div><strong id="stat-ratings">—</strong><span>ratings</span></div>
+          <div><strong id="stat-users">—</strong><span>anonymous raters</span></div>
+          <div><strong id="stat-date">—</strong><span>data snapshot</span></div>
+        </div>
+
+        <section class="block" aria-labelledby="how-title">
+          <h2 id="how-title">How it works</h2>
+          <ol class="steps">
+            <li>
+              <span class="step-number">1</span>
+              <h3>Pick favourites</h3>
+              <p>You see five well-known films at a time. Choose the one you like most, or skip a round.</p>
+            </li>
+            <li>
+              <span class="step-number">2</span>
+              <h3>We follow the graph</h3>
+              <p>We look for films that the same MovieLens raters also scored 4★ or higher.</p>
+            </li>
+            <li>
+              <span class="step-number">3</span>
+              <h3>See the reason</h3>
+              <p>Every suggestion has a “Why?” button showing which of your picks it is connected to, and through how many people.</p>
+            </li>
+          </ol>
+          <figure class="graph-figure">
+            <svg viewBox="0 0 640 170" role="img" aria-labelledby="graph-caption">
+              <g class="g-edge"><path d="M118 85H250" /><path d="M370 85H502" /></g>
+              <g class="g-node you"><circle cx="70" cy="85" r="44" /><text x="70" y="80">You</text><text x="70" y="98" class="small">picked</text></g>
+              <g class="g-node film"><rect x="250" y="40" width="120" height="90" rx="14" /><text x="310" y="78" id="example-seed">Toy Story</text><text x="310" y="98" class="small">your favourite</text></g>
+              <g class="g-node rec"><rect x="502" y="40" width="120" height="90" rx="14" /><text x="562" y="78" id="example-rec">…</text><text x="562" y="98" class="small">recommended</text></g>
+              <text x="184" y="70" class="edge-label">you like</text>
+              <text x="436" y="70" class="edge-label" id="example-fans">people who loved both</text>
             </svg>
-            <div class="art-label">
-              <span>THE ART OF FINDING</span
-              ><strong>Unexpected<br />connections.</strong
-              ><small>ONE GRAPH. THOUSANDS OF STORIES.</small>
-            </div>
-            <div class="art-corner">MG / 01</div>
+            <figcaption id="graph-caption">A recommendation is a path through people who loved both films.</figcaption>
+          </figure>
+        </section>
+
+        <section class="block" aria-labelledby="choose-title">
+          <h2 id="choose-title">Two ways to get recommendations</h2>
+          <div class="choice-grid">
+            <article class="choice-card">
+              <span class="badge">Works everywhere</span>
+              <h3>Quick picks</h3>
+              <p>Ten rounds of five films. Click your favourites, then filter results by genre. No language model or key needed.</p>
+              <button class="button primary" data-view="picks">Start quick picks</button>
+            </article>
+            <article class="choice-card">
+              <span class="badge muted">Needs a local model</span>
+              <h3>Film assistant</h3>
+              <p>The same idea as a conversation. Say “only comedies” or “more like Alien” and the assistant reruns the graph search.</p>
+              <button class="button ghost" data-view="assistant">Open the assistant</button>
+            </article>
           </div>
         </section>
-        <section
-          id="graph-stats"
-          class="stats-strip"
-          aria-label="Live graph statistics"
-        >
-          <div>
-            <strong id="stat-movies">—</strong><span>FILMS TO DISCOVER</span>
+
+        <section class="block" aria-labelledby="explore-title">
+          <h2 id="explore-title">Explore the data behind it</h2>
+          <p class="section-lead">These pages show the MovieLens research dataset directly. They don’t use your picks.</p>
+          <div class="explore-grid">
+            <button class="explore-card" data-view="catalog"><strong>Catalog</strong><span>Search all 9,742 films and see which films share fans.</span></button>
+            <button class="explore-card" data-view="top"><strong>Top films</strong><span>Highest rated in the final year of the data, or most central in the graph.</span></button>
+            <button class="explore-card" data-view="users"><strong>Dataset users</strong><span>Pick an anonymous MovieLens rater and see their recommendations and taste communities.</span></button>
+            <button class="explore-card" data-view="lab"><strong>Query lab</strong><span>Ask a question in plain English and watch it become a checked database query.</span></button>
           </div>
-          <div>
-            <strong id="stat-ratings">—</strong><span>REAL CONNECTIONS</span>
-          </div>
-          <div>
-            <strong id="stat-users">—</strong><span>UNIQUE PERSPECTIVES</span>
-          </div>
-          <div class="snapshot-stat">
-            <span class="snapshot-icon">◷</span>
+        </section>
+      </section>
+
+      <!-- QUICK PICKS -->
+      <section id="screen-picks" class="screen" data-screen="picks" hidden>
+        <div class="page-head">
+          <p class="kicker">Quick picks</p>
+          <h1>Choose films you love</h1>
+          <p class="lead">Ten rounds, five films each. Pick your favourite, or skip films you don’t know. Films you don’t pick are <em>not</em> treated as dislikes.</p>
+        </div>
+
+        <div id="picks-intro" class="panel center">
+          <ol class="mini-steps">
+            <li>Pick one favourite per round</li>
+            <li>Skip rounds you don’t know</li>
+            <li>Get matches with reasons</li>
+          </ol>
+          <button id="start-taste" class="button primary large">Start round 1 →</button>
+          <p id="taste-status" class="muted" role="status" aria-live="polite"></p>
+        </div>
+
+        <div id="taste-quiz" class="quiz" hidden>
+          <div class="quiz-top">
             <div>
-              <strong id="snapshot-date">Loading snapshot</strong
-              ><span>HISTORICAL MOVIELENS DATA</span>
+              <strong id="round-label">Round 1 of 10</strong>
+              <span id="round-picks" class="muted"></span>
             </div>
+            <div class="progress" aria-hidden="true"><span id="round-bar"></span></div>
           </div>
-        </section>
-        <section id="taste-section" class="taste-section">
-          <div class="eyebrow">
-            01 / CHOOSE · 02 / DISCOVER · 03 / UNDERSTAND
+          <div id="taste-options" class="film-grid five"></div>
+          <div class="quiz-actions">
+            <button id="taste-back" class="button ghost">← Previous round</button>
+            <button id="taste-finish" class="button ghost" hidden>Show my matches now</button>
+            <button id="taste-skip" class="button subtle">I don’t know these — skip →</button>
           </div>
-          <h2>Your taste. Your next film.</h2>
-          <p>
-            Ten quick rounds. Pick your favourite of five films, or skip a round
-            if none feel familiar.
-          </p>
-          <div class="taste-actions">
-            <button id="start-taste" class="primary-link" hidden>
-              Find my films ↗</button
-            ><button id="demo-mode" class="text-button">
-              Explore the research demo instead
-            </button>
-          </div>
-          <div id="taste-quiz" hidden>
-            <div class="taste-progress">
-              <strong id="round-label"></strong
-              ><progress id="round-progress" max="10" value="0"></progress>
-            </div>
-            <p id="round-help">
-              Choose the film you like most. The others are not counted as
-              dislikes.
-            </p>
-            <div id="taste-options" class="taste-options"></div>
-            <div class="taste-actions">
-              <button id="taste-back" class="text-button">← Back</button
-              ><button id="taste-skip" class="text-button">
-                I haven't seen these — skip round →
-              </button>
-            </div>
-          </div>
-          <p id="taste-status" role="status" aria-live="polite"></p>
-        </section>
-        <section id="collection" class="collection-section" hidden>
-          <div class="section-heading">
+        </div>
+
+        <div id="picks-results" hidden>
+          <div class="results-head">
             <div>
-              <div class="eyebrow" id="page-caption">YOUR NEXT FRAME</div>
-              <h2 id="collection-title">A few stories for you<span>.</span></h2>
-              <p id="page-description" class="page-description"></p>
+              <h2>Your matches</h2>
+              <p id="picks-note" class="muted"></p>
             </div>
-            <div class="view-note" id="method-note">
-              Graph-backed, evidence-led
-            </div>
+            <button id="picks-restart" class="button ghost">Start over</button>
           </div>
-          <form id="filter-form" class="filters">
-            <label class="user-control" id="demo-user-control"
-              ><span>DEMO USER</span><span class="user-icon">◉</span
-              ><input
-                id="user-id"
-                type="number"
-                min="1"
-                max="100000"
-                value="42"
-                aria-label="MovieLens user ID" /></label
-            ><label id="genre-control" class="genre-control"
-              ><select id="genre" aria-label="Filter by genre">
-                <option value="">All genres</option>
-              </select></label
-            ><label id="search-control" class="search-control"
-              ><span>⌕</span
-              ><input
-                id="search"
-                type="search"
-                placeholder="Search a film, find a connection…"
-                aria-label="Search the catalog" /></label
-            ><button class="filter-submit" type="submit">
-              Find films <span>↗</span>
-            </button>
+          <div id="picks-chosen" class="chosen-strip" aria-label="Your picks"></div>
+          <div id="picks-genres" class="chips" role="group" aria-label="Filter by genre"></div>
+          <div id="picks-grid" class="film-grid" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- ASSISTANT -->
+      <section id="screen-assistant" class="screen" data-screen="assistant" hidden>
+        <div class="page-head">
+          <p class="kicker">Film assistant</p>
+          <h1>Find films by chatting</h1>
+          <p class="lead">The assistant shows you real films to choose from, then lets you refine the results in plain language. The language model only understands your request — the films always come from the graph.</p>
+        </div>
+
+        <div id="assistant-connect" class="panel connect">
+          <div>
+            <h2>Connect your local model</h2>
+            <ol class="checklist">
+              <li>Open LM Studio, load <code>qwen2.5-7b-instruct</code> and start the server on port 1234.</li>
+              <li>Copy <code>APP_API_KEY</code> from the <code>.env</code> file in the project folder.</li>
+              <li>Paste it below. It stays in this tab only.</li>
+            </ol>
+          </div>
+          <form id="assistant-connect-form" class="connect-form">
+            <label for="assistant-key">Local access key</label>
+            <input id="assistant-key" class="model-key" type="password" autocomplete="off" placeholder="Paste APP_API_KEY" />
+            <button id="assistant-start" class="button primary" type="submit">Start the conversation →</button>
+            <p class="muted small">No model? <button class="link" type="button" data-view="picks">Use quick picks instead</button> — same results, no setup.</p>
           </form>
-          <div id="notice" class="notice" hidden></div>
-          <div id="movie-grid" class="movie-grid" aria-live="polite"></div>
-          <div class="collection-footer">
-            <span id="result-note">Connecting to your graph…</span>
-            <div class="pager">
-              <button id="show-previous" class="text-button" hidden>
-                ← Previous page</button
-              ><button id="show-more" class="text-button" hidden>
-                Next page ↗
-              </button>
+        </div>
+
+        <div id="assistant-workspace" class="assistant-layout" hidden>
+          <div class="chat">
+            <div class="chat-head">
+              <strong id="assistant-progress">Round 1 of 10</strong>
+              <div>
+                <button id="assistant-back" class="button subtle small" hidden>← Previous round</button>
+                <button id="assistant-reset" class="button subtle small">Start over</button>
+              </div>
             </div>
-            <span>REAL RATINGS. VISIBLE REASONS.</span>
+            <div id="assistant-transcript" class="transcript" role="log" aria-label="Conversation" aria-live="polite"></div>
+            <div class="suggestions" aria-label="Suggested messages">
+              <button data-assistant-message="Only comedies, please">Only comedies</button>
+              <button data-assistant-message="Bana sadece bilim kurgu öner">Sadece bilim kurgu</button>
+              <button data-assistant-message="All genres, please">All genres</button>
+              <button data-assistant-message="Recommend films now">Recommend now</button>
+              <button data-assistant-message="Continue the film selection quiz">Keep choosing</button>
+            </div>
+            <form id="assistant-form" class="composer">
+              <label class="sr-only" for="assistant-message">Your message</label>
+              <input id="assistant-message" maxlength="1000" autocomplete="off" placeholder="e.g. “only comedies” or “more like Alien”" />
+              <button id="assistant-send" class="button primary" type="submit">Send</button>
+            </form>
+            <div id="assistant-status" class="status-line" role="status" aria-live="polite"></div>
+            <button id="assistant-retry" class="button ghost small" hidden>Try that step again ↻</button>
           </div>
-        </section>
-        <section id="ask-screen" hidden>
-          <section class="ask-section">
-            <div>
-              <div class="eyebrow">A QUESTION WORTH ASKING</div>
-              <h2>Your curiosity.<br /><em>The graph’s answers.</em></h2>
-              <p>
-                Ask about films, recommendations or communities.<br />Every
-                question becomes a validated, read-only graph query.
-              </p>
-              <div class="ask-examples">
-                <button data-question="Recommend 5 movies for user 42">
-                  “What should user 42 watch next?” ↗</button
-                ><button data-question="Find 5 movies similar to movie 1">
-                  “Which films are connected to movie 1?” ↗
-                </button>
-              </div>
+          <div class="assistant-panel">
+            <div id="assistant-filters" class="filter-line"></div>
+            <div id="assistant-results" aria-live="polite"></div>
+            <details class="method">
+              <summary>What did the assistant decide?</summary>
+              <p>The model returns a small, validated plan: which graph tool to use, an optional genre, and an optional favourite film. The server checks every value before running the query.</p>
+              <pre id="assistant-plan"></pre>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- CATALOG -->
+      <section id="screen-catalog" class="screen" data-screen="catalog" hidden>
+        <div class="page-head">
+          <p class="kicker">Explore · Catalog</p>
+          <h1>Search the film catalog</h1>
+          <p class="lead">All 9,742 MovieLens films. Open any film to see the films most liked by the same people.</p>
+        </div>
+        <form id="catalog-form" class="toolbar">
+          <label class="field grow">
+            <span>Title</span>
+            <input id="search" type="search" placeholder="e.g. Toy Story" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>Genre</span>
+            <select id="genre" class="genre-select"><option value="">All genres</option></select>
+          </label>
+          <button class="button primary" type="submit">Search</button>
+        </form>
+        <div id="catalog-grid" class="film-grid" aria-live="polite"></div>
+        <div class="pager">
+          <button id="show-previous" class="button ghost" hidden>← Previous</button>
+          <span id="catalog-note" class="muted"></span>
+          <button id="show-more" class="button ghost" hidden>Next →</button>
+        </div>
+      </section>
+
+      <!-- TOP FILMS -->
+      <section id="screen-top" class="screen" data-screen="top" hidden>
+        <div class="page-head">
+          <p class="kicker">Explore · Top films</p>
+          <h1>Top films in the dataset</h1>
+          <p class="lead">MovieLens is a historical snapshot ending in September 2018 — this is not what’s trending today.</p>
+        </div>
+        <div class="segmented" role="tablist" aria-label="Ranking">
+          <button class="segment active" role="tab" aria-selected="true" data-metric="rating">Highest rated · final year</button>
+          <button class="segment" role="tab" aria-selected="false" data-metric="pagerank">Most central · PageRank</button>
+        </div>
+        <p id="top-explain" class="muted explain"></p>
+        <ol id="top-grid" class="ranking" aria-live="polite"></ol>
+      </section>
+
+      <!-- DATASET USERS -->
+      <section id="screen-users" class="screen" data-screen="users" hidden>
+        <div class="page-head">
+          <p class="kicker">Explore · Dataset users</p>
+          <h1>Recommendations for a MovieLens rater</h1>
+          <p class="lead">Each of the 610 raters is an anonymous number. Choose one to see what the graph recommends from their own rating history. This doesn’t use your picks.</p>
+        </div>
+        <form id="users-form" class="toolbar">
+          <label class="field">
+            <span>Rater ID (1–610)</span>
+            <input id="user-id" type="number" min="1" max="610" value="42" />
+          </label>
+          <label class="field">
+            <span>Method</span>
+            <select id="user-mode">
+              <option value="recommendations">Similar films to what they liked</option>
+              <option value="discover">From their taste communities (Louvain)</option>
+            </select>
+          </label>
+          <label class="field" id="user-genre-field">
+            <span>Genre</span>
+            <select id="user-genre" class="genre-select"><option value="">All genres</option></select>
+          </label>
+          <button class="button primary" type="submit">Show films</button>
+        </form>
+        <p id="users-explain" class="muted explain"></p>
+        <div id="users-grid" class="film-grid" aria-live="polite"></div>
+      </section>
+
+      <!-- QUERY LAB -->
+      <section id="screen-lab" class="screen" data-screen="lab" hidden>
+        <div class="page-head">
+          <p class="kicker">Explore · Query lab</p>
+          <h1>From a question to a safe database query</h1>
+          <p class="lead">Type a question about the dataset. A local language model turns it into a small plan; the server maps that plan to a reviewed Cypher template, checks it, and runs it. Unsafe requests are rejected.</p>
+        </div>
+        <div class="lab-layout">
+          <form id="lab-form" class="panel lab-form">
+            <label for="api-key">Local access key</label>
+            <input id="api-key" class="model-key" type="password" autocomplete="off" placeholder="Paste APP_API_KEY from .env" />
+            <label for="question">Your question</label>
+            <textarea id="question" rows="3" maxlength="1000" placeholder="Recommend 5 Sci-Fi movies for user 42"></textarea>
+            <div class="chips small-chips">
+              <button type="button" data-question="Recommend 5 Sci-Fi movies for user 42">Sci-Fi for user 42</button>
+              <button type="button" data-question="Find 5 movies similar to movie 1">Similar to movie 1</button>
+              <button type="button" data-question="Rank films by pagerank">Rank by PageRank</button>
+              <button type="button" data-question="Why would movie 318 be recommended to user 42?">Why movie 318?</button>
+              <button type="button" class="danger" data-question="DELETE all nodes">Try a blocked request</button>
             </div>
-            <div class="ask-panel">
-              <label for="api-key"
-                >LOCAL ACCESS KEY <span>stays in this tab</span></label
-              ><input
-                id="api-key"
-                type="password"
-                autocomplete="off"
-                placeholder="Enter APP_API_KEY from your local .env"
-              /><label for="question">ASK MOVIEGRAPH</label
-              ><textarea
-                id="question"
-                rows="3"
-                placeholder="Recommend 5 science-fiction movies for user 42"
-              ></textarea
-              ><button id="ask-button">
-                Follow the evidence <span>↗</span>
-              </button>
-              <div class="guardrail-note">
-                <span>◇</span> Bounded queries. Verified identities. No invented
-                results.
-              </div>
-              <div id="ask-result" hidden></div>
+            <button id="ask-button" class="button primary" type="submit">Run question</button>
+          </form>
+          <div id="ask-result" class="pipeline" aria-live="polite">
+            <div class="pipeline-empty">
+              <ol>
+                <li><strong>Question</strong><span>Plain English or Turkish</span></li>
+                <li><strong>Plan</strong><span>The model picks one of six allowed intents</span></li>
+                <li><strong>Checked query</strong><span>A reviewed Cypher template with bound parameters</span></li>
+                <li><strong>Results</strong><span>Real rows from Neo4j — nothing invented</span></li>
+              </ol>
             </div>
-          </section>
-        </section>
-        <footer>
-          <a class="footer-brand" href="/">moviegraph.</a>
-          <p>Discover the story behind your next story.</p>
-          <span
-            >Posters:
-            <a href="https://www.themoviedb.org" target="_blank" rel="noopener"
-              >TMDB</a
-            >
-            · Not endorsed or certified by TMDB. Image rights remain with their
-            holders.<br />NEO4J × MOVIELENS
-            <span class="footer-separator">/</span> AIDAMS 3A</span
-          >
-        </footer>
-      </div>
+          </div>
+        </div>
+      </section>
     </main>
-    <dialog id="detail-dialog">
-      <button
-        id="close-detail"
-        class="close-detail"
-        aria-label="Close movie details"
-      >
-        ×
-      </button>
+
+    <footer class="site-footer">
+      <div>
+        <strong>MovieGraph</strong> · Neo4j × MovieLens · AIDAMS 3A project by Can Oktay
+      </div>
+      <div class="muted small">
+        Ratings: <a href="https://grouplens.org/datasets/movielens/" target="_blank" rel="noopener">MovieLens</a> (historical, ends 2018).
+        Posters: <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>, not endorsed or certified by TMDB.
+        <a href="/docs" target="_blank" rel="noopener">API docs</a>
+        <span id="health" class="health" title="API status">●</span>
+      </div>
+    </footer>
+
+    <dialog id="detail-dialog" aria-labelledby="detail-title">
+      <button id="close-detail" class="close-detail" aria-label="Close">×</button>
       <div id="detail-content"></div>
     </dialog>
+
     <script src="/static/app.js" defer></script>
+    <script src="/static/assistant.js" defer></script>
   </body>
 </html>

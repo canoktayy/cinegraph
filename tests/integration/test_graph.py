@@ -18,7 +18,8 @@ pytestmark = pytest.mark.integration
 
 @pytest.fixture(scope="module")
 def store():
-    database = GraphStore(get_settings())
+    # GDS projection jobs run here; like `make analytics`, they need more than the API's 5 s budget on slow CI runners.
+    database = GraphStore(get_settings().model_copy(update={"query_timeout_seconds": 120}))
     database.healthy()
     yield database
     database.close()
@@ -130,3 +131,37 @@ def test_visitor_taste_rounds_and_actual_graph_evidence(store):
     filtered = recommend(service, TasteRequest(movie_ids=picks, genre="Sci-Fi"))
     assert all("Sci-Fi" in movie["genres"] for movie in filtered["items"])
     assert before == service.repository.statistics()
+
+
+def test_assistant_tool_switch_and_comedy_filter_use_real_graph(store):
+    """Only planning is controlled; filters, exclusions and reasons execute in Neo4j."""
+    from unittest.mock import Mock
+    from app.agent.assistant import AssistantPlan, AssistantTurn, answer_turn
+    from app.taste import rounds
+
+    service = RecommendationService(CatalogRepository(store))
+    choices = [group[0]["movie_id"] for group in rounds(service, 42)["rounds"]]
+    adapter = Mock()
+    adapter.plan.return_value = AssistantPlan(
+        action="recommend",
+        algorithm="graph_affinity",
+        genre="Comedy",
+        anchor_movie_id=None,
+        reply="I’ll find comedies.",
+    )
+    result = answer_turn(AssistantTurn(choices=choices, message="Only comedies"), service, adapter, "integration")
+    assert result["items"]
+    assert all("Comedy" in row["genres"] and row["movie_id"] not in choices for row in result["items"])
+    assert all(reason["seed_id"] in choices for row in result["items"] for reason in row["reasons"])
+    adapter.plan.return_value = AssistantPlan(
+        action="recommend",
+        algorithm="similar_movies",
+        genre=None,
+        anchor_movie_id=choices[0],
+        reply="I’ll follow that favourite.",
+    )
+    result = answer_turn(
+        AssistantTurn(choices=choices, message="Like my first favourite"), service, adapter, "integration"
+    )
+    assert result["items"]
+    assert all(reason["seed_id"] == choices[0] for row in result["items"] for reason in row["reasons"])

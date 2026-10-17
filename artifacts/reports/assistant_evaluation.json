@@ -1,0 +1,211 @@
+{
+  "evaluated_at": "2026-10-17T22:56:34.572874+00:00",
+  "model": "qwen2.5-7b-instruct",
+  "elapsed_seconds": 22.01,
+  "actual_model_cases": 4,
+  "deterministic_quiz_turns": 11,
+  "guard_cases": 2,
+  "source_counts_unchanged": true,
+  "cases": [
+    {
+      "case": "start",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-1",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-2",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-3",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-4",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-5",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-6",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-7",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-8",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-9",
+      "passed": true,
+      "plan": {
+        "action": "continue_quiz",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "round-10",
+      "passed": true,
+      "plan": {
+        "action": "recommend",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      }
+    },
+    {
+      "case": "turkish-comedy",
+      "passed": true,
+      "plan": {
+        "action": "recommend",
+        "algorithm": "graph_affinity",
+        "genre": "Comedy",
+        "anchor_movie_id": null
+      },
+      "movie_ids": [
+        4306,
+        4886,
+        6377,
+        296,
+        6539,
+        588,
+        608,
+        356
+      ]
+    },
+    {
+      "case": "preserve-genre",
+      "passed": true,
+      "plan": {
+        "action": "recommend",
+        "algorithm": "graph_affinity",
+        "genre": "Comedy",
+        "anchor_movie_id": null
+      },
+      "movie_ids": [
+        4306,
+        4886,
+        6377,
+        296,
+        6539,
+        588,
+        608,
+        356
+      ]
+    },
+    {
+      "case": "clear-genre",
+      "passed": true,
+      "plan": {
+        "action": "recommend",
+        "algorithm": "graph_affinity",
+        "genre": null,
+        "anchor_movie_id": null
+      },
+      "movie_ids": [
+        2959,
+        7361,
+        4226,
+        4306,
+        7153,
+        2762,
+        6874,
+        1089
+      ]
+    },
+    {
+      "case": "single-favourite",
+      "passed": true,
+      "plan": {
+        "action": "recommend",
+        "algorithm": "similar_movies",
+        "genre": null,
+        "anchor_movie_id": 293
+      },
+      "movie_ids": [
+        1089,
+        2959,
+        6874,
+        47,
+        7438,
+        1214,
+        296,
+        2571
+      ]
+    },
+    {
+      "case": "scope-guard",
+      "passed": true,
+      "status": 422
+    },
+    {
+      "case": "scope-guard",
+      "passed": true,
+      "status": 422
+    }
+  ]
+}
