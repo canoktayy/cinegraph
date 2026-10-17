@@ -21,7 +21,7 @@ scripts/evaluate_llm.py:90:0: R0914: Too many local variables (16/15) (too-many-
 
 Report
 ======
-1061 statements analysed.
+1060 statements analysed.
 
 Statistics by type
 ------------------
@@ -84,7 +84,7 @@ External dependencies
 
 
 
-2486 lines have been analyzed
+2485 lines have been analyzed
 
 Raw metrics
 -----------
@@ -92,13 +92,13 @@ Raw metrics
 +----------+-------+------+---------+-----------+
 |type      |number |%     |previous |difference |
 +==========+=======+======+=========+===========+
-|code      |1637   |65.85 |1634     |+3.00      |
+|code      |1636   |65.84 |1637     |-1.00      |
 +----------+-------+------+---------+-----------+
-|docstring |527    |21.20 |527      |=          |
+|docstring |527    |21.21 |527      |=          |
 +----------+-------+------+---------+-----------+
 |comment   |2      |0.08  |2        |=          |
 +----------+-------+------+---------+-----------+
-|empty     |320    |12.87 |320      |=          |
+|empty     |320    |12.88 |320      |=          |
 +----------+-------+------+---------+-----------+
 
 
@@ -158,7 +158,7 @@ Messages
 +------------------------------+------------+
 |message id                    |occurrences |
 +==============================+============+
-|too-many-locals               |7           |
+|too-many-locals               |10          |
 +------------------------------+------------+
 |line-too-long                 |4           |
 +------------------------------+------------+
@@ -173,4 +173,4 @@ Messages
 
 
 ------------------------------------------------------------------
-Your code has been rated at 9.88/10 (previous run: 9.88/10, +0.00)
+Your code has been rated at 9.88/10 (previous run: 9.88/10, -0.00)

@@ -1,9 +1,8 @@
 """One traceable model-planning and database-tool execution workflow."""
 
 from fastapi import HTTPException
-import re
 
-from app.agent.client import LLMClient
+from app.agent.client import LLMClient, explicit_entities
 from app.agent.compiler import compile_plan, guard_question, validate_template
 from app.models import AskRequest, AskResponse
 from app.services import RecommendationService
@@ -15,12 +14,12 @@ def answer(request: AskRequest, service: RecommendationService, client: LLMClien
     plan = client.plan(request, service.repository.genres())
     # The caller's requested result budget cannot be expanded by the model.
     plan.limit = min(plan.limit, request.limit)
-    explicit_ids = {int(value) for value in re.findall(r"\b\d+\b", request.question)}
-    if plan.movie_id and plan.movie_id not in explicit_ids:
+    supplied = explicit_entities(request)
+    if plan.movie_id and plan.movie_id != supplied.get("movie_id"):
         raise HTTPException(
             422, "Movie identity must be explicitly provided; title resolution needs a catalog selection"
         )
-    if plan.user_id and plan.user_id != request.user_id and plan.user_id not in explicit_ids:
+    if plan.user_id and plan.user_id != supplied.get("user_id"):
         raise HTTPException(422, "User identity was not supplied in the question or context")
     if request.user_id and plan.user_id and request.user_id != plan.user_id:
         raise HTTPException(422, "Model changed the explicitly supplied user context")

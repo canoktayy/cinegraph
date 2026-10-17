@@ -1,0 +1,25 @@
+[
+  {
+    "case": "host_make_run_readiness",
+    "status": 200
+  },
+  {
+    "case": "exact_genre_filter",
+    "rows": 3,
+    "passed": true
+  },
+  {
+    "case": "no_recommendation_evidence_for_already_rated_film",
+    "status": 200,
+    "rows": 0
+  },
+  {
+    "case": "global_ranking_not_filtered_by_ui_context",
+    "status": 200,
+    "rows": 3
+  },
+  {
+    "case": "mutation_rejected",
+    "status": 422
+  }
+]

@@ -135,12 +135,20 @@ def test_model_cannot_switch_user_context():
         answer(AskRequest(question="Recommend", user_id=42), fake_service(), client, "trace")
 
 
-def test_model_cannot_guess_known_movie_id():
+@pytest.mark.parametrize("question", ["Find similar movies", "Find 1 similar movies"])
+def test_model_cannot_guess_known_movie_id(question):
     client = Mock()
     client.plan.return_value = QueryPlan(intent="similar_movies", movie_id=1)
     with pytest.raises(HTTPException) as caught:
-        answer(AskRequest(question="Find similar movies"), fake_service(), client, "trace")
+        answer(AskRequest(question=question), fake_service(), client, "trace")
     assert caught.value.status_code == 422
+
+
+@pytest.mark.parametrize("question", ["Find similar movies to movie1", "Film1 ile benzer filmler bul"])
+def test_explicit_compact_movie_identity_is_supported(question):
+    client = Mock()
+    client.plan.return_value = QueryPlan(intent="similar_movies", movie_id=1)
+    assert answer(AskRequest(question=question), fake_service(), client, "trace").status == "ok"
 
 
 @pytest.mark.parametrize("question", ["Who directed movie 1?", "Tell me the plot of movie 1"])
