@@ -5,17 +5,18 @@
 1. Keep `.env` local. Start Docker and the LM Studio model/server.
 2. Run `make docker-run`, `make seed`, `make analytics`, `make validate-data`.
 3. Verify `make lint`, `make test`, `make demo`. Open actual CI and coverage evidence.
-4. Verify the model through `make llm-eval`; do not substitute mocked output for the live request.
+4. Verify the local model through `make assistant-eval` and `make llm-eval`; do not substitute mocked output for live requests.
 
 ## Suggested 12–15 minute route
 
 - Explain why shared ratings and multi-hop recommendations suit a graph.
 - Show `make help`, `make lint`, `make test`, `make docker-run`.
-- Open the UI: user 42 recommendations, one evidence dialog, community discovery, catalog search.
+- Open Home and explain the two ways to get recommendations. In **Film assistant**, complete the five-card rounds (card clicks are deterministic and fast), open a “Why?” reason, then ask `Bana sadece komedi öner` and show the genre-filtered graph results. Name one selected favourite to demonstrate the single-film tool.
+- Show that **Quick picks** works without the model, including genre chips and “Why?”. Then open **Dataset users** for rater 42 (both methods and the path evidence), **Catalog** for title search and “Fans also liked”, and **Top films** for the rating/PageRank toggle.
 - In Swagger show similar, personalized, discover and historical trending/PageRank routes.
-- Enter the **local** APP_API_KEY only in the browser field, then ask `Recommend 5 Sci-Fi movies for user 42`.
+- In **Query lab**, enter the **local** APP_API_KEY only in the browser field, then ask `Recommend 5 Sci-Fi movies for user 42`.
 - Show the actual compiled Cypher, bound parameters and graph results.
-- Ask `DELETE all nodes`: show 422 and verify the source counts remain unchanged.
+- Click “Try a blocked request” (`DELETE all nodes`): show the red 422 guardrail stage and verify the source counts remain unchanged.
 - Explain Movie→User projection direction, support shrinkage and canonical undirected weights.
 - Show the chronological split and cold-start cohort; explain why unrated pairs are not negative labels.
 - Show actual benchmark speed and ranking overlap, CI and private container publishing.

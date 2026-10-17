@@ -21,3 +21,4 @@ GraphDB_26_27.pdf
 *.out
 *.xdv
 .pylint.d/
+.claude/

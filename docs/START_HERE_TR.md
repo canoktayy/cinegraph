@@ -1,6 +1,10 @@
 # Buradan başla
 
-Proje klasöründe terminal aç. Docker Desktop çalışır durumda olsun.
+**MovieGraph, sevdiğin filmleri seçmeni ister; ardından ne izleyebileceğini önerir ve her önerinin nedenini gösterir.** Hesap açman gerekmez. Seçimlerin yalnızca açık tarayıcı sekmesinde tutulur.
+
+## 1. Uygulamayı çalıştır
+
+Docker Desktop açıkken proje klasöründe şu komutları çalıştır:
 
 ```bash
 make install
@@ -9,26 +13,48 @@ make docker-run
 make download seed analytics
 ```
 
-- Arayüz: http://localhost:18080
-- Swagger: http://localhost:18080/docs
-- Neo4j Browser: http://localhost:17474
-- Yerel model: LM Studio'da qwen2.5-7b-instruct; server port 1234
+Ardından [siteyi aç](http://localhost:18080). [API belgeleri (Swagger)](http://localhost:18080/docs) ve [Neo4j Browser](http://localhost:17474) teknik inceleme içindir.
 
-Veri/öneriler model kapalıyken de çalışır. Doğal dil sorgusu için model server açık olmalı; arayüzdeki şifreli alana `.env` içindeki `APP_API_KEY` değerini gir. Bu alanın değeri kaydedilmez veya GitHub'a gönderilmez. Neo4j şifresi de aynı yerel dosyadadır. Anahtarları ekran görüntüsüne veya Git'e ekleme.
+## 2. Menüde ne var?
 
-Kullanıcı 42 ile önerileri aç; “Why this film?” düğmesi gerçek kanıt yollarını gösterir. “Taste communities” topluluk keşfidir. Katalog aramasında `Toy Story` denenebilir. “The long view” günümüzün popüler filmleri değil, tarihsel veri görünümüdür.
+Üst menü iki gruba ayrılır.
 
-Kalite kontrolü: `make lint`, `make test`, `make demo`. Tüm sonuçlar ve sınırlılıklar `docs/results.md` içindedir. Notebook `demo.ipynb`, ayrıntılı proje rehberi `proje_guide.pdf`.
+**Öneri al**
 
-Kapatmak için `make stop`; veri saklanır. Normal kullanımda `docker compose down -v` çalıştırma. Başka bir bilgisayarda özel repoyu klonlamak için kendi GitHub yetkin gerekir; ek Neo4j veya ücretli LLM hesabı gerekmez.
+| Sayfa | Ne işe yarar? |
+|---|---|
+| Quick picks | Her turda beş film görürsün; on tur boyunca sevdiğini seçer ya da turu atlarsın. Model veya anahtar gerekmez. Sonuçlarda tür çipleriyle filtre uygulayabilir, **Why?** ile her önerinin nedenini görebilirsin. |
+| Film assistant | Aynı akışın sohbetli hâlidir. Seçimlerden sonra “Bana sadece komedi öner” ya da “Fargo gibi filmler” yazarak sonuçları değiştirebilirsin. Yerel model gerekir. |
 
-Repo ve image özel tutulur. Hocanın herkese açık registry ve bağımsız insan incelemesi/grup çalışması ölçütlerinin uygulanışı ayrıca netleştirilmelidir; tamamlanmış gibi gösterilmez.
+**Veriyi keşfet** (bu sayfalar senin seçimlerini kullanmaz)
 
-## Yeni ziyaretçi için kişisel öneri
+| Sayfa | Ne işe yarar? |
+|---|---|
+| Catalog | 9.742 film içinde ada ve türe göre arama yaparsın. Bir filme tıklayınca aynı kişilerin sevdiği filmleri görürsün. |
+| Top films | Veri setinin son yılında en yüksek puan alan filmleri ya da PageRank ile en merkezî filmleri listeler. |
+| Dataset users | 610 anonim MovieLens kullanıcısından birini seçip ona yapılan önerileri ve topluluk (Louvain) keşfini görürsün. |
+| Query lab | Doğal dilde sorduğun soru doğrulanmış bir Cypher sorgusuna dönüşür. Tehlikeli istekler 422 ile reddedilir. |
 
-1. **Find my films** düğmesine bas.
-2. On tur boyunca her beşli gruptan en sevdiğin filmi seç. Tanımadığın grubu **skip round** ile geç; **Back** ile geri dönebilirsin.
-3. Son turdan sonra **Your next watch** listesi senin seçimlerinden hesaplanır. Tür filtresiyle daraltabilirsin.
-4. **Why this film?** hangi seçtiğin filmlerin öneriye katkı verdiğini ve kaç ortak olumlu puanlayan izleyici olduğunu gösterir.
+## 3. Film assistant'ı kullanmak
 
-Bu akışta API anahtarı ve LLM gerekmez. Seçimler sayfa yenilenince sıfırlanır; kullanıcı hesabı açılmaz ve MovieLens verisine yeni puan yazılmaz. Seçmediğin filmler beğenmediğin varsayılmaz. Eski kullanıcı numarasıyla gösterim için **Explore the research demo instead** kullanılır. Doğal dil paneli hocaya gösterim için açılır menüdedir.
+1. LM Studio'da **qwen2.5-7b-instruct** modelini yükle ve yerel sunucuyu **1234** portunda başlat.
+2. `.env` dosyasındaki **APP_API_KEY** değerini **Local access key** alanına yapıştır. Bu ücretli bir servis anahtarı değildir ve Neo4j şifresiyle aynı şey değildir. Anahtar yalnızca o sekmede kalır.
+3. **Start the conversation** ile başla. Film kartına tıklayarak seç ya da turu atla. Kart tıklamaları sunucu tarafından yönetilir, bu yüzden hızlıdır. Modeli yalnızca yazdığın mesajlar kullanır.
+4. On turdan sonra ya da **Recommend now** ile öneriler gelir. Bir afişe tıklarsan **Why?** penceresi açılır.
+5. “Bana sadece komedi öner”, “All genres” ya da seçtiğin bir filmin adını yazarak sonuçları değiştir.
+
+Model kapalıysa açık bir hata mesajı görürsün; **Try that step again** seçimlerini kaybetmeden yeniden dener. İstek sınırına takılırsan bir dakika bekle. Anahtarı ekran görüntüsüne ya da Git'e ekleme.
+
+## 4. Sunum ve kalite kontrolleri
+
+| Komut | Ne yapar? |
+|---|---|
+| `make lint` | Pylint denetimi (en az 9.5 puan) |
+| `make test` | Frontend testleri ve gerçek Neo4j ile Python testleri, coverage dahil |
+| `make demo` | Çalışan servislere canlı HTTP kontrolleri |
+| `make assistant-eval` | Gerçek modelle sohbet akışını sınar |
+| `make llm-eval` | Query lab'in 40 vakalık güvenlik ve doğruluk değerlendirmesi |
+
+Ayrıntılar: [gösterim akışı](demo-runbook.md), [asistan mimarisi](film-assistant.md), [ölçülen sonuçlar](results.md), `demo.ipynb` ve `proje_guide.pdf`.
+
+`make stop` servisleri durdurur ama verileri korur. Repo ve konteyner imajı özeldir (private). Ücretli bir LLM ya da bulut Neo4j hesabı gerekmez.

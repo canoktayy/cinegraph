@@ -1,15 +1,17 @@
 # Recorded verification results
 
-Measured locally on 17 October 2026. These are observed results, not promised future accuracy or latency. Full inputs and methodology are in the JSON reports and ADRs.
+Measured locally on 18 October 2026 after the interface redesign. These are observed results, not promised future accuracy or latency. Full inputs and methodology are in the JSON reports and ADRs.
 
 ## Quality gates
 
-- **154 Python tests and 7 frontend regression tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
-- **81.34% combined Python statement/branch coverage**, minimum enforced: 60%.
-- **Pylint 9.89/10**, teacher configuration, minimum enforced: 9.5.
-- **40/40 reliability cases passed**. The 20 supported questions check intent, exact entity/filter/budget parameters and returned genre membership. Other cases distinguish scope/guardrail rejection from controlled malformed-provider fault injection.
+- **178 Python tests and 18 frontend behavioural tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
+- **83.02% combined Python statement/branch coverage**, minimum enforced: 60%.
+- **Pylint 9.90/10**, teacher configuration, minimum enforced: 9.5. Black reports no changes.
+- **40/40 query-lab reliability cases passed**. The 20 supported questions check intent, exact entity/filter/budget parameters and returned genre membership. Other cases distinguish scope/guardrail rejection from controlled malformed-provider fault injection.
+- **17/17 film-assistant checks passed** with the real local model and real Neo4j (ten deterministic quiz turns, Turkish comedy filter, filter retention and removal, single-favourite tool switch, two scope guards, unchanged source counts) in 22 s.
+- **14/14 live HTTP smoke checks passed** against the rebuilt container stack.
 - Every notebook cell executed; real model HTTP 200, exact Sci-Fi filtering and unsafe-operation HTTP 422 are assertions.
-- Desktop and 390px mobile checked; measured document width equals viewport width. Mobile navigation is functional and no key is embedded in screenshots.
+- The interface was driven end to end in Chrome at 1440 px and 390 px (all seven screens, dialogs, the assistant and the query lab). No screen has horizontal overflow at 375 px. Screenshots are in `docs/screenshots/`; no key appears in them.
 
 ## GDS on the actual source snapshot
 
