@@ -37,6 +37,7 @@ def client(monkeypatch):
         "/api/movies/1/similar",
         "/api/users/42/recommendations",
         "/api/users/42/discover",
+        "/api/users/42/favorites",
         "/api/users/42/recommendations/2/explanation",
         "/static/style.css",
         "/static/app.js",
@@ -46,7 +47,9 @@ def test_successful_routes(client, path):
     assert client[0].get(path).status_code == 200
 
 
-@pytest.mark.parametrize("path", ["/api/users/999/recommendations", "/api/movies/999/similar"])
+@pytest.mark.parametrize(
+    "path", ["/api/users/999/recommendations", "/api/users/999/favorites", "/api/movies/999/similar"]
+)
 def test_unknown_identity(client, path):
     assert client[0].get(path).status_code == 404
 

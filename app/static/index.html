@@ -13,6 +13,8 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f5b84b'/%3E%3Ccircle cx='20' cy='42' r='7' fill='%2314161c'/%3E%3Ccircle cx='44' cy='22' r='7' fill='%2314161c'/%3E%3Cpath d='M20 42L44 22' stroke='%2314161c' stroke-width='5'/%3E%3C/svg%3E"
     />
+    <link rel="preconnect" href="https://image.tmdb.org" />
+    <link rel="preload" href="/static/posters.json" as="fetch" crossorigin />
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
@@ -171,8 +173,10 @@
               <span id="round-picks" class="muted"></span>
             </div>
             <div class="progress" aria-hidden="true"><span id="round-bar"></span></div>
+            <div id="quiz-chosen" class="chosen-strip" aria-label="Your picks so far"></div>
           </div>
           <div id="taste-options" class="film-grid five"></div>
+          <p class="shortcut-hint muted small">Tip: press <kbd>1</kbd>–<kbd>5</kbd> to pick a film, <kbd>S</kbd> to skip, <kbd>←</kbd> to go back.</p>
           <div class="quiz-actions">
             <button id="taste-back" class="button ghost">← Previous round</button>
             <button id="taste-finish" class="button ghost" hidden>Show my matches now</button>
@@ -322,6 +326,12 @@
           </label>
           <button class="button primary" type="submit">Show films</button>
         </form>
+        <section id="users-context" class="context" aria-labelledby="users-context-title" hidden>
+          <h2 id="users-context-title">What this rater loved</h2>
+          <p class="muted small">Their highest ratings (4★ or more). Recommendations start from films like these.</p>
+          <div id="users-favourites" class="poster-strip"></div>
+        </section>
+        <h2 class="list-title">Recommended for them</h2>
         <p id="users-explain" class="muted explain"></p>
         <div id="users-grid" class="film-grid" aria-live="polite"></div>
       </section>

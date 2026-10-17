@@ -54,6 +54,7 @@ function page({ posters = Promise.resolve(response({})) } = {}) {
   const requests = [];
   const bodies = new Map();
   const pending = new Map();
+  const documentEvents = {};
   const element = (selector) => {
     if (!nodes.has(selector)) nodes.set(selector, new Element());
     return nodes.get(selector);
@@ -83,7 +84,9 @@ function page({ posters = Promise.resolve(response({})) } = {}) {
     document: {
       querySelector: element,
       querySelectorAll: (selector) => (selector === "[data-screen]" ? screens : []),
-      addEventListener() {},
+      addEventListener(name, fn) {
+        (documentEvents[name] ??= []).push(fn);
+      },
       createElement: () => new Element(),
     },
     fetch: (path, options = {}) => {
@@ -105,6 +108,12 @@ function page({ posters = Promise.resolve(response({})) } = {}) {
     bodies,
     pending,
     run: (code) => vm.runInContext(code, context),
+    key: (key, target = { matches: () => false }) => {
+      let prevented = false;
+      for (const listener of documentEvents.keydown ?? [])
+        listener({ key, target, preventDefault: () => (prevented = true) });
+      return prevented;
+    },
   };
 }
 const item = (title, id) => ({
@@ -358,4 +367,23 @@ test("a rejected access key explains where to find the local key", async () => {
   browser.pending.get("/api/assistant/turn").resolve(response({ detail: "A valid X-API-Key is required" }, false, 401));
   await request;
   assert.match(browser.element("#assistant-status").textContent, /APP_API_KEY/);
+});
+
+test("number keys pick a film, S skips, and picks so far stay visible during the quiz", async () => {
+  const browser = page();
+  await tick();
+  browser.run(
+    "taste.rounds=[[{movie_id:1,title:'One'},{movie_id:2,title:'Godfather, The (1972)'}],[{movie_id:3,title:'Three'}],[{movie_id:4,title:'Four'}]]; taste.answers=[]; taste.index=0",
+  );
+  await browser.run("setView('picks')");
+  browser.run("showPicksStage('quiz'); renderRound()");
+  assert.equal(browser.key("2"), true);
+  assert.equal(browser.run("taste.answers[0]"), 2);
+  assert.match(browser.element("#quiz-chosen").innerHTML, /The Godfather/);
+  assert.equal(browser.key("s"), true);
+  assert.equal(browser.run("taste.answers[1]"), null);
+  assert.equal(browser.key("9"), false, "keys beyond the offered films are ignored");
+  assert.equal(browser.key("1", { matches: () => true }), false, "typing in a field is never hijacked");
+  browser.run("setView('catalog')");
+  assert.equal(browser.key("1"), false, "shortcuts only work on the quick-picks screen");
 });

@@ -36,13 +36,8 @@ def match_posters(movies, metadata):
     for movie in movies:
         row = lookup.get((movie["tmdb_id"], "tt" + (movie["imdb_id"] or "")))
         if row:
-            found[str(movie["movie_id"])] = {
-                "image": "https://image.tmdb.org/t/p/w500" + row["poster_path"],
-                "source": f'https://www.themoviedb.org/movie/{movie["tmdb_id"]}',
-                "page_title": movie["title"],
-                "provider": "TMDB",
-                "note": "Poster reference from Full TMDB Movies Dataset; matched by TMDB and IMDb IDs.",
-            }
+            # Compact [file name, TMDB ID]: the browser builds sized image URLs and the TMDB page link.
+            found[str(movie["movie_id"])] = [row["poster_path"].lstrip("/"), movie["tmdb_id"]]
     return found
 
 
@@ -74,7 +69,7 @@ def main():
         store.close()
     with path.open(encoding="utf-8", newline="") as source:
         found = match_posters(movies, csv.DictReader(source))
-    OUTPUT.write_text(json.dumps(found, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    OUTPUT.write_text(json.dumps(found, separators=(",", ":")) + "\n", encoding="utf-8")
     report = {
         "source": SOURCE_PAGE,
         "download": SOURCE,
@@ -84,6 +79,7 @@ def main():
         "unmatched_movies": len(movies) - len(found),
         "join": "exact TMDB ID AND IMDb ID",
         "image_binaries_stored": False,
+        "format": "{movie_id: [poster file name, tmdb_id]}",
         "provider": "TMDB",
         "limitation": "Historical references can be unavailable; the UI retains a designed fallback.",
     }

@@ -65,6 +65,14 @@ class RecommendationService:
         rows = self.repository.execute("historical_trending", params)
         return self.envelope(rows, "bayesian_popularity", "bayesian_rating", "Sparse history or analytics unavailable")
 
+    def favourites(self, user_id: int, limit: int = 8):
+        """Show the observed high ratings that item-CF recommendations start from."""
+        self.require("user", user_id)
+        rows = self.repository.store.read(
+            queries.USER_FAVOURITES, self.parameters({"user_id": user_id, "limit": limit})
+        )
+        return self.envelope(rows, "observed_ratings", "rating")
+
     def discover(self, user_id: int, limit: int = 10):
         """Discover unrated films from the user's dominant Louvain communities."""
         self.require("user", user_id)

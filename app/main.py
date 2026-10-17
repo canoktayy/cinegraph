@@ -164,6 +164,12 @@ def similar(movie_id: Identifier, recommender: Service, limit: Limit = 10):
     return recommender.similar(movie_id, limit)
 
 
+@app.get("/api/users/{user_id}/favorites", response_model=RankingResponse, tags=["Recommendations"])
+def favourites(user_id: Identifier, recommender: Service, limit: Limit = 8):
+    """Films the rater scored 4★ or more, highest and most recent first."""
+    return recommender.favourites(user_id, limit)
+
+
 @app.get("/api/users/{user_id}/recommendations", response_model=RankingResponse, tags=["Recommendations"])
 def recommendations(user_id: Identifier, recommender: Service, genre: str | None = None, limit: Limit = 10):
     """Weighted item-CF recommendations excluding every previously rated film."""

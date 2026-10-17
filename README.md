@@ -45,12 +45,12 @@ Project 4 · *Movie Recommender in Production* (Level 2)
 
 | | Feature | How it works |
 |---|---|---|
-| 🎯 | **Quick picks** | Ten rounds of five well-known films. Pick favourites, get matches, filter by genre. No account, no model. |
+| 🎯 | **Quick picks** | Ten rounds of five well-known films — click or press <kbd>1</kbd>–<kbd>5</kbd>. Pick favourites, get matches, filter by genre. No account, no model. |
 | 💬 | **Film assistant** | The same flow as a conversation. Say *“Bana sadece komedi öner”* or *“more like Fargo”* — a local LLM interprets the request, the graph returns the films. |
 | 🔍 | **“Why this film?”** | Every recommendation shows the picks it is linked to and how many raters loved both films. |
 | 📚 | **Catalog** | Full-text search over 9,742 films, genre filter, and “fans also liked” for any film. |
 | 🏆 | **Top films** | Bayesian-rated films from the snapshot’s final year, or the most central films by **PageRank**. |
-| 👥 | **Dataset users** | Item-based collaborative filtering and **Louvain** community discovery for any of the 610 MovieLens raters, with path-level evidence. |
+| 👥 | **Dataset users** | See what any of the 610 MovieLens raters loved, then their item-CF and **Louvain** community recommendations with path-level evidence. |
 | 🧪 | **Query lab** | A question in plain English becomes a typed plan → a reviewed Cypher template → real rows. Unsafe requests are rejected with HTTP 422. |
 
 **Design principle:** the language model never invents films, scores or explanations. All titles, counts and paths come from Neo4j and are shown with their provenance.
@@ -284,6 +284,7 @@ Interactive documentation: **http://localhost:18080/docs**
 | GET | `/api/movies?q=&genre=&year=&limit=&offset=` | Full-text catalog search with pagination |
 | GET | `/api/movies/{id}/similar` | Similar films (GDS) |
 | GET | `/api/movies/trending?metric=rating\|pagerank` | Historical top films / centrality |
+| GET | `/api/users/{id}/favorites` | The rater’s own 4★+ ratings (context for their recommendations) |
 | GET | `/api/users/{id}/recommendations?genre=` | Item-CF recommendations |
 | GET | `/api/users/{id}/discover` | Louvain community discovery |
 | GET | `/api/users/{u}/recommendations/{m}/explanation` | Path evidence |
@@ -309,9 +310,9 @@ curl -X POST 'http://localhost:18080/api/ask' -H 'Content-Type: application/json
 
 | Check | Result |
 |---|---|
-| Python tests (unit, API, real Neo4j/Cypher/GDS integration) | **178 passed** |
-| Frontend behavioural tests (Node test runner) | **18 passed** |
-| Statement + branch coverage (enforced ≥ 60 %) | **83.0 %** |
+| Python tests (unit, API, real Neo4j/Cypher/GDS integration) | **181 passed** |
+| Frontend behavioural tests (Node test runner) | **19 passed** |
+| Statement + branch coverage (enforced ≥ 60 %) | **83.2 %** |
 | Pylint with the course `.pylintrc` (enforced ≥ 9.5) | **9.90 / 10** |
 | Query-lab evaluation: 20 live model cases, 10 unsafe, 5 unsupported, 5 injected faults | **40 / 40** |
 | Assistant evaluation: real model + real Neo4j, 10 rounds, Turkish genre filter, tool switch, guards | **17 / 17** |
@@ -336,6 +337,8 @@ CI ([Quality workflow](.github/workflows/ci.yml)) starts the real three-service 
 | Precomputed GDS neighbours | **2.6 ms** | **4.2 ms** |
 
 Mean top-10 overlap between the two: 0.97. More detail in [docs/results.md](docs/results.md).
+
+**Page weight:** Nginx gzip plus compact poster metadata (`[file, tmdb_id]` per film) cut the first load from about **3.1 MB to 0.32 MB**. Posters are requested at the size each slot needs (92, 185 or 342 px wide), and static files are revalidated on every visit so a new release is never mixed with stale CSS or JS.
 
 ---
 
