@@ -144,14 +144,15 @@ label { font-size: 0.86rem; color: var(--muted); font-weight: 550; }
 .explore-card span { color: var(--muted); font-size: 0.9rem; }
 
 /* ---------- Posters & film cards ---------- */
-.poster { position: relative; display: block; aspect-ratio: 2 / 3; border-radius: var(--radius-sm); overflow: hidden; background: linear-gradient(160deg, hsl(var(--hue, 30) 35% 28%), hsl(calc(var(--hue, 30) + 40) 30% 14%)); }
+/* Explicit width: Safari sizes block children of <button> to their content, which is only absolutely positioned. */
+.poster { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; border-radius: var(--radius-sm); overflow: hidden; background: linear-gradient(160deg, hsl(var(--hue, 30) 35% 28%), hsl(calc(var(--hue, 30) + 40) 30% 14%)); }
 .poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
 .poster-fallback { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 12px; font-family: var(--display); font-size: 1.02rem; line-height: 1.2; color: rgba(255, 255, 255, 0.88); }
 .film-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(172px, 1fr)); gap: 22px 18px; }
 .film-grid.five { grid-template-columns: repeat(5, 1fr); }
 .film-grid.loading { opacity: 0.6; }
 .film-card { display: flex; flex-direction: column; gap: 10px; background: none; border: 0; padding: 0; text-align: left; color: inherit; min-width: 0; }
-.poster-button { padding: 0; border: 0; background: none; border-radius: var(--radius-sm); }
+.poster-button { display: block; width: 100%; padding: 0; border: 0; background: none; border-radius: var(--radius-sm); }
 .poster-button .poster, .pickable .poster { transition: transform 0.18s ease, box-shadow 0.18s ease; }
 .poster-button:hover .poster, .pickable:hover .poster { transform: translateY(-4px); box-shadow: var(--shadow); }
 .film-info { display: grid; gap: 3px; min-width: 0; }
@@ -245,7 +246,7 @@ label { font-size: 0.86rem; color: var(--muted); font-weight: 550; }
 .rank-row { display: grid; grid-template-columns: 36px 54px 1fr auto; gap: 16px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 18px 10px 14px; }
 .rank { font-family: var(--display); font-size: 1.4rem; color: var(--faint); text-align: center; }
 .rank-row:nth-child(-n + 3) .rank { color: var(--accent); }
-.rank-poster { padding: 0; border: 0; background: none; }
+.rank-poster { display: block; width: 100%; padding: 0; border: 0; background: none; }
 .rank-poster .poster-fallback { display: none; }
 .rank-text { display: grid; gap: 2px; min-width: 0; }
 .link-title { background: none; border: 0; padding: 0; text-align: left; color: var(--text); font-size: 1rem; }
