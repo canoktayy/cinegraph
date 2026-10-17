@@ -12,6 +12,7 @@ import pandas as pd
 
 from app.config import ROOT, get_settings
 from app.database import GraphStore
+from app.models import MAX_GRAPH_ID
 from app.scoring import normalize_tag, parse_year, validate_rating
 
 DATA = ROOT / "data" / "ml-latest-small"
@@ -48,9 +49,43 @@ def download():
     print("Downloaded documented MovieLens snapshot")
 
 
+def validate_source(frames: dict):
+    """Reject malformed identities and incomplete metadata before any graph writes."""
+    for name, fields in {
+        "movies": ("movieId",),
+        "links": ("movieId",),
+        "ratings": ("userId", "movieId", "timestamp"),
+        "tags": ("userId", "movieId", "timestamp"),
+    }.items():
+        for field in fields:
+            values = pd.to_numeric(frames[name][field], errors="coerce")
+            minimum = 0 if field == "timestamp" else 1
+            if (
+                pd.api.types.is_bool_dtype(values)
+                or (values.isna() | (values < minimum) | (values > MAX_GRAPH_ID) | (values % 1 != 0)).any()
+            ):
+                raise ValueError(f"Invalid integer {field} in {name}; import aborted")
+    for name in ("movies", "links"):
+        if frames[name].movieId.duplicated().any():
+            raise ValueError(f"Duplicate movie identities in {name}; import aborted")
+    if set(frames["links"].movieId) != set(frames["movies"].movieId):
+        raise ValueError("Every source movie must have exactly one links row")
+    for name, field in (("movies", "title"), ("tags", "tag")):
+        values = frames[name][field]
+        if values.isna().any() or values.astype(str).str.strip().eq("").any():
+            raise ValueError(f"Missing {field} in {name}; import aborted")
+    if frames["movies"].empty or frames["ratings"].empty:
+        raise ValueError("The movie catalog and ratings must not be empty")
+    frames["movies"]["genres"] = frames["movies"].genres.fillna("(no genres listed)")
+
+
 def load_frames() -> dict[str, pd.DataFrame]:
     """Validate source types and preserve identifiers before normalization."""
-    frames = {name.split(".", maxsplit=1)[0]: pd.read_csv(DATA / name) for name in FILES}
+    frames = {
+        name.split(".", maxsplit=1)[0]: pd.read_csv(DATA / name, dtype={"title": str, "genres": str, "tag": str})
+        for name in FILES
+    }
+    validate_source(frames)
     ratings = frames["ratings"]
     ratings["rating"] = ratings["rating"].map(validate_rating)
     known = set(frames["movies"].movieId)

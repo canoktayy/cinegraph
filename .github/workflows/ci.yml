@@ -30,6 +30,9 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - run: make install setup
       - name: Start real Neo4j, API and proxy
         run: make docker-run

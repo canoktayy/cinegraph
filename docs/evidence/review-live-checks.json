@@ -1,0 +1,21 @@
+{
+  "api_version": "1.1.1",
+  "catalog_last_page_movies": 6,
+  "/health/live": 200,
+  "/health/ready": 200,
+  "/api/movies/99999999999999999999999/similar": 422,
+  "/api/users/0/recommendations": 422,
+  "conflicting_identity": 422,
+  "unsafe_mutation": 422,
+  "fast_navigation_and_catalog_search": "passed; Toy Story search returned 3 matching films",
+  "personal_flow": "skip/back and each of 10 round numbers checked; 8 personal results",
+  "personal_genre_filter": "8 Sci-Fi results verified in the real browser",
+  "mobile_viewport_width": 390,
+  "mobile_document_width": 390,
+  "python_tests": 150,
+  "frontend_tests": 7,
+  "python_coverage_percent": 81.03,
+  "pylint_score": 9.89,
+  "real_model_evaluation": "40/40",
+  "executed_notebook_cells": 18
+}

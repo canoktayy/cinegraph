@@ -28,7 +28,7 @@ validate-data: ## Check graph invariants and expected source counts
 	$(PYTHON) -m scripts.data validate
 analytics: ## Build versioned GDS similarity, Louvain and PageRank
 	$(PYTHON) -m app.analytics.build
-test: ## Run unit/API/real Neo4j tests with coverage (requires seeded DB)
+test: test-ui ## Run frontend + Python/real Neo4j tests with coverage (requires seeded DB)
 	$(PYTHON) -m scripts.check_database
 	$(PYTHON) -m pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-report=html
 test-unit: ## Run isolated tests without requiring Neo4j
@@ -48,3 +48,11 @@ demo: ## Run container health/API smoke checks
 	$(PYTHON) -m scripts.smoke
 clean: ## Remove Python caches only, preserving datasets and volumes
 	$(PYTHON) -m scripts.clean
+
+.PHONY: test-ui
+test-ui: ## Check delayed-request UI regressions with the Node built-in test runner
+	node --test tests/frontend/*.test.cjs
+
+.PHONY: notebook
+notebook: ## Execute and save every demo notebook cell with the project Python
+	$(PYTHON) -m scripts.execute_notebook

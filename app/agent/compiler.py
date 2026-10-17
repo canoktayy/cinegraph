@@ -33,14 +33,14 @@ def compile_plan(plan: QueryPlan, service: RecommendationService) -> tuple[str, 
     """Resolve domain entities, then bind parameters without string interpolation."""
     if plan.intent == "unsupported":
         raise HTTPException(422, {"code": "unsupported_intent", "message": plan.reason or "Unsupported question"})
-    if plan.user_id:
+    if plan.intent in {"recommend_movies", "discover_movies", "explain_recommendation"}:
         service.require("user", plan.user_id)
-    if plan.movie_id:
+    if plan.intent in {"similar_movies", "explain_recommendation"}:
         service.require("movie", plan.movie_id)
     if plan.genre and plan.genre not in service.repository.genres():
         raise HTTPException(422, {"code": "unknown_genre", "message": "Genre is not in the dataset vocabulary"})
     params = service.parameters(plan.model_dump(exclude_none=True))
-    if plan.intent == "historical_trending":
+    if plan.intent in {"historical_trending", "similar_movies"}:
         params["user_id"] = None  # Historical rankings are global, not filtered by incidental UI user context.
     params["since"] = max(0, params["as_of"] - plan.window_days * 86400)
     text = queries.PLAN_QUERIES[plan.intent]

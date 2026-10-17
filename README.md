@@ -29,7 +29,7 @@ Project 4, **Movie Recommender in Production — Level 2**, AIDAMS 3A. See the [
 
 [Türkçe başlangıç rehberi](docs/START_HERE_TR.md).
 
-Prerequisites: Python **3.12+**, Docker Desktop/Engine with Compose v2, Git and approximately 4–6 GB of Docker memory. Ports are deliberately nonstandard to avoid colliding with other local projects: UI **18080**, Neo4j Browser **17474**, Bolt **17687**. No cloud Neo4j account is required.
+Prerequisites: Python **3.12+**, Docker Desktop/Engine with Compose v2, Git, **Node.js 20+** for frontend regression tests, and approximately 4–6 GB of Docker memory. Ports are deliberately nonstandard to avoid colliding with other local projects: UI **18080**, Neo4j Browser **17474**, Bolt **17687**. No cloud Neo4j account is required.
 
 ```bash
 git clone https://github.com/canoktayy/moviegraph.git
@@ -171,7 +171,7 @@ The experiment reports average precision, ROC-AUC, F1/confusion matrix, warm/col
 | `make docker-run` / `make stop` | start/stop the three services |
 | `make download profile seed validate-data` | data provenance and graph invariants |
 | `make analytics` | real GDS jobs and atomic run activation |
-| `make test` | unit + HTTP + real Neo4j/Cypher/GDS with coverage |
+| `make test` | frontend delayed-request regressions + Python/HTTP/real Neo4j/Cypher/GDS with Python coverage |
 | `make test-unit` | isolated tests, explicitly not full validation |
 | `make lint` / `make format` | teacher `.pylintrc`, score ≥9.5 / Black |
 | `make train` / `make evaluate` | reproducible offline ML experiment |
@@ -211,3 +211,13 @@ Recorded display enrichment: **9,586 / 9,742** films have identity-matched poste
 ![Ten-round personal taste selection](docs/evidence/taste-round.jpg)
 
 ![Personal recommendations from selected films](docs/evidence/taste-recommendations.jpg)
+
+## Reliability review
+
+`make test-ui` runs seven dependency-free Node behavioral tests with deliberately delayed responses. They verify that newer navigation wins, obsolete errors/results cannot contaminate another or closed film dialog, poster metadata does not block graph initialization, and catalog pagination continues past 1,000 rows. `make test` includes this suite before the Python tests. The Node simulations complement actual browser checks; they are not represented as a full browser automation suite.
+
+API source IDs must be positive signed 64-bit integers. JSON identity fields reject booleans, fractional numbers and numeric strings before database access. Natural-language questions with conflicting demo-user context or multiple distinct IDs request clarification; numeric role IDs and time windows are not treated as requested result counts. General/movie-level queries ignore user context they do not use.
+
+Ingestion now validates IDs, timestamp ranges, unique movie/link identities, complete link coverage and required titles/tags before graph writes. Missing genres remain unclassified instead of creating a `nan` genre; numeric-looking tags retain their original text. Source-file validation does not change the documented MovieLens snapshot or historical ML results.
+
+`make notebook` executes all notebook cells with the project interpreter and shuts down its kernel, avoiding accidental use of another global Jupyter installation. It requires the seeded running stack and configured local model. Notebook outputs are saved only after successful execution. See [review findings and evidence](docs/review.md).

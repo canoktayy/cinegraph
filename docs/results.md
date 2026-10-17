@@ -4,8 +4,8 @@ Measured locally on 17 October 2026. These are observed results, not promised fu
 
 ## Quality gates
 
-- **117 tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
-- **80.58% combined statement/branch coverage**, minimum enforced: 60%.
+- **150 Python tests and 7 frontend regression tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
+- **81.03% combined Python statement/branch coverage**, minimum enforced: 60%.
 - **Pylint 9.89/10**, teacher configuration, minimum enforced: 9.5.
 - **40/40 reliability cases passed**. The 20 supported questions check intent, exact entity/filter/budget parameters and returned genre membership. Other cases distinguish scope/guardrail rejection from controlled malformed-provider fault injection.
 - Every notebook cell executed; real model HTTP 200, exact Sci-Fi filtering and unsafe-operation HTTP 422 are assertions.
@@ -49,3 +49,5 @@ The owner requested a private repository and private image; the public-registry 
 ## New-visitor taste discovery
 
 Ten rounds of five distinct supported films; skip/back states; selected-film exclusion; exact sum-of-similarities normalization; canonical genre filtering; actual graph reasons; no new source users or ratings. HTTP contract and real graph tests exercise the visitor path. This is functional validation, not an independently measured accuracy/user-study claim. Film display metadata has 9,586 identity-matched references of 9,742 catalog movies; both TMDB and IMDb IDs must match. Source SHA-256 and counts are in `artifacts/reports/posters.json`.
+
+The review added delayed-response UI regressions, strict graph-identity bounds, natural-language context/count cases, malformed CSV cases and full-snapshot catalog pagination. All 18 notebook code cells were executed, including the new visitor path and exact graph-affinity assertions. See [review report](review.md).

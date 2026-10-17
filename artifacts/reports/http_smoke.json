@@ -54,6 +54,18 @@
     "passed": true
   },
   {
+    "path": "/api/movies?offset=9736",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/api/taste/rounds?seed=42",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
     "path": "/api/movies?limit=99999",
     "status": 422,
     "expected": 422,
@@ -63,6 +75,12 @@
     "path": "/api/users/999999/recommendations",
     "status": 404,
     "expected": 404,
+    "passed": true
+  },
+  {
+    "path": "POST /api/taste/recommendations",
+    "status": 200,
+    "expected": 200,
     "passed": true
   }
 ]
