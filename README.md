@@ -4,110 +4,129 @@
 
 **Follow your taste. Find your next story.**
 
-An explainable movie recommendation application built on Neo4j, FastAPI and real MovieLens ratings. Discover similar films, follow taste communities and inspect the exact graph paths behind a recommendation. Natural-language questions use a real local language model, a constrained plan compiler and read-only query templates.
+MovieGraph helps a new visitor find films they might enjoy and understand **why each film was recommended**. Choose a favourite from five films over ten rounds, then explore recommendations connected to your choices through real MovieLens ratings. No account, anonymous user ID or language-model key is needed for personal recommendations.
+
+Project 4 — **Movie Recommender in Production, Level 2**, AIDAMS 3A.
 
 [![Quality](https://github.com/canoktayy/moviegraph/actions/workflows/ci.yml/badge.svg)](https://github.com/canoktayy/moviegraph/actions/workflows/ci.yml)
 [![Container](https://github.com/canoktayy/moviegraph/actions/workflows/image.yml/badge.svg)](https://github.com/canoktayy/moviegraph/actions/workflows/image.yml)
 ![Coverage](docs/evidence/coverage.svg)
 
-![Working MovieGraph dashboard](docs/evidence/dashboard-desktop.jpg)
+![MovieGraph welcome screen](docs/evidence/pages-home.jpg)
 
-Project 4, **Movie Recommender in Production — Level 2**, AIDAMS 3A. See the [37-page development guide](proje_guide.pdf) and [requirement/evidence map](docs/requirements.md).
+## Using the application
 
-## What works
+The sidebar opens **separate screens**. A menu choice changes the active screen instead of scrolling through a long dashboard. The address identifies the screen, browser Back/Forward works, and your quiz progress survives navigation within the page. Reloading clears visitor selections.
 
-- Item-based collaborative recommendations that exclude already-rated films.
-- GDS Node Similarity, Louvain community discovery and PageRank centrality.
-- Verifiable User → RATED → Movie → SIMILAR_TO → Movie explanation paths.
-- Searchable catalog, genre filters and a responsive, dependency-free demo interface.
-- Authenticated natural language → typed plan → validated Cypher → actual graph rows.
-- Idempotent source ingestion, provenance-preserving tag events and versioned analytical runs.
-- A frozen-history supervised preference experiment, chronological holdouts and full-catalog ranking evaluation.
-- Three healthy Docker services, real Neo4j/Cypher tests, CI, coverage and measured query plans.
+| Screen                | What it does                                                                                                                                                         |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Your recommendations  | Start the ten-round quiz, choose or skip films, return to previous rounds, and receive personal recommendations. Open **Why this film?** for the actual connections. |
+| Research: communities | Select an anonymous MovieLens user and discover unseen films from their strongest Louvain communities.                                                               |
+| Research: rankings    | Inspect historical activity rankings from the snapshot's final year; these are not live trends.                                                                      |
+| Explore the catalog   | Search films, filter by genre, change pages and inspect similar films.                                                                                               |
+| Ask the graph         | Ask natural-language questions using a local model and inspect the validated query and graph evidence. Requires the local access key.                                |
 
-## Start here
+The **research demo** on the first screen uses an existing anonymous MovieLens user. It is explicitly distinct from recommendations based on your own selections. Source user IDs are dataset identities, not application logins.
 
-[Türkçe başlangıç rehberi](docs/START_HERE_TR.md).
+![Five-film preference round](docs/evidence/pages-quiz.jpg)
 
-Prerequisites: Python **3.12+**, Docker Desktop/Engine with Compose v2, Git, **Node.js 20+** for frontend regression tests, and approximately 4–6 GB of Docker memory. Ports are deliberately nonstandard to avoid colliding with other local projects: UI **18080**, Neo4j Browser **17474**, Bolt **17687**. No cloud Neo4j account is required.
+Each round offers five different films from a supported 150-film pool; 50 distinct options appear across the quiz. Pick one favourite or skip unfamiliar films. At least one choice is required. Unchosen films are **not** treated as dislikes, and choices do not create fabricated ratings or modify the research graph.
+
+![Personal recommendations](docs/evidence/pages-personal.jpg)
+
+Personal scores combine active graph similarities across all selected films; selected films are excluded from the result. Explanations name the selected seed films, similarity and shared positive raters. Scores are affinities, not predicted stars or probabilities. Preferences stay in page memory; there is no persisted visitor account.
+
+![Separate catalog screen](docs/evidence/pages-catalog.jpg)
+
+## Run locally
+
+Requirements: **Python 3.12+**, Docker with Compose v2, Git and **Node.js 20+** for frontend tests. Allow approximately 4–6 GB Docker memory. Initial image, plugin and dataset downloads require internet access.
 
 ```bash
 git clone https://github.com/canoktayy/moviegraph.git
 cd moviegraph
 make install
-make setup                 # creates .env with unique secrets; never prints them
-make docker-run            # starts Neo4j + API + Nginx
+make setup
+make docker-run
 make download
 make seed
 make analytics
 make demo
 ```
 
-Open [the application](http://localhost:18080), [Swagger](http://localhost:18080/docs) or [Neo4j Browser](http://localhost:17474). Neo4j credentials are the local `.env` values. First-run plugin/image downloads require network access. `make seed` can safely be repeated for the same snapshot; switching datasets requires a separate clean database, not an in-place partial merge.
+`make setup` creates an untracked `.env` with unique secrets without printing them. Open [MovieGraph](http://localhost:18080), [API documentation](http://localhost:18080/docs) or [Neo4j Browser](http://localhost:17474). Bolt uses port **17687**. Neo4j credentials are in your local `.env`.
 
-`make stop` stops this stack without deleting its volumes. `make clean` only removes Python caches. Never use `docker compose down -v` unless intentionally deleting this project's database.
+The import can be repeated safely for the same snapshot. A different dataset requires a separate clean database. `make stop` stops services while preserving volumes; `make clean` removes Python caches. See the [Türkçe başlangıç rehberi](docs/START_HERE_TR.md).
 
-### Local language model
+### Optional local language model
 
-The tested model is **qwen2.5-7b-instruct**, served by LM Studio at `http://localhost:1234/v1`. Load the model, start the LM Studio local server, and make its port reachable from Docker if using `/api/ask` through the container. The container uses `host.docker.internal:1234`; host scripts use `localhost:1234`.
+The tested server is **LM Studio**, serving **qwen2.5-7b-instruct** at `http://localhost:1234/v1`. Load the model and start its local server. Containers use `host.docker.internal:1234`, so the server must be reachable from Docker. Alternatively, run `make run` on the host and use port **18081**. Other compatible endpoints can be configured in `.env`.
 
-If LM Studio is bound to loopback only, Docker on your platform may not reach it. Use the model server's local-network setting or run `make run` on the host and access port **18081**. Do not expose the model server or this development stack to the public internet. Other OpenAI-compatible servers can be configured through `.env`; no paid provider or key is required for LM Studio.
+On **Ask the graph**, enter your local `APP_API_KEY`. It stays in the current tab and is not saved in localStorage. Personal recommendations and graph browsing work independently of the language model. If the model is unavailable, the question endpoint reports a real error rather than substituting a simulated model. This is a local development deployment; do not expose its credentials or development services publicly.
 
-The demo's access-key field accepts `APP_API_KEY` from your local `.env`. It stays in the current browser tab and is not persisted in localStorage. API keys, Neo4j passwords and `.env` are never committed. The application does **not** replace an unavailable model with a fake rule-based “LLM”; standard graph recommendations continue working while `/api/ask` reports a real error.
+![Dedicated natural-language screen](docs/evidence/pages-ask.jpg)
 
-### Container image and privacy
+## Data and film images
 
-The publish workflow builds `ghcr.io/canoktayy/moviegraph:latest` and a commit-SHA tag using GitHub's temporary Actions token. [Package page](https://github.com/users/canoktayy/packages/container/package/moviegraph).
+The recommendation graph uses [GroupLens MovieLens small](https://grouplens.org/datasets/movielens/): **610 users, 9,742 movies, 100,836 ratings and 3,683 tag applications** in the tested snapshot. These are real historical observations, ending in 2018, rather than activity collected from this website.
 
-This repository is **private** by owner choice. The image preserves private visibility. It is not presented as meeting the rubric's public-registry criterion: publishing an application image publicly also exposes its embedded code. See [solo/privacy scope](docs/solo-scope.md). The Docker build works independently of registry authentication.
+`make download` preserves raw source files and their README in untracked `data/`. `make profile` records per-file SHA-256 hashes and quality distributions. Import validation rejects invalid scores, missing foreign keys and conflicting source identities. Duplicate rating pairs retain the latest timestamp; conflicting equal-time observations abort. Tag events preserve who tagged which movie and when. `make validate-data` checks graph invariants.
 
-## System architecture
+MovieLens use remains subject to the [official usage terms](https://files.grouplens.org/datasets/movielens/ml-latest-small-README.html). Citation: F. Maxwell Harper and Joseph A. Konstan (2015), _The MovieLens Datasets: History and Context_, [DOI](https://doi.org/10.1145/2827872). No GroupLens endorsement is implied.
 
-![Services, ports and data flows](docs/diagrams/architecture.svg)
+Film image references are joined using **both exact TMDB and IMDb identifiers** from a frozen [Full TMDB Movies Dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies). There are **9,586 matched references** and 156 designed fallback covers. External URLs can fail; a designed cover remains usable. Recommendations never use TMDB ratings. No TMDB API key is needed for this snapshot.
 
-| Service | Responsibility | Access |
-|---|---|---|
-| Nginx | One HTTP entry point, body/time/rate limits | `127.0.0.1:18080` |
-| FastAPI | Contracts, recommendation policy, model adapter, validated queries | internal `api:8000` |
-| Neo4j 5.26.0 + GDS 2.13.2 | Source graph, constraints/indexes, persistent analytical output | local Browser/Bolt, internal Docker network |
-| Batch CLI | Download, validation, seed, GDS, ML and benchmarks | runs on host or via API image |
-| LM Studio | Real local JSON-schema query planning | host port 1234 |
+Only reference metadata is committed, not full image binaries or the third-party CSV. `scripts/fetch_posters.py` is an optional checksum-verified refresh (~638 MiB), not an installation step. See the [image metadata report](artifacts/reports/posters.json). Imagery remains with its rights holders; MovieGraph is not endorsed or certified by TMDB.
 
-One driver per process; short-lived sessions; materialized results; bounded query timeouts. The API does not run GDS afresh on every request. Live/readiness checks differ: readiness requires an actual database round trip and a seeded dataset. Compose's API healthcheck is process liveness, allowing the initial empty stack to start before `make seed`.
+## Architecture and graph design
 
-## Graph model and deliberate decisions
+![Architecture and data flows](docs/diagrams/architecture.svg)
 
-![Source graph and versioned analytics](docs/diagrams/schema.svg)
+| Component                 | Responsibility                                                               |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| Nginx                     | HTTP entry point on 18080; body, rate and timeout limits                     |
+| FastAPI                   | API contracts, recommendation policy, query compilation and static interface |
+| Neo4j 5.26.0 + GDS 2.13.2 | Source graph, constraints/indexes and versioned analytical results           |
+| Batch CLI                 | Source validation, import, GDS, ML evaluation and benchmarks                 |
+| LM Studio                 | Optional real local-model query planning                                     |
 
-| Label | Identity and meaningful properties |
-|---|---|
-| User | `user_id`; anonymous source identity, not a login |
-| Movie | `movie_id`, raw `title`, nullable `year`, IMDb/TMDb identifiers |
-| Genre | unique canonical `name` |
-| Tag | normalized unique `key`, display text |
-| TagApplication | deterministic `application_id`, original text, timestamp, source |
-| AnalyticsRun | derived run ID, dataset hash, cutoff, GDS version, status |
-| SystemState | operational `key`, snapshot hash, historical `as_of`, active run ID |
+The API reuses one driver per process and short-lived sessions, bounds query time and materializes results. It reads precomputed analytical output instead of rerunning GDS per request. Readiness checks the database and seed; process liveness lets an empty installation start before import.
 
-Observed relationships: `RATED {score,timestamp,source}`, `IN_GENRE`, `APPLIED`, `ON_MOVIE`, `WITH_TAG`. Derived relationships: `SIMILAR_TO {score,support,run_id,method,computed_at}` and `ANALYZED_IN {community_id,pagerank,vote_count,bayesian_rating}`. These are analytically derived facts, not claims that two movies are objectively equivalent.
+![Graph schema](docs/diagrams/schema.svg)
 
-**Why this schema?** Genres are shared nodes for traversal/filtering; duplicating them in a property array would create synchronization work. A rating is an edge because its score/time describes a user/movie pair. TagApplication is an event node because two independent User–Tag and Movie–Tag links would lose who tagged which movie and when. The source has no actors/directors, so none are invented to increase label counts. Seven uniqueness constraints and the full-text/year indexes support actual access patterns. Cardinality and rating ranges are additionally checked in import/tests, not falsely attributed to Community constraints.
+| Node           | Meaning                                                           |
+| -------------- | ----------------------------------------------------------------- |
+| User           | Anonymous MovieLens identity                                      |
+| Movie          | Film ID, original title, nullable year and external identifiers   |
+| Genre          | Shared canonical genre                                            |
+| Tag            | Normalized tag identity                                           |
+| TagApplication | Provenance-preserving tagging event                               |
+| AnalyticsRun   | Dataset hash, cutoff, method version and run status               |
+| SystemState    | Snapshot identity, historical timestamp and active analytical run |
 
-See [model rationale](docs/adr/001-graph-model.md), [analytics versioning](docs/adr/002-analytics-runs.md), [language safety](docs/adr/003-language-safety.md), [evaluation](docs/adr/004-offline-evaluation.md), and [the required AI baseline comparison](docs/modeling-comparison.md). Editable `.drawio` diagram sources are included.
+Observed edges are `RATED`, `IN_GENRE`, `APPLIED`, `ON_MOVIE` and `WITH_TAG`. Derived `SIMILAR_TO` edges retain score, support and run ID; `ANALYZED_IN` records community, PageRank and rating aggregates. An active run is switched atomically after successful computation.
 
-## Recommendation methods
+Genres are shared nodes for traversal. Ratings are edges because score/time belong to a user–movie pair. TagApplication is an event node to avoid losing user/movie/tag/time provenance. Actors and directors are absent from the source and are not invented. Seven uniqueness constraints plus full-text/year indexes support actual access patterns; import/test validation enforces additional cardinality/range rules.
 
-For two films, `U_i` and `U_j` are users who rated each film ≥4. Similarity is Jaccard multiplied by `support/(support+5)`, with at least three shared positive raters. GDS produces 40 raw candidates; after support/shrinkage the application retains up to 20 per film. This is explicitly a bounded approximation. The graph projection is **Movie→User**, reversing stored RATED direction so GDS compares movies by outgoing user neighborhoods.
+Detailed rationale: [graph model](docs/adr/001-graph-model.md), [versioned analytics](docs/adr/002-analytics-runs.md), [language safety](docs/adr/003-language-safety.md), [evaluation](docs/adr/004-offline-evaluation.md) and [required modeling-baseline comparison](docs/modeling-comparison.md). Editable diagram sources are included.
 
-Personalized ranking aggregates neighbors of the user's latest 50 positive seed films. Scores are weighted averages of seed ratings. All previously rated candidates are excluded. Scores are rounded before sorting to avoid floating-point noise outranking stronger support; tie-breaks use supporting seeds and stable movie ID. Scores are not confidence probabilities. Sparse histories use a labeled Bayesian-popularity fallback.
+## Recommendation and query methods
 
-Louvain uses a canonicalized undirected movie similarity graph. Opposite top-K edges are merged before projection, preventing doubled weights. Discovery selects unseen candidates in the user's dominant communities. Isolated films remain in the catalog, so aggregate community counts include singleton isolates. PageRank measures graph centrality, not time-sensitive popularity.
+**Movie similarity.** Users rating a film ≥4 form its positive neighborhood. GDS Node Similarity compares Movie→User projections, reversing stored rating direction. Jaccard similarity is shrunk by `support/(support+5)` and requires at least three shared positive raters. Forty raw candidates are reduced to up to twenty retained neighbors per film, making this a bounded approximation.
 
-`/movies/trending` uses the snapshot's last rating timestamp as `as_of`. MovieLens ends in 2018; **these are historical activity rankings, not today's live trends**. Absence of a rating does not establish dislike or prove a film was never watched.
+**New visitors.** Candidate affinity is the sum of similarities to selected films divided by the number of selected seeds. One to ten distinct seeds are accepted. Selected films are excluded; exact supporting seeds accompany the result. This onboarding has functional verification, not a claimed user-study accuracy result.
+
+**Research users.** Item CF aggregates the latest fifty positive source ratings, excludes all already-rated films and uses an explicitly labeled Bayesian-popularity fallback for sparse histories. Louvain discovery uses dominant communities in a canonicalized undirected similarity graph. PageRank measures graph centrality. Singleton isolates remain in the catalog, so aggregate community counts include them. Historical activity uses the snapshot timestamp rather than today's clock.
+
+**Natural language.** A real model produces a typed QueryPlan. A deterministic compiler selects an exact reviewed read-only Cypher template and binds parameters. Explicit identities are resolved independently; unknown fields, unsafe intents and excess budgets are rejected. EXPLAIN validates syntax before bounded execution. Raw model-generated Cypher is never interpolated. Driver READ mode and EXPLAIN are not presented as security sandboxes; application database credentials remain trusted secrets.
 
 ## API examples
 
 ```bash
+curl 'http://localhost:18080/api/taste/rounds?seed=42'
+curl -X POST 'http://localhost:18080/api/taste/recommendations' \
+  -H 'Content-Type: application/json' \
+  -d '{"movie_ids":[1,260,296],"limit":8}'
 curl 'http://localhost:18080/api/movies/1/similar?limit=5'
 curl 'http://localhost:18080/api/users/42/recommendations?genre=Sci-Fi&limit=10'
 curl 'http://localhost:18080/api/users/42/discover?limit=5'
@@ -115,109 +134,46 @@ curl 'http://localhost:18080/api/movies/trending?metric=pagerank&limit=5'
 curl 'http://localhost:18080/api/movies?q=Toy%20Story&limit=10'
 ```
 
-Choose a returned movie ID, then inspect `/api/users/42/recommendations/{movie_id}/explanation`. Explanation rows include real source ratings, similarity/support and contributions. The top three paths are displayed; additional contributions may exist. A path means recommendation eligibility, not necessarily membership in every possible top-K result. Already-rated films are explicitly excluded from recommendation evidence.
-
-![Actual explanation dialog](docs/evidence/explanation-ui.jpg)
-
-For natural language, set the local key in your shell (without publishing it):
+Inspect a returned recommendation at `/api/users/42/recommendations/{movie_id}/explanation` to see real rating → similarity paths. Up to three evidence paths are displayed; additional contributions may exist.
 
 ```bash
-curl -X POST http://localhost:18080/api/ask \
+curl -X POST 'http://localhost:18080/api/ask' \
   -H 'Content-Type: application/json' \
   -H "X-API-Key: $APP_API_KEY" \
   -d '{"question":"Recommend 5 Sci-Fi movies for user 42","user_id":42,"limit":5}'
 ```
 
-The response exposes interpreted intent, query hash, compiled Cypher, bound parameters, actual rows, warnings and a trace ID. Supported intents cover similar/recommended/discovered/historical films and explanation paths. Names are resolved through catalog selection; the model may not guess movie IDs. Unknown or missing identities request clarification or return 404/422.
+Set the shell variable from your local configuration without publishing its value. Responses expose the interpreted intent, compiled query, bound parameters, real rows, warnings and trace ID. Unknown identities return 404; invalid or unsafe input 422; missing model key 401; request budgets 429; malformed model output 502; unavailable or timed-out dependencies 503/504. Valid queries may return an explicitly empty list.
 
-| Status | Meaning |
-|---|---|
-| 200 | valid response, possibly an explicitly empty list |
-| 401 | invalid/missing key for the costly LLM endpoint |
-| 404 | unknown user/movie |
-| 422 | invalid input, unavailable data, unsafe intent or unvalidated query |
-| 429 | per-client model budget exceeded |
-| 502 | invalid provider output after one repair |
-| 503 / 504 | unavailable dependency / bounded timeout |
+## Validation and evaluation
 
-### LLM reliability boundary
+The recorded local suite passes **154 Python tests and 9 frontend behavioral tests**, with **81.34% Python statement/branch coverage**. Teacher-configured Pylint scored **9.89/10**. Frontend tests cover delayed requests, obsolete errors, closed dialogs, pagination, optional image metadata and screen isolation with quiz preservation. Actual desktop/mobile browser checks complement these simulations.
 
-The LLM outputs a typed QueryPlan. A deterministic compiler selects one exact reviewed Cypher template and binds values; it never interpolates raw model Cypher. Explicit source IDs are resolved independently, unknown fields are forbidden, budgets are capped, EXPLAIN checks syntax and a bounded query executes. General CALL/APOC/file access/mutation is absent from the model language. EXPLAIN and driver READ mode are **not** claimed to be access-control sandboxes. Source credentials remain trusted application secrets in a local development deployment.
+CI starts the real three-service stack, imports MovieLens twice, runs GDS and executes the suite. Integration tests fail preflight when seeded Neo4j is absent rather than silently skipping. Coverage enforces ≥60%; teacher lint enforces ≥9.5. Local-model evaluation is separate because hosted CI has no LM Studio model.
 
-Successful questions and rejected mutation attempts are demonstrated in the notebook and [40-case evaluation](artifacts/reports/llm_evaluation.json). The suite distinguishes real local-model cases, deterministic scope/guardrail checks and five injected malformed-provider fixtures. It is a small engineering evaluation, not proof that prompt injection is universally solved.
+The [40-case language evaluation](artifacts/reports/llm_evaluation.json) distinguishes actual local-model cases, deterministic guardrails and injected malformed-provider fixtures. All 18 code cells of [demo.ipynb](demo.ipynb) were executed against the configured stack. This is measured engineering evidence, not a universal prompt-injection guarantee.
 
-## Data, license and reproducibility
+The supervised experiment uses a frozen chronological graph: earliest ~60% for features, subsequent ~20/10/10% for train/validation/test labels, with equal timestamps kept together. Train-only preprocessing and validation-only tuning prevent target leakage. Production full-data GDS output is not read. Future observed high/low ratings supply labels; missing pairs are not fabricated negatives. Reports include AP, ROC-AUC, F1, confusion matrix and warm/cold cohorts; full-catalog Recall@10/NDCG@10 compare Bayesian and frozen item-CF baselines. The classifier is not automatically promoted into serving.
 
-Source: [MovieLens small](https://grouplens.org/datasets/movielens/), [official README and usage terms](https://files.grouplens.org/datasets/movielens/ml-latest-small-README.html). The tested snapshot contains 610 users, 9,742 movies, 100,836 ratings and 3,683 tag applications.
+Benchmarks compare traversal and precomputed lookup on the same thirty movie IDs after warm-up, recording PROFILE operators, DB hits and result overlap. See [measured results](docs/results.md), [ML metrics](artifacts/reports/ml_metrics.json), [benchmark](artifacts/reports/benchmark.json) and [index plan](docs/evidence/profile-index.json).
 
-`make download` stores immutable raw files and the original README under untracked `data/`. `make profile` records SHA-256 per source file, a combined snapshot hash and quality distributions. UTF-8 CSV parsing preserves quoted titles; duplicate rating pairs keep the latest timestamp, conflicting equal-time duplicates abort; exact duplicate tag rows are deduplicated. Missing foreign keys and invalid scores abort rather than silently disappearing. Source-row/batch-count and graph invariants verify the import.
+## Development and demonstration
 
-This is an educational/research project. MovieLens data and transformed distributions remain subject to its usage terms; no GroupLens endorsement is implied. Do not assume the code repository's availability grants commercial data rights. Required citation: F. Maxwell Harper and Joseph A. Konstan (2015), *The MovieLens Datasets: History and Context*, [DOI](https://doi.org/10.1145/2827872).
+| Command                            | Purpose                                                |
+| ---------------------------------- | ------------------------------------------------------ |
+| `make help`                        | Targets and preconditions                              |
+| `make docker-run` / `make stop`    | Start/stop services                                    |
+| `make profile seed validate-data`  | Data provenance, import and invariants                 |
+| `make analytics`                   | Real GDS jobs and run activation                       |
+| `make test`                        | Frontend and Python/HTTP/Neo4j/GDS tests with coverage |
+| `make test-ui` / `make test-unit`  | Focused frontend / isolated Python checks              |
+| `make lint` / `make format`        | Teacher Pylint / Black                                 |
+| `make train` / `make evaluate`     | Offline ML experiment                                  |
+| `make benchmark` / `make llm-eval` | Query performance / real-model checks                  |
+| `make notebook` / `make demo`      | Execute notebook / live HTTP smoke checks              |
 
-## ML and performance evidence
+For a presentation: complete the quiz, open a recommendation reason, switch to the research and catalog screens, then show a real natural-language query and rejected mutation attempt. Supporting material: [demo runbook](docs/demo-runbook.md), [requirement map](docs/requirements.md), [37-page project guide](proje_guide.pdf) and [review evidence](docs/review.md).
 
-`make train` runs a chronological frozen-history experiment. G0 uses the earliest ~60%; later ~20/10/10% supply train/validation/test labels. Equal timestamps stay together. Rating-derived features use G0 only; static movie/genre catalog metadata is assumed available, and historical release-time availability is not simulated. Production full-data GDS output is never read. Train-only preprocessing and validation-only hyperparameter selection prevent target leakage. High future ratings are positive, low observed ratings negative, 3.5 excluded; missing pairs are not invented negatives.
+The [container workflow](https://github.com/canoktayy/moviegraph/actions/workflows/image.yml) publishes `ghcr.io/canoktayy/moviegraph:latest` and commit-addressed images. Both the repository and [container package](https://github.com/canoktayy/moviegraph/pkgs/container/moviegraph) remain **private** by owner choice. Public-registry compliance is not claimed. Local Docker builds work without registry authentication.
 
-The experiment reports average precision, ROC-AUC, F1/confusion matrix, warm/cold cohorts and dummy/movie-mean baselines. Full-catalog Recall@10, NDCG@10, candidate recall and catalog coverage compare a Bayesian baseline with frozen item CF. Global chronology produces heavy cold-start conditions; interpret the cohort counts, not only one headline metric. The classifier is not promoted into serving just because it exists.
-
-`make benchmark` compares actual traversal versus precomputed lookup on the same 30 movie IDs after warm-up. It separately records PROFILE operators/DB hits and top-10 overlap, making the approximation's quality trade-off visible. [Measured results](docs/results.md), [ML report](artifacts/reports/ml_metrics.json), [benchmark](artifacts/reports/benchmark.json), [index plan](docs/evidence/profile-index.json).
-
-## Development commands
-
-| Command | Purpose |
-|---|---|
-| `make help` | all targets and preconditions |
-| `make install setup` | isolated dependencies and local secrets |
-| `make docker-run` / `make stop` | start/stop the three services |
-| `make download profile seed validate-data` | data provenance and graph invariants |
-| `make analytics` | real GDS jobs and atomic run activation |
-| `make test` | frontend delayed-request regressions + Python/HTTP/real Neo4j/Cypher/GDS with Python coverage |
-| `make test-unit` | isolated tests, explicitly not full validation |
-| `make lint` / `make format` | teacher `.pylintrc`, score ≥9.5 / Black |
-| `make train` / `make evaluate` | reproducible offline ML experiment |
-| `make benchmark` / `make llm-eval` | actual performance / real local-model evaluation |
-| `make demo` | live HTTP smoke checks |
-| `make run` | host FastAPI at port 18081 |
-| `make clean` | disposable Python caches only |
-
-`make test` fails preflight when Neo4j or seeded data is absent; integration tests are not silently skipped. Coverage enforces ≥60%. CI boots the actual three-service stack, imports the real dataset twice, runs GDS and executes tests. Local model evaluation is separate because hosted CI has no LM Studio GPU/model.
-
-Teacher configuration is preserved in `.pylintrc`; no checks were broadly disabled to improve the score. Its existing disabled docstring warnings do not remove the project's explicit docstring requirement.
-
-## Demonstration and contribution record
-
-Run `make help`, `make lint`, `make test`, `make docker-run`. Open the UI/Swagger, inspect one explanation, then show a real `/api/ask` response and a blocked `DELETE` request. See [demo runbook](docs/demo-runbook.md) and executed [demo.ipynb](demo.ipynb).
-
-Solo contributor: **Can Oktay**. Feature branches and merged PRs document actual work. Self-review observations are not represented as independent peer approval. Group balancing and individual-review rules require instructor interpretation for a solo submission. See [scope](docs/solo-scope.md) and [release evidence](docs/release-checklist.md).
-
-Known limits: historical development dataset, selection-biased implicit relevance, approximate top-K similarity, many sparse/isolated movies, local-only API key protection, pinned legacy projection API, no high-availability/SLA claim, no independently obtained human review, and private image visibility. These are explicit boundaries rather than hidden exceptions.
-
-## Personal recommendations for new visitors
-
-The default experience is now **Find my films → ten rounds of five films → personal recommendations → Why this film?** No MovieLens user ID or model key is needed for this flow. Each round offers distinct, sufficiently supported films; skip unfamiliar rounds and go back to revise choices. At least one selection is required. The research demo remains available separately for the instructor's existing-user/community/ranking demonstrations; the advanced natural-language panel is collapsed by default.
-
-`GET /api/taste/rounds?seed=42` returns 50 distinct options from a bounded 150-film supported pool, shuffled reproducibly for a given seed. `POST /api/taste/recommendations` accepts 1–10 distinct positive movie IDs, an optional canonical genre and a bounded result limit. The selected movies are positive seeds, not synthetic 5-star ratings; unchosen alternatives are not negative labels. Candidate score is the sum of active-run shrunk-Jaccard similarities divided by the number of selected seeds. This rewards connections across the selected set; selected films are excluded. Returned reasons contain the exact seed identities, similarities and shared-rater support. Scores are affinity, not probabilities or star predictions. This onboarding has functional/integration verification, not a claimed user-study accuracy result.
-
-Visitor selections stay in the current page's memory and reset on reload. No account, visitor node, persisted preference profile or research-data mutation is created. Standard graph ranking remains independent of the local LLM.
-
-### Optional film images
-
-`scripts/fetch_posters.py` downloads the public [Full TMDB Movies Dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies), verifies a pinned SHA-256 and joins poster references using **both exact TMDB and IMDb IDs** from MovieLens. Display metadata never changes the rating graph. The source snapshot and match counts are recorded in `artifacts/reports/posters.json`. `app/static/posters.json` records image URLs and source pages; no image binaries or full third-party metadata dump are committed. Historical image references may disappear: failed or missing images retain the designed cover. External image loading requires internet access.
-
-Poster images are provided by TMDB and remain with their respective rights holders. This product uses TMDB imagery but is not endorsed or certified by TMDB. Poster display does not imply a blanket image reuse license. No TMDB API credential is required for this frozen metadata snapshot; recommendation calculations use MovieLens, not TMDB ratings.
-
-Recorded display enrichment: **9,586 / 9,742** films have identity-matched poster references; 156 retain designed covers. This is metadata coverage, not a guarantee every external URL remains available. The optional refresh downloads a large CSV (~638 MiB for this snapshot); it is not part of installation, CI or normal use. An existing local file can be passed with `--metadata PATH`. Snapshot changes fail checksum validation instead of being silently accepted.
-
-![Ten-round personal taste selection](docs/evidence/taste-round.jpg)
-
-![Personal recommendations from selected films](docs/evidence/taste-recommendations.jpg)
-
-## Reliability review
-
-`make test-ui` runs seven dependency-free Node behavioral tests with deliberately delayed responses. They verify that newer navigation wins, obsolete errors/results cannot contaminate another or closed film dialog, poster metadata does not block graph initialization, and catalog pagination continues past 1,000 rows. `make test` includes this suite before the Python tests. The Node simulations complement actual browser checks; they are not represented as a full browser automation suite.
-
-API source IDs must be positive signed 64-bit integers. JSON identity fields reject booleans, fractional numbers and numeric strings before database access. Natural-language questions with conflicting demo-user context, multiple distinct IDs or malformed negative/fractional/exponent identities request clarification; numeric role IDs and time windows are not treated as requested result counts. General/movie-level queries ignore user context they do not use.
-
-Ingestion now validates IDs, timestamp ranges, unique movie/link identities, complete link coverage and required titles/tags before graph writes. Missing genres remain unclassified instead of creating a `nan` genre; numeric-looking tags retain their original text. Source-file validation does not change the documented MovieLens snapshot or historical ML results.
-
-`make notebook` executes all notebook cells with the project interpreter and shuts down its kernel, avoiding accidental use of another global Jupyter installation. It requires the seeded running stack and configured local model. Notebook outputs are saved only after successful execution. See [review findings and evidence](docs/review.md).
+Solo contributor: **Can Oktay**. Owner reviews are self-reviews, not independent peer approval. Instructor interpretation is needed for group/reviewer requirements; see [solo scope](docs/solo-scope.md). Remaining limits include historical selection-biased data, sparse/isolated movies, approximate similarity, ephemeral visitor preferences and local-development authentication. No live-data, high-availability or guaranteed grading claim is made.

@@ -34,6 +34,9 @@
         <button class="nav-item" data-view="catalog">
           <span>▤</span> Explore the catalog <i>04</i>
         </button>
+        <button class="nav-item" data-view="ask">
+          <span>◇</span> Ask the graph <i>05</i>
+        </button>
       </nav>
       <div class="sidebar-note">
         <div class="mini-network" aria-hidden="true">
@@ -70,6 +73,7 @@
       <button class="nav-item" data-view="catalog">
         <span>▤</span>Catalog
       </button>
+      <button class="nav-item" data-view="ask"><span>◇</span>Ask</button>
     </nav>
     <main>
       <header class="topbar">
@@ -82,7 +86,7 @@
         </div>
       </header>
       <div class="content">
-        <section class="hero">
+        <section class="hero" id="welcome-screen">
           <div class="hero-copy">
             <div class="eyebrow">
               <span class="small-line"></span> GOOD STORIES FIND THEIR PEOPLE
@@ -95,8 +99,8 @@
               with a reason, not just a rating.
             </p>
             <div class="hero-actions">
-              <a href="#taste-section" class="primary-link"
-                >Find my films <span>↗</span></a
+              <button id="hero-start" class="primary-link">
+                Find my films <span>↗</span></button
               ><span class="hero-footnote"
                 >Built on connections.<br />Grounded in real ratings.</span
               >
@@ -129,7 +133,11 @@
             <div class="art-corner">MG / 01</div>
           </div>
         </section>
-        <section class="stats-strip" aria-label="Live graph statistics">
+        <section
+          id="graph-stats"
+          class="stats-strip"
+          aria-label="Live graph statistics"
+        >
           <div>
             <strong id="stat-movies">—</strong><span>FILMS TO DISCOVER</span>
           </div>
@@ -185,8 +193,9 @@
         <section id="collection" class="collection-section" hidden>
           <div class="section-heading">
             <div>
-              <div class="eyebrow">YOUR NEXT FRAME</div>
+              <div class="eyebrow" id="page-caption">YOUR NEXT FRAME</div>
               <h2 id="collection-title">A few stories for you<span>.</span></h2>
+              <p id="page-description" class="page-description"></p>
             </div>
             <div class="view-note" id="method-note">
               Graph-backed, evidence-led
@@ -202,11 +211,11 @@
                 max="100000"
                 value="42"
                 aria-label="MovieLens user ID" /></label
-            ><label class="genre-control"
+            ><label id="genre-control" class="genre-control"
               ><select id="genre" aria-label="Filter by genre">
                 <option value="">All genres</option>
               </select></label
-            ><label class="search-control"
+            ><label id="search-control" class="search-control"
               ><span>⌕</span
               ><input
                 id="search"
@@ -231,10 +240,7 @@
             <span>REAL RATINGS. VISIBLE REASONS.</span>
           </div>
         </section>
-        <details class="advanced-tools">
-          <summary>
-            For the presentation: ask the graph & inspect validated queries ↗
-          </summary>
+        <section id="ask-screen" hidden>
           <section class="ask-section">
             <div>
               <div class="eyebrow">A QUESTION WORTH ASKING</div>
@@ -275,7 +281,7 @@
               <div id="ask-result" hidden></div>
             </div>
           </section>
-        </details>
+        </section>
         <footer>
           <a class="footer-brand" href="/">moviegraph.</a>
           <p>Discover the story behind your next story.</p>

@@ -28,6 +28,7 @@ class Element {
   addEventListener(name, fn) {
     (this.events[name] ??= []).push(fn);
   }
+  setAttribute() {}
   append() {}
   insertAdjacentHTML(_where, html) {
     this.innerHTML += html;
@@ -54,6 +55,9 @@ function page({ posters = Promise.resolve(response({})) } = {}) {
     setTimeout,
     clearTimeout,
     AbortController,
+    location: { hash: "" },
+    history: { pushState() {} },
+    window: { addEventListener() {}, scrollTo() {} },
     document: {
       querySelector: element,
       querySelectorAll: () => [],
@@ -213,4 +217,36 @@ test("an obsolete list failure cannot replace a successful newer view", async ()
   await old;
   assert.match(browser.element("#movie-grid").innerHTML, /CURRENT RESULTS/);
   assert.doesNotMatch(browser.element("#notice").textContent, /OBSOLETE ERROR/);
+});
+
+test("navigation isolates quiz, catalog and language-model screens", async () => {
+  const browser = page();
+  await tick();
+  assert.equal(browser.element("#collection").hidden, true);
+  assert.equal(browser.element("#ask-screen").hidden, true);
+  browser.run("taste.rounds = [[{movie_id:1}]]; taste.answers=[1]");
+  const catalog = browser.run("setView('catalog')");
+  assert.equal(browser.element("#taste-section").hidden, true);
+  assert.equal(browser.element("#welcome-screen").hidden, true);
+  browser.pending
+    .get("/api/movies?limit=8&offset=0&q=")
+    .resolve(response({ items: [] }));
+  await catalog;
+  await browser.run("setView('ask')");
+  assert.equal(browser.element("#collection").hidden, true);
+  assert.equal(browser.element("#ask-screen").hidden, false);
+  await browser.run("setView('recommendations')");
+  assert.equal(browser.element("#taste-quiz").hidden, false);
+  assert.equal(browser.run("taste.answers[0]"), 1);
+});
+test("leaving a pending list for the question screen invalidates its response", async () => {
+  const browser = page();
+  const catalog = browser.run("setView('catalog')");
+  await browser.run("setView('ask')");
+  browser.pending
+    .get("/api/movies?limit=8&offset=0&q=")
+    .resolve(response({ items: [item("OBSOLETE", 1)] }));
+  await catalog;
+  assert.doesNotMatch(browser.element("#movie-grid").innerHTML, /OBSOLETE/);
+  assert.equal(browser.element("#collection").hidden, true);
 });

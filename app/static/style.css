@@ -1674,3 +1674,29 @@ dialog::backdrop {
 html {
   scroll-behavior: auto;
 }
+
+/* Each navigation destination is an independent screen. */
+.page-description {
+  max-width: 700px;
+  color: var(--muted, #71827a);
+  line-height: 1.7;
+  margin-top: 12px;
+}
+#ask-screen .ask-section {
+  margin-top: 32px;
+}
+#taste-section {
+  margin-top: 24px;
+}
+.hero-actions button {
+  border: 0;
+  cursor: pointer;
+}
+@media (max-width: 760px) {
+  .mobile-nav {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .mobile-nav .nav-item {
+    font-size: 10px;
+  }
+}
