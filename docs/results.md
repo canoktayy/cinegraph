@@ -37,8 +37,8 @@ Full-catalog item-CF Recall@10: 0.0503; NDCG@10: 0.2277. Bayesian baseline Recal
 
 | Method | p50 ms | p95 ms |
 |---|---:|---:|
-| Direct graph traversal | 19.595 | 58.294 |
-| Versioned precomputed lookup | 1.692 | 2.737 |
+| Direct graph traversal | 21.786 | 42.526 |
+| Versioned precomputed lookup | 2.614 | 4.234 |
 
 Thirty identical source-movie IDs, five warm-up calls, sequential local-client timings. Mean top-10 overlap: 0.973. The precomputed raw-candidate cap is approximate, so faster does not imply perfectly equivalent ranking. PROFILE captures are separate from normal latency timing. This is not a concurrency/SLA test.
 

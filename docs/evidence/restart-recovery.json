@@ -1,0 +1,7 @@
+{
+  "database_down_liveness": 200,
+  "database_down_readiness": 503,
+  "recovered_readiness": 200,
+  "data_and_active_run_preserved": true,
+  "recommendation_order_preserved": true
+}

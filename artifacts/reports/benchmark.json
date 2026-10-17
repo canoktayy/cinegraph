@@ -39,20 +39,20 @@
   "warmup_queries": 5,
   "direct_graph": {
     "samples": 30,
-    "p50_ms": 17.665,
-    "p95_ms": 37.311,
-    "min_ms": 6.749
+    "p50_ms": 21.786,
+    "p95_ms": 42.526,
+    "min_ms": 7.956
   },
   "precomputed_gds": {
     "samples": 30,
-    "p50_ms": 1.783,
-    "p95_ms": 2.986,
-    "min_ms": 0.975
+    "p50_ms": 2.614,
+    "p95_ms": 4.234,
+    "min_ms": 1.715
   },
   "mean_top10_overlap": 0.9733333333333332,
   "notes": [
     "Sequential local client workload; not a concurrent load or SLA test",
     "Precomputed top-40 raw Jaccard candidates can differ from exhaustive shrunk ranking"
   ],
-  "commit": "4bbbe1d0150f0c686d3903a6a293701990af4d01"
+  "commit": "81a89524e3a9d431fcd28bb5c6354f22e96c056a"
 }
