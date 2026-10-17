@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/canoktayy/moviegraph",
+  "visibility": "private",
+  "merged_pull_request": "https://github.com/canoktayy/moviegraph/pull/1",
+  "application_commit": "81a89524e3a9d431fcd28bb5c6354f22e96c056a",
+  "application_quality_run": "https://github.com/canoktayy/moviegraph/actions/runs/39052798282",
+  "container_run": "https://github.com/canoktayy/moviegraph/actions/runs/39053436880",
+  "container_source_commit": "a666c3aa8923fdd79020ee092a761e4a378108a2",
+  "container_image": "ghcr.io/canoktayy/moviegraph:latest",
+  "container_digest": "sha256:170f541dace3bae4c2c100de30f2a6de7c57072bbb6c92a180fa2452c4bf68de",
+  "package_visibility_observed": "Private",
+  "package_page": "https://github.com/canoktayy/moviegraph/pkgs/container/moviegraph"
+}
