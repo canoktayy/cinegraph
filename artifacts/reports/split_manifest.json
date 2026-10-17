@@ -1,0 +1,16 @@
+{
+  "dataset_hash": "bb3c34d9a8f1e0cdff329186be42f1e78e49bc0385b3a1224a5a2d75c1a5b123",
+  "feature_graph_hash": "e5e5e71893a0b51928b1a4c8e276a267c96f840106e09be98c98e1102bb49a78",
+  "cutoffs": [
+    1258420900,
+    1458635162,
+    1498029445
+  ],
+  "block_sizes": [
+    60501,
+    20167,
+    10084,
+    10084
+  ],
+  "seed": 42
+}

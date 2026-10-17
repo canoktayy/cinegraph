@@ -1,0 +1,57 @@
+{
+  "dataset_hash": "bb3c34d9a8f1e0cdff329186be42f1e78e49bc0385b3a1224a5a2d75c1a5b123",
+  "analytics_run_id": "gds-25d869f84e838a9b",
+  "platform": "macOS-15.6-arm64-arm-64bit",
+  "seed": 42,
+  "workload_ids": [
+    48043,
+    838,
+    154,
+    97752,
+    2023,
+    1719,
+    1441,
+    1060,
+    95510,
+    720,
+    61323,
+    97304,
+    6378,
+    543,
+    8807,
+    3468,
+    185,
+    173,
+    594,
+    1387,
+    1584,
+    5010,
+    27801,
+    161,
+    6953,
+    1285,
+    86377,
+    52973,
+    77455,
+    3441
+  ],
+  "warmup_queries": 5,
+  "direct_graph": {
+    "samples": 30,
+    "p50_ms": 22.433,
+    "p95_ms": 41.212,
+    "min_ms": 7.756
+  },
+  "precomputed_gds": {
+    "samples": 30,
+    "p50_ms": 2.268,
+    "p95_ms": 2.895,
+    "min_ms": 1.369
+  },
+  "mean_top10_overlap": 0.9733333333333332,
+  "notes": [
+    "Sequential local client workload; not a concurrent load or SLA test",
+    "Precomputed top-40 raw Jaccard candidates can differ from exhaustive shrunk ranking"
+  ],
+  "commit": "b2b732986ee355a9511d9372c321c36dc680db87"
+}

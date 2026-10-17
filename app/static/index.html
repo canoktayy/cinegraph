@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MovieGraph — Follow your taste.</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' rx='16' fill='%23e66f45'/%3E%3Cpath d='M17 43V17l13 16 13-16v26' fill='none' stroke='white' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<aside class="sidebar">
+  <a class="brand" href="/" aria-label="MovieGraph home"><span class="brand-icon">m<span>·</span></span><span>moviegraph<span class="brand-dot">.</span></span></a>
+  <div class="workspace"><span class="workspace-dot"></span> YOUR CINEMA, CONNECTED <span>↗</span></div>
+  <div class="nav-caption">THE COLLECTION</div>
+  <nav aria-label="Main navigation">
+    <button class="nav-item active" data-view="recommendations"><span>◈</span> For you <i>01</i></button>
+    <button class="nav-item" data-view="discover"><span>⌘</span> Taste communities <i>02</i></button>
+    <button class="nav-item" data-view="trending"><span>↗</span> The long view <i>03</i></button>
+    <button class="nav-item" data-view="catalog"><span>▤</span> Explore the catalog <i>04</i></button>
+  </nav>
+  <div class="sidebar-note"><div class="mini-network" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><svg viewBox="0 0 180 70"><path d="M15 35L70 10L110 55L165 20M15 35L110 55M70 10L165 20"/></svg></div><span>MORE THAN AN ALGORITHM</span><h3>A little less guessing.<br>A lot more connection.</h3><p>Every recommendation has a path. We show you yours.</p><a href="/docs" target="_blank" rel="noopener">Explore the API <span>↗</span></a></div>
+  <div class="sidebar-bottom"><span class="avatar">ML</span><div>MovieLens small<small>Research snapshot · not live data</small></div><span class="health-dot" title="API connection status"></span></div>
+</aside>
+<nav class="mobile-nav" aria-label="Mobile navigation">
+<button class="nav-item active" data-view="recommendations"><span>◈</span>For you</button>
+<button class="nav-item" data-view="discover"><span>⌘</span>Communities</button>
+<button class="nav-item" data-view="trending"><span>↗</span>History</button>
+<button class="nav-item" data-view="catalog"><span>▤</span>Catalog</button>
+</nav>
+<main>
+  <header class="topbar"><div class="breadcrumb">YOUR SPACE <span>/</span> <strong id="breadcrumb">For you</strong></div><div class="topbar-right"><span class="live-badge"><span></span> LOCAL-FIRST</span><a href="/docs" target="_blank" rel="noopener">API docs ↗</a></div></header>
+  <div class="content">
+    <section class="hero">
+      <div class="hero-copy"><div class="eyebrow"><span class="small-line"></span> GOOD STORIES FIND THEIR PEOPLE</div><h1 id="hero-title">Follow your taste.<br><em>Find your next story.</em></h1><p id="hero-description">Films connected by the people who love them.<br>Recommendations with a reason, not just a rating.</p><div class="hero-actions"><a href="#collection" class="primary-link">Explore your picks <span>↗</span></a><span class="hero-footnote">Built on connections.<br>Grounded in real ratings.</span></div></div>
+      <div class="hero-art" aria-label="An abstract cinematic constellation"><div class="art-grain"></div><div class="art-circle circle-a"></div><div class="art-circle circle-b"></div><div class="art-orbit"></div><svg viewBox="0 0 400 300" class="constellation"><path d="M62 204L136 124L234 172L331 74M136 124L280 48M234 172L314 252"/><circle cx="62" cy="204" r="5"/><circle cx="136" cy="124" r="7"/><circle cx="234" cy="172" r="5"/><circle cx="331" cy="74" r="6"/><circle cx="280" cy="48" r="4"/><circle cx="314" cy="252" r="4"/></svg><div class="art-label"><span>THE ART OF FINDING</span><strong>Unexpected<br>connections.</strong><small>ONE GRAPH. THOUSANDS OF STORIES.</small></div><div class="art-corner">MG / 01</div></div>
+    </section>
+    <section class="stats-strip" aria-label="Live graph statistics"><div><strong id="stat-movies">—</strong><span>FILMS TO DISCOVER</span></div><div><strong id="stat-ratings">—</strong><span>REAL CONNECTIONS</span></div><div><strong id="stat-users">—</strong><span>UNIQUE PERSPECTIVES</span></div><div class="snapshot-stat"><span class="snapshot-icon">◷</span><div><strong id="snapshot-date">Loading snapshot</strong><span>HISTORICAL MOVIELENS DATA</span></div></div></section>
+    <section id="collection" class="collection-section">
+      <div class="section-heading"><div><div class="eyebrow">YOUR NEXT FRAME</div><h2 id="collection-title">A few stories for you<span>.</span></h2></div><div class="view-note" id="method-note">Graph-backed, evidence-led</div></div>
+      <form id="filter-form" class="filters"><label class="user-control"><span>VIEW AS</span><span class="user-icon">◉</span><input id="user-id" type="number" min="1" max="100000" value="42" aria-label="MovieLens user ID"></label><label class="genre-control"><select id="genre" aria-label="Filter by genre"><option value="">All genres</option></select></label><label class="search-control"><span>⌕</span><input id="search" type="search" placeholder="Search a film, find a connection…" aria-label="Search the catalog"></label><button class="filter-submit" type="submit">Find films <span>↗</span></button></form>
+      <div id="notice" class="notice" hidden></div><div id="movie-grid" class="movie-grid" aria-live="polite"></div>
+      <div class="collection-footer"><span id="result-note">Connecting to your graph…</span><button id="show-more" class="text-button" hidden>Show more films ↗</button><span>REAL RATINGS. VISIBLE REASONS.</span></div>
+    </section>
+    <section class="ask-section"><div><div class="eyebrow">A QUESTION WORTH ASKING</div><h2>Your curiosity.<br><em>The graph’s answers.</em></h2><p>Ask about films, recommendations or communities.<br>Every question becomes a validated, read-only graph query.</p><div class="ask-examples"><button data-question="Recommend 5 movies for user 42">“What should user 42 watch next?” ↗</button><button data-question="Find 5 movies similar to movie 1">“Which films are connected to movie 1?” ↗</button></div></div><div class="ask-panel"><label for="api-key">LOCAL ACCESS KEY <span>stays in this tab</span></label><input id="api-key" type="password" autocomplete="off" placeholder="Enter APP_API_KEY from your local .env"><label for="question">ASK MOVIEGRAPH</label><textarea id="question" rows="3" placeholder="Recommend 5 science-fiction movies for user 42"></textarea><button id="ask-button">Follow the evidence <span>↗</span></button><div class="guardrail-note"><span>◇</span> Bounded queries. Verified identities. No invented results.</div><div id="ask-result" hidden></div></div></section>
+    <footer><a class="footer-brand" href="/">moviegraph.</a><p>Discover the story behind your next story.</p><span>NEO4J × MOVIELENS <span class="footer-separator">/</span> AIDAMS 3A</span></footer>
+  </div>
+</main>
+<dialog id="detail-dialog"><button id="close-detail" class="close-detail" aria-label="Close movie details">×</button><div id="detail-content"></div></dialog>
+<script src="/static/app.js" defer></script>
+</body></html>

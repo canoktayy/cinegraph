@@ -1,0 +1,36 @@
+{
+  "run_id": "gds-246d37dafdab7423",
+  "data_version": "bb3c34d9a8f1e0cdff329186be42f1e78e49bc0385b3a1224a5a2d75c1a5b123",
+  "cutoff": 1537799250,
+  "gds_version": "2.13.2",
+  "config": {
+    "like_threshold": 4.0,
+    "min_common": 3,
+    "beta": 5,
+    "candidate_top_k": 40,
+    "top_k": 20
+  },
+  "code_sha256": "22d8e7eddf78f8ecd224a8aaf49581ec91fa789a281aeea6a4a822c93542f873",
+  "likes_projection": {
+    "nodeCount": 10352,
+    "relationshipCount": 48580
+  },
+  "movie_projection": {
+    "nodeCount": 9742,
+    "relationshipCount": 49890
+  },
+  "memory_estimate": {
+    "requiredMemory": "[8250 KiB ... 8816 KiB]",
+    "bytesMin": 8448616,
+    "bytesMax": 9028328
+  },
+  "similarity_edges": 33679,
+  "communities": 7316,
+  "connected_movies": 2437,
+  "non_isolated_communities": 11,
+  "duration_seconds": 4.891,
+  "limitations": [
+    "Top-40 raw Jaccard candidates are shrunk and truncated to top-20; not exhaustive",
+    "Louvain IDs are run-specific; deterministic partition is not guaranteed"
+  ]
+}

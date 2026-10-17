@@ -1,0 +1,64 @@
+name: moviegraph
+services:
+  neo4j:
+    image: neo4j:5.26.0-community@sha256:5a015e53de1895e7eee1574ae0325cf8c4b89587222778108c594bdd45a474b5
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?Run make setup first}
+      MOVIEGRAPH_DB_PASSWORD: ${NEO4J_PASSWORD}
+      NEO4J_PLUGINS: '["graph-data-science"]'
+      NEO4J_dbms_security_procedures_unrestricted: gds.*
+      NEO4J_server_memory_heap_initial__size: 512m
+      NEO4J_server_memory_heap_max__size: 1536m
+      NEO4J_server_memory_pagecache_size: 512m
+    ports:
+      - 127.0.0.1:${NEO4J_HTTP_PORT:-17474}:7474
+      - 127.0.0.1:${NEO4J_BOLT_PORT:-17687}:7687
+    volumes:
+      - neo4j_data:/data
+      - neo4j_plugins:/plugins
+    healthcheck:
+      test: [CMD-SHELL, 'cypher-shell -u neo4j -p "$$MOVIEGRAPH_DB_PASSWORD" "RETURN 1" >/dev/null 2>&1']
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+  api:
+    image: ${MOVIEGRAPH_IMAGE:-moviegraph-api:local}
+    build: .
+    env_file: .env
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      LLM_BASE_URL: http://host.docker.internal:1234/v1
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  nginx:
+    image: nginx:1.28-alpine
+    ports:
+      - 127.0.0.1:${API_PORT:-18080}:8080
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:8080/health/live']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+volumes:
+  neo4j_data:
+  neo4j_plugins:

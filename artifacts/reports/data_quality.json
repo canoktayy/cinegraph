@@ -1,0 +1,26 @@
+{
+  "data_version": "bb3c34d9a8f1e0cdff329186be42f1e78e49bc0385b3a1224a5a2d75c1a5b123",
+  "movies": 9742,
+  "ratings": 100836,
+  "tag_applications": 3683,
+  "users": 610,
+  "rating_min": 0.5,
+  "rating_max": 5.0,
+  "as_of": 1537799250,
+  "first_rating": 828124615,
+  "rating_distribution": {
+    "0.5": 1370,
+    "1.0": 2811,
+    "1.5": 1791,
+    "2.0": 7551,
+    "2.5": 5550,
+    "3.0": 20047,
+    "3.5": 13136,
+    "4.0": 26818,
+    "4.5": 8551,
+    "5.0": 13211
+  },
+  "quarantined": 0,
+  "duplicate_policy": "latest rating per user/movie; identical tags deduplicated",
+  "license": "MovieLens README terms apply; research/educational use; attribution required"
+}

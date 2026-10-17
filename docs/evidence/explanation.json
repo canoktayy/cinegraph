@@ -1,0 +1,109 @@
+{
+  "user_id": 42,
+  "movie_id": 3639,
+  "recommended": true,
+  "explanation": "Supported by movies in your rating history: For Your Eyes Only (1981) (rating 5, similarity 0.105, 4 shared positive raters); View to a Kill, A (1985) (rating 5, similarity 0.094, 3 shared positive raters); Licence to Kill (1989) (rating 5, similarity 0.087, 3 shared positive raters). Evidence shows graph affinity, not certainty.",
+  "evidence": [
+    {
+      "evidence_id": "ev-gds-25d869f84e838a9b-1",
+      "type": "collaborative_path",
+      "path": [
+        {
+          "label": "User",
+          "user_id": 42
+        },
+        {
+          "relationship": "RATED",
+          "score": 5.0
+        },
+        {
+          "label": "Movie",
+          "movie_id": 2989,
+          "title": "For Your Eyes Only (1981)"
+        },
+        {
+          "relationship": "SIMILAR_TO",
+          "score": 0.10457516339869281
+        },
+        {
+          "label": "Movie",
+          "movie_id": 3639
+        }
+      ],
+      "source_rating": 5.0,
+      "similarity": 0.10457516339869281,
+      "support": 4,
+      "contribution": 1.8355303072086484,
+      "run_id": "gds-25d869f84e838a9b",
+      "provenance": "derived"
+    },
+    {
+      "evidence_id": "ev-gds-25d869f84e838a9b-2",
+      "type": "collaborative_path",
+      "path": [
+        {
+          "label": "User",
+          "user_id": 42
+        },
+        {
+          "relationship": "RATED",
+          "score": 5.0
+        },
+        {
+          "label": "Movie",
+          "movie_id": 2376,
+          "title": "View to a Kill, A (1985)"
+        },
+        {
+          "relationship": "SIMILAR_TO",
+          "score": 0.09375
+        },
+        {
+          "label": "Movie",
+          "movie_id": 3639
+        }
+      ],
+      "source_rating": 5.0,
+      "similarity": 0.09375,
+      "support": 3,
+      "contribution": 1.6455242402515031,
+      "run_id": "gds-25d869f84e838a9b",
+      "provenance": "derived"
+    },
+    {
+      "evidence_id": "ev-gds-25d869f84e838a9b-3",
+      "type": "collaborative_path",
+      "path": [
+        {
+          "label": "User",
+          "user_id": 42
+        },
+        {
+          "relationship": "RATED",
+          "score": 5.0
+        },
+        {
+          "label": "Movie",
+          "movie_id": 2990,
+          "title": "Licence to Kill (1989)"
+        },
+        {
+          "relationship": "SIMILAR_TO",
+          "score": 0.08653846153846154
+        },
+        {
+          "label": "Movie",
+          "movie_id": 3639
+        }
+      ],
+      "source_rating": 5.0,
+      "similarity": 0.08653846153846154,
+      "support": 3,
+      "contribution": 1.518945452539849,
+      "run_id": "gds-25d869f84e838a9b",
+      "provenance": "derived"
+    }
+  ],
+  "analytics_run_id": "gds-25d869f84e838a9b",
+  "note": "A recommendation is not a guarantee of future preference."
+}
