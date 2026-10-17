@@ -1,0 +1,16 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: requires a running Neo4j database", "llm: real local LLM evaluation"]
+addopts = "-ra"
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 60
