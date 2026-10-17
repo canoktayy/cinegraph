@@ -1,0 +1,142 @@
+{
+  "items": [
+    {
+      "movie_id": 2948,
+      "title": "From Russia with Love (1963)",
+      "year": 1963,
+      "genres": [
+        "Adventure",
+        "Action",
+        "Thriller"
+      ],
+      "score": 5.0,
+      "support": 26,
+      "supporting_seeds": 5
+    },
+    {
+      "movie_id": 2949,
+      "title": "Dr. No (1962)",
+      "year": 1962,
+      "genres": [
+        "Thriller",
+        "Action",
+        "Adventure"
+      ],
+      "score": 5.0,
+      "support": 16,
+      "supporting_seeds": 3
+    },
+    {
+      "movie_id": 3639,
+      "title": "Man with the Golden Gun, The (1974)",
+      "year": 1974,
+      "genres": [
+        "Thriller",
+        "Action",
+        "Adventure"
+      ],
+      "score": 5.0,
+      "support": 10,
+      "supporting_seeds": 3
+    },
+    {
+      "movie_id": 2993,
+      "title": "Thunderball (1965)",
+      "year": 1965,
+      "genres": [
+        "Thriller",
+        "Action",
+        "Adventure"
+      ],
+      "score": 5.0,
+      "support": 11,
+      "supporting_seeds": 2
+    },
+    {
+      "movie_id": 3635,
+      "title": "Spy Who Loved Me, The (1977)",
+      "year": 1977,
+      "genres": [
+        "Thriller",
+        "Adventure",
+        "Action"
+      ],
+      "score": 5.0,
+      "support": 11,
+      "supporting_seeds": 2
+    },
+    {
+      "movie_id": 1,
+      "title": "Toy Story (1995)",
+      "year": 1995,
+      "genres": [
+        "Adventure",
+        "Animation",
+        "Children",
+        "Comedy",
+        "Fantasy"
+      ],
+      "score": 5.0,
+      "support": 78,
+      "supporting_seeds": 1
+    },
+    {
+      "movie_id": 70,
+      "title": "From Dusk Till Dawn (1996)",
+      "year": 1996,
+      "genres": [
+        "Thriller",
+        "Horror",
+        "Comedy",
+        "Action"
+      ],
+      "score": 5.0,
+      "support": 6,
+      "supporting_seeds": 1
+    },
+    {
+      "movie_id": 589,
+      "title": "Terminator 2: Judgment Day (1991)",
+      "year": 1991,
+      "genres": [
+        "Sci-Fi",
+        "Action"
+      ],
+      "score": 5.0,
+      "support": 87,
+      "supporting_seeds": 1
+    },
+    {
+      "movie_id": 750,
+      "title": "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964)",
+      "year": 1964,
+      "genres": [
+        "War",
+        "Comedy"
+      ],
+      "score": 5.0,
+      "support": 36,
+      "supporting_seeds": 1
+    },
+    {
+      "movie_id": 903,
+      "title": "Vertigo (1958)",
+      "year": 1958,
+      "genres": [
+        "Romance",
+        "Mystery",
+        "Drama",
+        "Thriller"
+      ],
+      "score": 5.0,
+      "support": 29,
+      "supporting_seeds": 1
+    }
+  ],
+  "method": "item_cf",
+  "data_version": "bb3c34d9a8f1e0cdff329186be42f1e78e49bc0385b3a1224a5a2d75c1a5b123",
+  "analytics_run_id": "gds-246d37dafdab7423",
+  "as_of": 1537799250,
+  "fallback_reason": null,
+  "score_type": "weighted_rating"
+}

@@ -1,0 +1,12 @@
+.git
+.env
+.venv
+data
+artifacts
+tmp
+tests
+*.pdf
+*.tex
+__pycache__
+htmlcov
+.coverage

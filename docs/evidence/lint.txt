@@ -1,0 +1,176 @@
+.venv/bin/python -m pylint --rcfile=.pylintrc --fail-under=9.5 app scripts
+************* Module app.main
+app/main.py:130:0: R0913: Too many arguments (6/5) (too-many-arguments)
+app/main.py:130:0: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+************* Module app.ml.experiment
+app/ml/experiment.py:55:0: R0902: Too many instance attributes (13/10) (too-many-instance-attributes)
+app/ml/experiment.py:76:4: R0914: Too many local variables (23/15) (too-many-locals)
+app/ml/experiment.py:148:0: R0914: Too many local variables (24/15) (too-many-locals)
+app/ml/experiment.py:201:0: R0914: Too many local variables (25/15) (too-many-locals)
+************* Module app.analytics.build
+app/analytics/build.py:142:0: R0914: Too many local variables (18/15) (too-many-locals)
+************* Module scripts.documentation
+scripts/documentation.py:57:0: C0301: Line too long (157/120) (line-too-long)
+scripts/documentation.py:72:0: C0301: Line too long (128/120) (line-too-long)
+scripts/documentation.py:73:0: C0301: Line too long (127/120) (line-too-long)
+scripts/documentation.py:116:0: C0301: Line too long (132/120) (line-too-long)
+scripts/documentation.py:52:0: R0914: Too many local variables (30/15) (too-many-locals)
+************* Module scripts.evaluate_llm
+scripts/evaluate_llm.py:90:0: R0914: Too many local variables (16/15) (too-many-locals)
+
+
+Report
+======
+1066 statements analysed.
+
+Statistics by type
+------------------
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |28     |28         |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |14     |14         |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|method   |28     |28         |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|function |66     |66         |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+
+
+
+External dependencies
+---------------------
+::
+
+    app
+      \-agent
+      | \-client (app.agent.workflow,app.main,scripts.evaluate_llm)
+      | \-compiler (app.agent.workflow)
+      | \-plans (app.agent.client,app.agent.compiler)
+      | \-workflow (app.main,scripts.evaluate_llm)
+      \-config (app.agent.client,app.analytics.build,app.database,app.main,app.ml.experiment,scripts.benchmark,scripts.check_database,scripts.clean,scripts.data,scripts.documentation,scripts.evaluate_llm,scripts.record_modeling_baseline,scripts.setup,scripts.smoke)
+      \-database (app.analytics.build,app.main,app.repository,scripts.benchmark,scripts.check_database,scripts.data,scripts.evaluate_llm)
+      \-models (app.agent.client,app.agent.workflow,app.main,app.services,scripts.evaluate_llm)
+      \-queries (app.agent.compiler,app.repository,app.services,scripts.benchmark)
+      \-repository (app.main,app.services,scripts.benchmark,scripts.evaluate_llm)
+      \-scoring (app.analytics.build,scripts.data)
+      \-services (app.agent.compiler,app.agent.workflow,app.main,scripts.evaluate_llm)
+    fastapi (app.agent.client,app.agent.compiler,app.agent.workflow,app.main,app.services,scripts.evaluate_llm)
+      \-responses (app.main)
+      \-staticfiles (app.main)
+    httpx (app.agent.client,scripts.data,scripts.evaluate_llm,scripts.record_modeling_baseline,scripts.smoke)
+    joblib (app.ml.experiment)
+    matplotlib (scripts.documentation)
+      \-pyplot (scripts.documentation)
+    neo4j (app.database)
+      \-exceptions (app.database,app.main)
+    numpy (app.ml.experiment,scripts.benchmark)
+    pandas (app.ml.experiment,scripts.data)
+    pydantic (app.agent.client,app.agent.plans,app.models)
+    pydantic_settings (app.config)
+    scipy
+      \-sparse (app.ml.experiment)
+    scripts
+      \-data (app.analytics.build,app.ml.experiment,scripts.benchmark,scripts.documentation,scripts.evaluate_llm,scripts.record_modeling_baseline,scripts.smoke)
+    sklearn
+      \-dummy (app.ml.experiment)
+      \-impute (app.ml.experiment)
+      \-linear_model (app.ml.experiment)
+      \-metrics (app.ml.experiment)
+      \-pipeline (app.ml.experiment)
+      \-preprocessing (app.ml.experiment)
+
+
+
+2492 lines have been analyzed
+
+Raw metrics
+-----------
+
++----------+-------+------+---------+-----------+
+|type      |number |%     |previous |difference |
++==========+=======+======+=========+===========+
+|code      |1642   |65.89 |1636     |+6.00      |
++----------+-------+------+---------+-----------+
+|docstring |527    |21.15 |527      |=          |
++----------+-------+------+---------+-----------+
+|comment   |3      |0.12  |2        |+1.00      |
++----------+-------+------+---------+-----------+
+|empty     |320    |12.84 |320      |=          |
++----------+-------+------+---------+-----------+
+
+
+
+Duplication
+-----------
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |0        |0          |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |0.000    |=          |
++-------------------------+------+---------+-----------+
+
+
+
+Messages by category
+--------------------
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |4      |4        |4          |
++-----------+-------+---------+-----------+
+|refactor   |9      |9        |9          |
++-----------+-------+---------+-----------+
+|warning    |0      |0        |0          |
++-----------+-------+---------+-----------+
+|error      |0      |0        |0          |
++-----------+-------+---------+-----------+
+
+
+
+% errors / warnings by module
+-----------------------------
+
++----------------------+------+--------+---------+-----------+
+|module                |error |warning |refactor |convention |
++======================+======+========+=========+===========+
+|app.ml.experiment     |0.00  |0.00    |44.44    |0.00       |
++----------------------+------+--------+---------+-----------+
+|app.main              |0.00  |0.00    |22.22    |0.00       |
++----------------------+------+--------+---------+-----------+
+|scripts.documentation |0.00  |0.00    |11.11    |100.00     |
++----------------------+------+--------+---------+-----------+
+|scripts.evaluate_llm  |0.00  |0.00    |11.11    |0.00       |
++----------------------+------+--------+---------+-----------+
+|app.analytics.build   |0.00  |0.00    |11.11    |0.00       |
++----------------------+------+--------+---------+-----------+
+
+
+
+Messages
+--------
+
++------------------------------+------------+
+|message id                    |occurrences |
++==============================+============+
+|too-many-locals               |7           |
++------------------------------+------------+
+|line-too-long                 |4           |
++------------------------------+------------+
+|too-many-positional-arguments |1           |
++------------------------------+------------+
+|too-many-instance-attributes  |1           |
++------------------------------+------------+
+|too-many-arguments            |1           |
++------------------------------+------------+
+
+
+
+
+------------------------------------------------------------------
+Your code has been rated at 9.88/10 (previous run: 9.88/10, +0.00)

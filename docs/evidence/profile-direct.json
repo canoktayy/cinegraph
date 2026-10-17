@@ -1,0 +1,693 @@
+{
+  "args": {
+    "Order": "score DESC, support DESC, movie_id ASC",
+    "GlobalMemory": 2105616,
+    "planner-impl": "IDP",
+    "Memory": 0,
+    "string-representation": "Cypher 5\n\nPlanner COST\n\nRuntime SLOTTED\n\nRuntime version 5.26\n\n+----------------------+----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| Operator             | Id | Details                                                                                              | Estimated Rows | Rows   | DB Hits | Memory (Bytes) | Page Cache Hits/Misses | Ordered by                             |\n+----------------------+----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +ProduceResults      |  0 | movie_id, title, year, genres, support, score                                                        |              5 |     10 |       0 |              0 |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+                                        |\n| +Projection          |  1 | cache[candidate.year] AS year, cache[candidate.title] AS title                                       |              5 |     10 |       0 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+                                        |\n| +CacheProperties     |  2 | cache[candidate.year], cache[candidate.title]                                                        |              5 |     10 |      20 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+                                        |\n| +RollUpApply         |  3 | genres, anon_0                                                                                       |              5 |     10 |       0 |                |                    0/0 | score DESC, support DESC, movie_id ASC |\n| |\\                   +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Projection        |  4 | g.name AS anon_0                                                                                     |             11 |     41 |      41 |                |                    0/0 |                                        |\n| | |                  +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Filter            |  5 | g:Genre                                                                                              |             11 |     41 |      41 |                |                    0/0 |                                        |\n| | |                  +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Expand(All)       |  6 | (candidate)-[anon_3:IN_GENRE]->(g)                                                                   |             11 |     41 |      71 |                |                    0/0 |                                        |\n| | |                  +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Argument          |  7 | candidate                                                                                            |              5 |     10 |       0 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +Top                 |  8 | score DESC, support DESC, movie_id ASC LIMIT $limit                                                  |              5 |     10 |       0 |           2664 |                    0/0 | score DESC, support DESC, movie_id ASC |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +Projection          |  9 | ((toFloat(common) / ((left_count + right_count) - common)) * common) / (common + $autoint_4) AS scor |              5 |   1787 |    1787 |                |                    0/0 |                                        |\n| |                    |    | e, common AS support, candidate.movie_id AS movie_id                                                 |                |        |         |                |                        |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +Apply               | 10 |                                                                                                      |              5 |   1787 |       0 |                |                    0/0 |                                        |\n| |\\                   +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +EagerAggregation  | 11 | count(r) AS right_count                                                                              |              5 |   1787 |       0 |             24 |                    0/0 |                                        |\n| | |                  +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Filter            | 12 | r.score >= $autoint_3 AND anon_2:User                                                                |             19 |  39579 |  110992 |                |                    0/0 |                                        |\n| | |                  +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Expand(All)       | 13 | (candidate)<-[r:RATED]-(anon_2)                                                                      |             48 |  71413 |   83661 |                |                    0/0 |                                        |\n| | |                  +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Argument          | 14 | candidate                                                                                            |              5 |   1787 |       0 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +Apply               | 15 |                                                                                                      |              5 |   1787 |       0 |                |                    0/0 |                                        |\n| |\\                   +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +EagerAggregation  | 16 | count(r) AS left_count                                                                               |              5 |   1787 |       0 |             24 |                    0/0 |                                        |\n| | |                  +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Filter            | 17 | r.score >= $autoint_2 AND anon_1:User                                                                |             19 | 262689 |  646894 |                |                    0/0 |                                        |\n| | |                  +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Expand(All)       | 18 | (seed)<-[r:RATED]-(anon_1)                                                                           |             48 | 384205 |  391353 |                |                    0/0 |                                        |\n| | |                  +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| | +Argument          | 19 | seed                                                                                                 |              5 |   1787 |       0 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +Filter              | 20 | common >= $min_common                                                                                |              5 |   1787 |       0 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +EagerAggregation    | 21 | seed, candidate, count(DISTINCT u) AS common                                                         |             16 |   4308 |       0 |        2105480 |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +Filter              | 22 | NOT seed = candidate AND NOT r2 = r1 AND r2.score >= $autoint_1 AND candidate:Movie                  |            244 |  20817 |   63905 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +Expand(All)         | 23 | (u)-[r2:RATED]->(candidate)                                                                          |            684 |  43235 |   43522 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +Filter              | 24 | r1.score >= $autoint_0 AND u:User                                                                    |              4 |    147 |     362 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +Expand(All)         | 25 | (seed)<-[r1:RATED]-(u)                                                                               |             10 |    215 |     219 |                |                    0/0 |                                        |\n| |                    +----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n| +NodeUniqueIndexSeek | 26 | UNIQUE seed:Movie(movie_id) WHERE movie_id = $movie_id                                               |              1 |      1 |       2 |                |                    0/0 |                                        |\n+----------------------+----+------------------------------------------------------------------------------------------------------+----------------+--------+---------+----------------+------------------------+----------------------------------------+\n\nTotal database accesses: 1342870, total allocated memory: 2105616\n",
+    "runtime": "SLOTTED",
+    "runtime-impl": "SLOTTED",
+    "version": "5",
+    "DbHits": 0,
+    "Details": "movie_id, title, year, genres, support, score",
+    "planner-version": "5.26",
+    "runtime-version": "5.26",
+    "Id": 0,
+    "EstimatedRows": 4.685400586045154,
+    "planner": "COST",
+    "PageCacheMisses": 0,
+    "Rows": 10,
+    "PageCacheHits": 0
+  },
+  "pageCacheMisses": 0,
+  "children": [
+    {
+      "args": {
+        "Order": "score DESC, support DESC, movie_id ASC",
+        "Details": "cache[candidate.year] AS year, cache[candidate.title] AS title",
+        "Id": 1,
+        "PageCacheMisses": 0,
+        "EstimatedRows": 4.685400586045154,
+        "DbHits": 0,
+        "Rows": 10,
+        "PageCacheHits": 0
+      },
+      "pageCacheMisses": 0,
+      "children": [
+        {
+          "args": {
+            "Order": "score DESC, support DESC, movie_id ASC",
+            "Details": "cache[candidate.year], cache[candidate.title]",
+            "Id": 2,
+            "PageCacheMisses": 0,
+            "EstimatedRows": 4.685400586045154,
+            "DbHits": 20,
+            "Rows": 10,
+            "PageCacheHits": 0
+          },
+          "pageCacheMisses": 0,
+          "children": [
+            {
+              "args": {
+                "Order": "score DESC, support DESC, movie_id ASC",
+                "Details": "genres, anon_0",
+                "Id": 3,
+                "PageCacheMisses": 0,
+                "EstimatedRows": 4.685400586045154,
+                "DbHits": 0,
+                "Rows": 10,
+                "PageCacheHits": 0
+              },
+              "pageCacheMisses": 0,
+              "children": [
+                {
+                  "args": {
+                    "Order": "score DESC, support DESC, movie_id ASC",
+                    "Details": "score DESC, support DESC, movie_id ASC LIMIT $limit",
+                    "Memory": 2664,
+                    "Id": 8,
+                    "EstimatedRows": 4.685400586045154,
+                    "PageCacheMisses": 0,
+                    "DbHits": 0,
+                    "Rows": 10,
+                    "PageCacheHits": 0
+                  },
+                  "pageCacheMisses": 0,
+                  "children": [
+                    {
+                      "args": {
+                        "Details": "((toFloat(common) / ((left_count + right_count) - common)) * common) / (common + $autoint_4) AS score, common AS support, candidate.movie_id AS movie_id",
+                        "Id": 9,
+                        "PageCacheMisses": 0,
+                        "EstimatedRows": 4.685400586045154,
+                        "DbHits": 1787,
+                        "Rows": 1787,
+                        "PageCacheHits": 0
+                      },
+                      "pageCacheMisses": 0,
+                      "children": [
+                        {
+                          "args": {
+                            "Id": 10,
+                            "PageCacheMisses": 0,
+                            "EstimatedRows": 4.685400586045154,
+                            "DbHits": 0,
+                            "Rows": 1787,
+                            "PageCacheHits": 0
+                          },
+                          "pageCacheMisses": 0,
+                          "children": [
+                            {
+                              "args": {
+                                "Id": 15,
+                                "PageCacheMisses": 0,
+                                "EstimatedRows": 4.685400586045154,
+                                "DbHits": 0,
+                                "Rows": 1787,
+                                "PageCacheHits": 0
+                              },
+                              "pageCacheMisses": 0,
+                              "children": [
+                                {
+                                  "args": {
+                                    "Details": "common >= $min_common",
+                                    "Id": 20,
+                                    "PageCacheMisses": 0,
+                                    "EstimatedRows": 4.685400586045154,
+                                    "DbHits": 0,
+                                    "Rows": 1787,
+                                    "PageCacheHits": 0
+                                  },
+                                  "pageCacheMisses": 0,
+                                  "children": [
+                                    {
+                                      "args": {
+                                        "Details": "seed, candidate, count(DISTINCT u) AS common",
+                                        "Memory": 2105480,
+                                        "Id": 21,
+                                        "EstimatedRows": 15.618001953483848,
+                                        "PageCacheMisses": 0,
+                                        "DbHits": 0,
+                                        "Rows": 4308,
+                                        "PageCacheHits": 0
+                                      },
+                                      "pageCacheMisses": 0,
+                                      "children": [
+                                        {
+                                          "args": {
+                                            "Details": "NOT seed = candidate AND NOT r2 = r1 AND r2.score >= $autoint_1 AND candidate:Movie",
+                                            "Id": 22,
+                                            "PageCacheMisses": 0,
+                                            "EstimatedRows": 243.92198501902527,
+                                            "DbHits": 63905,
+                                            "Rows": 20817,
+                                            "PageCacheHits": 0
+                                          },
+                                          "pageCacheMisses": 0,
+                                          "children": [
+                                            {
+                                              "args": {
+                                                "Details": "(u)-[r2:RATED]->(candidate)",
+                                                "Id": 23,
+                                                "PageCacheMisses": 0,
+                                                "EstimatedRows": 684.4051207043357,
+                                                "DbHits": 43522,
+                                                "Rows": 43235,
+                                                "PageCacheHits": 0
+                                              },
+                                              "pageCacheMisses": 0,
+                                              "children": [
+                                                {
+                                                  "args": {
+                                                    "Details": "r1.score >= $autoint_0 AND u:User",
+                                                    "Id": 24,
+                                                    "PageCacheMisses": 0,
+                                                    "EstimatedRows": 4.140258673783617,
+                                                    "DbHits": 362,
+                                                    "Rows": 147,
+                                                    "PageCacheHits": 0
+                                                  },
+                                                  "pageCacheMisses": 0,
+                                                  "children": [
+                                                    {
+                                                      "args": {
+                                                        "Details": "(seed)<-[r1:RATED]-(u)",
+                                                        "Id": 25,
+                                                        "PageCacheMisses": 0,
+                                                        "EstimatedRows": 10.350646684459043,
+                                                        "DbHits": 219,
+                                                        "Rows": 215,
+                                                        "PageCacheHits": 0
+                                                      },
+                                                      "pageCacheMisses": 0,
+                                                      "children": [
+                                                        {
+                                                          "args": {
+                                                            "Details": "UNIQUE seed:Movie(movie_id) WHERE movie_id = $movie_id",
+                                                            "Id": 26,
+                                                            "PageCacheMisses": 0,
+                                                            "EstimatedRows": 0.9999999999999999,
+                                                            "DbHits": 2,
+                                                            "Rows": 1,
+                                                            "PageCacheHits": 0
+                                                          },
+                                                          "pageCacheMisses": 0,
+                                                          "dbHits": 2,
+                                                          "identifiers": [
+                                                            "seed"
+                                                          ],
+                                                          "operatorType": "NodeUniqueIndexSeek@neo4j",
+                                                          "rows": 1,
+                                                          "pageCacheHitRatio": 0.0,
+                                                          "pageCacheHits": 0
+                                                        }
+                                                      ],
+                                                      "dbHits": 219,
+                                                      "identifiers": [
+                                                        "seed",
+                                                        "r1",
+                                                        "u"
+                                                      ],
+                                                      "operatorType": "Expand(All)@neo4j",
+                                                      "rows": 215,
+                                                      "pageCacheHitRatio": 0.0,
+                                                      "pageCacheHits": 0
+                                                    }
+                                                  ],
+                                                  "dbHits": 362,
+                                                  "identifiers": [
+                                                    "seed",
+                                                    "r1",
+                                                    "u"
+                                                  ],
+                                                  "operatorType": "Filter@neo4j",
+                                                  "rows": 147,
+                                                  "pageCacheHitRatio": 0.0,
+                                                  "pageCacheHits": 0
+                                                }
+                                              ],
+                                              "dbHits": 43522,
+                                              "identifiers": [
+                                                "seed",
+                                                "u",
+                                                "r1",
+                                                "r2",
+                                                "candidate"
+                                              ],
+                                              "operatorType": "Expand(All)@neo4j",
+                                              "rows": 43235,
+                                              "pageCacheHitRatio": 0.0,
+                                              "pageCacheHits": 0
+                                            }
+                                          ],
+                                          "dbHits": 63905,
+                                          "identifiers": [
+                                            "seed",
+                                            "u",
+                                            "r1",
+                                            "r2",
+                                            "candidate"
+                                          ],
+                                          "operatorType": "Filter@neo4j",
+                                          "rows": 20817,
+                                          "pageCacheHitRatio": 0.0,
+                                          "pageCacheHits": 0
+                                        }
+                                      ],
+                                      "dbHits": 0,
+                                      "identifiers": [
+                                        "seed",
+                                        "candidate",
+                                        "common"
+                                      ],
+                                      "operatorType": "EagerAggregation@neo4j",
+                                      "rows": 4308,
+                                      "pageCacheHitRatio": 0.0,
+                                      "pageCacheHits": 0
+                                    }
+                                  ],
+                                  "dbHits": 0,
+                                  "identifiers": [
+                                    "seed",
+                                    "candidate",
+                                    "common"
+                                  ],
+                                  "operatorType": "Filter@neo4j",
+                                  "rows": 1787,
+                                  "pageCacheHitRatio": 0.0,
+                                  "pageCacheHits": 0
+                                },
+                                {
+                                  "args": {
+                                    "Details": "count(r) AS left_count",
+                                    "Memory": 24,
+                                    "Id": 16,
+                                    "EstimatedRows": 4.685400586045154,
+                                    "PageCacheMisses": 0,
+                                    "DbHits": 0,
+                                    "Rows": 1787,
+                                    "PageCacheHits": 0
+                                  },
+                                  "pageCacheMisses": 0,
+                                  "children": [
+                                    {
+                                      "args": {
+                                        "Details": "r.score >= $autoint_2 AND anon_1:User",
+                                        "Id": 17,
+                                        "PageCacheMisses": 0,
+                                        "EstimatedRows": 19.398770416524293,
+                                        "DbHits": 646894,
+                                        "Rows": 262689,
+                                        "PageCacheHits": 0
+                                      },
+                                      "pageCacheMisses": 0,
+                                      "children": [
+                                        {
+                                          "args": {
+                                            "Details": "(seed)<-[r:RATED]-(anon_1)",
+                                            "Id": 18,
+                                            "PageCacheMisses": 0,
+                                            "EstimatedRows": 48.496926041310736,
+                                            "DbHits": 391353,
+                                            "Rows": 384205,
+                                            "PageCacheHits": 0
+                                          },
+                                          "pageCacheMisses": 0,
+                                          "children": [
+                                            {
+                                              "args": {
+                                                "Details": "seed",
+                                                "Id": 19,
+                                                "PageCacheMisses": 0,
+                                                "EstimatedRows": 4.685400586045154,
+                                                "DbHits": 0,
+                                                "Rows": 1787,
+                                                "PageCacheHits": 0
+                                              },
+                                              "pageCacheMisses": 0,
+                                              "dbHits": 0,
+                                              "identifiers": [
+                                                "seed"
+                                              ],
+                                              "operatorType": "Argument@neo4j",
+                                              "rows": 1787,
+                                              "pageCacheHitRatio": 0.0,
+                                              "pageCacheHits": 0
+                                            }
+                                          ],
+                                          "dbHits": 391353,
+                                          "identifiers": [
+                                            "seed",
+                                            "r",
+                                            "anon_1"
+                                          ],
+                                          "operatorType": "Expand(All)@neo4j",
+                                          "rows": 384205,
+                                          "pageCacheHitRatio": 0.0,
+                                          "pageCacheHits": 0
+                                        }
+                                      ],
+                                      "dbHits": 646894,
+                                      "identifiers": [
+                                        "seed",
+                                        "r",
+                                        "anon_1"
+                                      ],
+                                      "operatorType": "Filter@neo4j",
+                                      "rows": 262689,
+                                      "pageCacheHitRatio": 0.0,
+                                      "pageCacheHits": 0
+                                    }
+                                  ],
+                                  "dbHits": 0,
+                                  "identifiers": [
+                                    "left_count",
+                                    "seed"
+                                  ],
+                                  "operatorType": "EagerAggregation@neo4j",
+                                  "rows": 1787,
+                                  "pageCacheHitRatio": 0.0,
+                                  "pageCacheHits": 0
+                                }
+                              ],
+                              "dbHits": 0,
+                              "identifiers": [
+                                "seed",
+                                "candidate",
+                                "common",
+                                "left_count"
+                              ],
+                              "operatorType": "Apply@neo4j",
+                              "rows": 1787,
+                              "pageCacheHitRatio": 0.0,
+                              "pageCacheHits": 0
+                            },
+                            {
+                              "args": {
+                                "Details": "count(r) AS right_count",
+                                "Memory": 24,
+                                "Id": 11,
+                                "EstimatedRows": 4.685400586045154,
+                                "PageCacheMisses": 0,
+                                "DbHits": 0,
+                                "Rows": 1787,
+                                "PageCacheHits": 0
+                              },
+                              "pageCacheMisses": 0,
+                              "children": [
+                                {
+                                  "args": {
+                                    "Details": "r.score >= $autoint_3 AND anon_2:User",
+                                    "Id": 12,
+                                    "PageCacheMisses": 0,
+                                    "EstimatedRows": 19.398770416524293,
+                                    "DbHits": 110992,
+                                    "Rows": 39579,
+                                    "PageCacheHits": 0
+                                  },
+                                  "pageCacheMisses": 0,
+                                  "children": [
+                                    {
+                                      "args": {
+                                        "Details": "(candidate)<-[r:RATED]-(anon_2)",
+                                        "Id": 13,
+                                        "PageCacheMisses": 0,
+                                        "EstimatedRows": 48.496926041310736,
+                                        "DbHits": 83661,
+                                        "Rows": 71413,
+                                        "PageCacheHits": 0
+                                      },
+                                      "pageCacheMisses": 0,
+                                      "children": [
+                                        {
+                                          "args": {
+                                            "Details": "candidate",
+                                            "Id": 14,
+                                            "PageCacheMisses": 0,
+                                            "EstimatedRows": 4.685400586045154,
+                                            "DbHits": 0,
+                                            "Rows": 1787,
+                                            "PageCacheHits": 0
+                                          },
+                                          "pageCacheMisses": 0,
+                                          "dbHits": 0,
+                                          "identifiers": [
+                                            "candidate"
+                                          ],
+                                          "operatorType": "Argument@neo4j",
+                                          "rows": 1787,
+                                          "pageCacheHitRatio": 0.0,
+                                          "pageCacheHits": 0
+                                        }
+                                      ],
+                                      "dbHits": 83661,
+                                      "identifiers": [
+                                        "candidate",
+                                        "r",
+                                        "anon_2"
+                                      ],
+                                      "operatorType": "Expand(All)@neo4j",
+                                      "rows": 71413,
+                                      "pageCacheHitRatio": 0.0,
+                                      "pageCacheHits": 0
+                                    }
+                                  ],
+                                  "dbHits": 110992,
+                                  "identifiers": [
+                                    "candidate",
+                                    "r",
+                                    "anon_2"
+                                  ],
+                                  "operatorType": "Filter@neo4j",
+                                  "rows": 39579,
+                                  "pageCacheHitRatio": 0.0,
+                                  "pageCacheHits": 0
+                                }
+                              ],
+                              "dbHits": 0,
+                              "identifiers": [
+                                "right_count",
+                                "candidate"
+                              ],
+                              "operatorType": "EagerAggregation@neo4j",
+                              "rows": 1787,
+                              "pageCacheHitRatio": 0.0,
+                              "pageCacheHits": 0
+                            }
+                          ],
+                          "dbHits": 0,
+                          "identifiers": [
+                            "right_count",
+                            "seed",
+                            "left_count",
+                            "common",
+                            "candidate"
+                          ],
+                          "operatorType": "Apply@neo4j",
+                          "rows": 1787,
+                          "pageCacheHitRatio": 0.0,
+                          "pageCacheHits": 0
+                        }
+                      ],
+                      "dbHits": 1787,
+                      "identifiers": [
+                        "seed",
+                        "score",
+                        "left_count",
+                        "common",
+                        "support",
+                        "right_count",
+                        "movie_id",
+                        "candidate"
+                      ],
+                      "operatorType": "Projection@neo4j",
+                      "rows": 1787,
+                      "pageCacheHitRatio": 0.0,
+                      "pageCacheHits": 0
+                    }
+                  ],
+                  "dbHits": 0,
+                  "identifiers": [
+                    "seed",
+                    "score",
+                    "left_count",
+                    "common",
+                    "support",
+                    "right_count",
+                    "movie_id",
+                    "candidate"
+                  ],
+                  "operatorType": "Top@neo4j",
+                  "rows": 10,
+                  "pageCacheHitRatio": 0.0,
+                  "pageCacheHits": 0
+                },
+                {
+                  "args": {
+                    "Details": "g.name AS anon_0",
+                    "Id": 4,
+                    "PageCacheMisses": 0,
+                    "EstimatedRows": 10.604915101857488,
+                    "DbHits": 41,
+                    "Rows": 41,
+                    "PageCacheHits": 0
+                  },
+                  "pageCacheMisses": 0,
+                  "children": [
+                    {
+                      "args": {
+                        "Details": "g:Genre",
+                        "Id": 5,
+                        "PageCacheMisses": 0,
+                        "EstimatedRows": 10.604915101857488,
+                        "DbHits": 41,
+                        "Rows": 41,
+                        "PageCacheHits": 0
+                      },
+                      "pageCacheMisses": 0,
+                      "children": [
+                        {
+                          "args": {
+                            "Details": "(candidate)-[anon_3:IN_GENRE]->(g)",
+                            "Id": 6,
+                            "PageCacheMisses": 0,
+                            "EstimatedRows": 10.604915101857488,
+                            "DbHits": 71,
+                            "Rows": 41,
+                            "PageCacheHits": 0
+                          },
+                          "pageCacheMisses": 0,
+                          "children": [
+                            {
+                              "args": {
+                                "Details": "candidate",
+                                "Id": 7,
+                                "PageCacheMisses": 0,
+                                "EstimatedRows": 4.685400586045154,
+                                "DbHits": 0,
+                                "Rows": 10,
+                                "PageCacheHits": 0
+                              },
+                              "pageCacheMisses": 0,
+                              "dbHits": 0,
+                              "identifiers": [
+                                "candidate"
+                              ],
+                              "operatorType": "Argument@neo4j",
+                              "rows": 10,
+                              "pageCacheHitRatio": 0.0,
+                              "pageCacheHits": 0
+                            }
+                          ],
+                          "dbHits": 71,
+                          "identifiers": [
+                            "candidate",
+                            "anon_3",
+                            "g"
+                          ],
+                          "operatorType": "Expand(All)@neo4j",
+                          "rows": 41,
+                          "pageCacheHitRatio": 0.0,
+                          "pageCacheHits": 0
+                        }
+                      ],
+                      "dbHits": 41,
+                      "identifiers": [
+                        "candidate",
+                        "anon_3",
+                        "g"
+                      ],
+                      "operatorType": "Filter@neo4j",
+                      "rows": 41,
+                      "pageCacheHitRatio": 0.0,
+                      "pageCacheHits": 0
+                    }
+                  ],
+                  "dbHits": 41,
+                  "identifiers": [
+                    "candidate",
+                    "anon_3",
+                    "g",
+                    "anon_0"
+                  ],
+                  "operatorType": "Projection@neo4j",
+                  "rows": 41,
+                  "pageCacheHitRatio": 0.0,
+                  "pageCacheHits": 0
+                }
+              ],
+              "dbHits": 0,
+              "identifiers": [
+                "seed",
+                "score",
+                "left_count",
+                "common",
+                "genres",
+                "support",
+                "right_count",
+                "movie_id",
+                "candidate"
+              ],
+              "operatorType": "RollUpApply@neo4j",
+              "rows": 10,
+              "pageCacheHitRatio": 0.0,
+              "pageCacheHits": 0
+            }
+          ],
+          "dbHits": 20,
+          "identifiers": [
+            "seed",
+            "score",
+            "left_count",
+            "common",
+            "genres",
+            "support",
+            "right_count",
+            "movie_id",
+            "candidate"
+          ],
+          "operatorType": "CacheProperties@neo4j",
+          "rows": 10,
+          "pageCacheHitRatio": 0.0,
+          "pageCacheHits": 0
+        }
+      ],
+      "dbHits": 0,
+      "identifiers": [
+        "seed",
+        "score",
+        "year",
+        "left_count",
+        "common",
+        "genres",
+        "title",
+        "support",
+        "right_count",
+        "movie_id",
+        "candidate"
+      ],
+      "operatorType": "Projection@neo4j",
+      "rows": 10,
+      "pageCacheHitRatio": 0.0,
+      "pageCacheHits": 0
+    }
+  ],
+  "dbHits": 0,
+  "identifiers": [
+    "seed",
+    "score",
+    "year",
+    "left_count",
+    "common",
+    "genres",
+    "title",
+    "support",
+    "right_count",
+    "movie_id",
+    "candidate"
+  ],
+  "operatorType": "ProduceResults@neo4j",
+  "rows": 10,
+  "pageCacheHitRatio": 0.0,
+  "pageCacheHits": 0
+}

@@ -1,0 +1,160 @@
+{
+  "experiment_code_sha256": "c2b98e50ac8f763ddbb06acfaac0190914d7617655c68c74611c3dc7fc54c86b",
+  "task": "Predict high future observed ratings; unrated pairs are not negative training labels",
+  "dataset_hash": "bb3c34d9a8f1e0cdff329186be42f1e78e49bc0385b3a1224a5a2d75c1a5b123",
+  "feature_graph_hash": "e5e5e71893a0b51928b1a4c8e276a267c96f840106e09be98c98e1102bb49a78",
+  "cutoffs": [
+    1258420900,
+    1458635162,
+    1498029445
+  ],
+  "block_sizes": [
+    60501,
+    20167,
+    10084,
+    10084
+  ],
+  "supervised_sizes": [
+    16405,
+    8498,
+    8598
+  ],
+  "features": [
+    "user_count",
+    "user_mean",
+    "movie_count",
+    "movie_mean",
+    "genre_affinity",
+    "graph_rating",
+    "supporting_seeds",
+    "cold_user",
+    "cold_movie"
+  ],
+  "seed": 42,
+  "trials": [
+    {
+      "C": 0.1,
+      "validation_average_precision": 0.7309084836925809
+    },
+    {
+      "C": 1.0,
+      "validation_average_precision": 0.7309076445103576
+    },
+    {
+      "C": 10.0,
+      "validation_average_precision": 0.7308766511633086
+    }
+  ],
+  "selected_C": 0.1,
+  "test": {
+    "n": 8598,
+    "positive_rate": 0.4801116538729937,
+    "average_precision": 0.6164980042397485,
+    "roc_auc": 0.6688907694275359,
+    "f1": 0.6773492667028789,
+    "confusion_matrix": [
+      [
+        1293,
+        3177
+      ],
+      [
+        387,
+        3741
+      ]
+    ]
+  },
+  "dummy_test": {
+    "n": 8598,
+    "positive_rate": 0.4801116538729937,
+    "average_precision": 0.4801116538729937,
+    "roc_auc": 0.5,
+    "f1": 0.6487505893446488,
+    "confusion_matrix": [
+      [
+        0,
+        4470
+      ],
+      [
+        0,
+        4128
+      ]
+    ]
+  },
+  "movie_mean_test": {
+    "n": 8598,
+    "positive_rate": 0.4801116538729937,
+    "average_precision": 0.6036163640037366,
+    "roc_auc": 0.6580645030175329,
+    "f1": 0.6618228788245741,
+    "confusion_matrix": [
+      [
+        310,
+        4160
+      ],
+      [
+        29,
+        4099
+      ]
+    ]
+  },
+  "ranking": {
+    "bayesian_popularity": {
+      "users_evaluated": 72,
+      "warm_users": 0,
+      "recall_at_10": 0.049979675803819505,
+      "ndcg_at_10": 0.2275047882624976,
+      "catalog_coverage": 0.003284746458632724,
+      "candidate_recall": null
+    },
+    "item_cf": {
+      "users_evaluated": 72,
+      "warm_users": 4,
+      "recall_at_10": 0.05031842919135338,
+      "ndcg_at_10": 0.22765725505274645,
+      "catalog_coverage": 0.005029768014781359,
+      "candidate_recall": 0.04755751845257645
+    }
+  },
+  "cold_user_test_count": 8379,
+  "cold_movie_test_count": 3316,
+  "limitations": [
+    "All feature aggregates are frozen at T0; no rolling update",
+    "Observed future ratings are selection-biased, not exposure-controlled labels",
+    "The classifier is an offline experiment, not a calibrated serving probability",
+    "Ranking treats unknown relevance as unobserved, not verified dislike"
+  ],
+  "warm_test": {
+    "n": 219,
+    "positive_rate": 0.7168949771689498,
+    "average_precision": 0.8148643712530561,
+    "roc_auc": 0.6847133757961784,
+    "f1": 0.5112107623318386,
+    "confusion_matrix": [
+      [
+        53,
+        9
+      ],
+      [
+        100,
+        57
+      ]
+    ]
+  },
+  "cold_test": {
+    "n": 8379,
+    "positive_rate": 0.47392290249433106,
+    "average_precision": 0.6166738472546658,
+    "roc_auc": 0.6774024620878867,
+    "f1": 0.6807724290862053,
+    "confusion_matrix": [
+      [
+        1240,
+        3168
+      ],
+      [
+        287,
+        3684
+      ]
+    ]
+  }
+}

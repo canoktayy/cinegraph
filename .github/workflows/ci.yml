@@ -1,0 +1,56 @@
+name: Quality
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: moviegraph-quality-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m black --check app scripts tests
+      - run: python -m pylint --rcfile=.pylintrc --fail-under=9.5 app scripts
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: make install setup
+      - name: Start real Neo4j, API and proxy
+        run: make docker-run
+      - name: Seed the real documented dataset
+        run: make download seed analytics
+      - name: Verify idempotency
+        run: make seed validate-data
+      - name: Unit, API, Cypher and GDS integration tests
+        run: make test demo
+      - name: Save coverage and real test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-evidence
+          path: |
+            coverage.xml
+            htmlcov/
+            artifacts/reports/
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose logs --tail 80
+      - name: Stop disposable CI containers
+        if: always()
+        run: docker compose down -v

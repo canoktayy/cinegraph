@@ -1,0 +1,68 @@
+[
+  {
+    "path": "/health/live",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/health/ready",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/docs",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/openapi.json",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/api/system/status",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/api/movies/1/similar",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/api/users/42/recommendations",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/api/users/42/discover",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/api/movies/trending",
+    "status": 200,
+    "expected": 200,
+    "passed": true
+  },
+  {
+    "path": "/api/movies?limit=99999",
+    "status": 422,
+    "expected": 422,
+    "passed": true
+  },
+  {
+    "path": "/api/users/999999/recommendations",
+    "status": 404,
+    "expected": 404,
+    "passed": true
+  }
+]

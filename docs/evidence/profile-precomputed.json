@@ -1,0 +1,440 @@
+{
+  "args": {
+    "Order": "score DESC, support DESC, movie_id ASC",
+    "GlobalMemory": 3016,
+    "planner-impl": "IDP",
+    "Memory": 0,
+    "string-representation": "Cypher 5\n\nPlanner COST\n\nRuntime SLOTTED\n\nRuntime version 5.26\n\n+------------------------+----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| Operator               | Id | Details                                                                              | Estimated Rows | Rows | DB Hits | Memory (Bytes) | Page Cache Hits/Misses | Ordered by                             |\n+------------------------+----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| +ProduceResults        |  0 | movie_id, title, year, genres, score, support                                        |              0 |   10 |       0 |              0 |                    0/0 |                                        |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+                                        |\n| +Projection            |  1 | cache[candidate.year] AS year, cache[candidate.title] AS title                       |              0 |   10 |       0 |                |                    0/0 |                                        |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+                                        |\n| +CacheProperties       |  2 | cache[candidate.year], cache[candidate.title]                                        |              0 |   10 |      20 |                |                    0/0 |                                        |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+                                        |\n| +RollUpApply           |  3 | genres, anon_0                                                                       |              0 |   10 |       0 |                |                    0/0 | score DESC, support DESC, movie_id ASC |\n| |\\                     +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| | +Projection          |  4 | g.name AS anon_0                                                                     |              1 |   41 |      41 |                |                    0/0 |                                        |\n| | |                    +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| | +Filter              |  5 | g:Genre                                                                              |              1 |   41 |      41 |                |                    0/0 |                                        |\n| | |                    +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| | +Expand(All)         |  6 | (candidate)-[anon_3:IN_GENRE]->(g)                                                   |              1 |   41 |      71 |                |                    0/0 |                                        |\n| | |                    +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| | +Argument            |  7 | candidate                                                                            |              0 |   10 |       0 |                |                    0/0 |                                        |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| +Top                   |  8 | score DESC, support DESC, movie_id ASC LIMIT $limit                                  |              0 |   10 |       0 |           2928 |                    0/0 | score DESC, support DESC, movie_id ASC |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| +Projection            |  9 | cache[s.score] AS score, cache[s.support] AS support, candidate.movie_id AS movie_id |              0 |   20 |      20 |                |                    0/0 |                                        |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| +CacheProperties       | 10 | cache[s.score], cache[s.support]                                                     |              0 |   20 |      40 |                |                    0/0 |                                        |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| +SelectOrSemiApply     | 11 | $genre IS NULL                                                                       |              0 |   20 |       0 |                |                    0/0 |                                        |\n| |\\                     +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| | +Expand(Into)        | 12 | (candidate)-[anon_1:IN_GENRE]->(anon_2)                                              |              0 |    0 |       0 |                |                    0/0 |                                        |\n| | |                    +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| | +NodeUniqueIndexSeek | 13 | UNIQUE anon_2:Genre(name) WHERE name = $genre                                        |              0 |    0 |       0 |                |                    0/0 |                                        |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| +Filter                | 14 | s.run_id = $run_id AND candidate:Movie                                               |              0 |   20 |      60 |                |                    0/0 |                                        |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| +Expand(All)           | 15 | (seed)-[s:SIMILAR_TO]->(candidate)                                                   |              7 |   40 |      46 |                |                    0/0 |                                        |\n| |                      +----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n| +NodeUniqueIndexSeek   | 16 | UNIQUE seed:Movie(movie_id) WHERE movie_id = $movie_id                               |              1 |    1 |       2 |                |                    0/0 |                                        |\n+------------------------+----+--------------------------------------------------------------------------------------+----------------+------+---------+----------------+------------------------+----------------------------------------+\n\nTotal database accesses: 341, total allocated memory: 3016\n",
+    "runtime": "SLOTTED",
+    "runtime-impl": "SLOTTED",
+    "version": "5",
+    "DbHits": 0,
+    "Details": "movie_id, title, year, genres, score, support",
+    "planner-version": "5.26",
+    "runtime-version": "5.26",
+    "Id": 0,
+    "EstimatedRows": 0.2717026822395595,
+    "planner": "COST",
+    "PageCacheMisses": 0,
+    "Rows": 10,
+    "PageCacheHits": 0
+  },
+  "pageCacheMisses": 0,
+  "children": [
+    {
+      "args": {
+        "Order": "score DESC, support DESC, movie_id ASC",
+        "Details": "cache[candidate.year] AS year, cache[candidate.title] AS title",
+        "Id": 1,
+        "PageCacheMisses": 0,
+        "EstimatedRows": 0.2717026822395595,
+        "DbHits": 0,
+        "Rows": 10,
+        "PageCacheHits": 0
+      },
+      "pageCacheMisses": 0,
+      "children": [
+        {
+          "args": {
+            "Order": "score DESC, support DESC, movie_id ASC",
+            "Details": "cache[candidate.year], cache[candidate.title]",
+            "Id": 2,
+            "PageCacheMisses": 0,
+            "EstimatedRows": 0.2717026822395595,
+            "DbHits": 20,
+            "Rows": 10,
+            "PageCacheHits": 0
+          },
+          "pageCacheMisses": 0,
+          "children": [
+            {
+              "args": {
+                "Order": "score DESC, support DESC, movie_id ASC",
+                "Details": "genres, anon_0",
+                "Id": 3,
+                "PageCacheMisses": 0,
+                "EstimatedRows": 0.2717026822395595,
+                "DbHits": 0,
+                "Rows": 10,
+                "PageCacheHits": 0
+              },
+              "pageCacheMisses": 0,
+              "children": [
+                {
+                  "args": {
+                    "Order": "score DESC, support DESC, movie_id ASC",
+                    "Details": "score DESC, support DESC, movie_id ASC LIMIT $limit",
+                    "Memory": 2928,
+                    "Id": 8,
+                    "EstimatedRows": 0.2717026822395595,
+                    "PageCacheMisses": 0,
+                    "DbHits": 0,
+                    "Rows": 10,
+                    "PageCacheHits": 0
+                  },
+                  "pageCacheMisses": 0,
+                  "children": [
+                    {
+                      "args": {
+                        "Details": "cache[s.score] AS score, cache[s.support] AS support, candidate.movie_id AS movie_id",
+                        "Id": 9,
+                        "PageCacheMisses": 0,
+                        "EstimatedRows": 0.2717026822395595,
+                        "DbHits": 20,
+                        "Rows": 20,
+                        "PageCacheHits": 0
+                      },
+                      "pageCacheMisses": 0,
+                      "children": [
+                        {
+                          "args": {
+                            "Details": "cache[s.score], cache[s.support]",
+                            "Id": 10,
+                            "PageCacheMisses": 0,
+                            "EstimatedRows": 0.345709299938411,
+                            "DbHits": 40,
+                            "Rows": 20,
+                            "PageCacheHits": 0
+                          },
+                          "pageCacheMisses": 0,
+                          "children": [
+                            {
+                              "args": {
+                                "Details": "$genre IS NULL",
+                                "Id": 11,
+                                "PageCacheMisses": 0,
+                                "EstimatedRows": 0.345709299938411,
+                                "DbHits": 0,
+                                "Rows": 20,
+                                "PageCacheHits": 0
+                              },
+                              "pageCacheMisses": 0,
+                              "children": [
+                                {
+                                  "args": {
+                                    "Details": "s.run_id = $run_id AND candidate:Movie",
+                                    "Id": 14,
+                                    "PageCacheMisses": 0,
+                                    "EstimatedRows": 0.345709299938411,
+                                    "DbHits": 60,
+                                    "Rows": 20,
+                                    "PageCacheHits": 0
+                                  },
+                                  "pageCacheMisses": 0,
+                                  "children": [
+                                    {
+                                      "args": {
+                                        "Details": "(seed)-[s:SIMILAR_TO]->(candidate)",
+                                        "Id": 15,
+                                        "PageCacheMisses": 0,
+                                        "EstimatedRows": 6.91418599876822,
+                                        "DbHits": 46,
+                                        "Rows": 40,
+                                        "PageCacheHits": 0
+                                      },
+                                      "pageCacheMisses": 0,
+                                      "children": [
+                                        {
+                                          "args": {
+                                            "Details": "UNIQUE seed:Movie(movie_id) WHERE movie_id = $movie_id",
+                                            "Id": 16,
+                                            "PageCacheMisses": 0,
+                                            "EstimatedRows": 0.9999999999999999,
+                                            "DbHits": 2,
+                                            "Rows": 1,
+                                            "PageCacheHits": 0
+                                          },
+                                          "pageCacheMisses": 0,
+                                          "dbHits": 2,
+                                          "identifiers": [
+                                            "seed"
+                                          ],
+                                          "operatorType": "NodeUniqueIndexSeek@neo4j",
+                                          "rows": 1,
+                                          "pageCacheHitRatio": 0.0,
+                                          "pageCacheHits": 0
+                                        }
+                                      ],
+                                      "dbHits": 46,
+                                      "identifiers": [
+                                        "seed",
+                                        "s",
+                                        "candidate"
+                                      ],
+                                      "operatorType": "Expand(All)@neo4j",
+                                      "rows": 40,
+                                      "pageCacheHitRatio": 0.0,
+                                      "pageCacheHits": 0
+                                    }
+                                  ],
+                                  "dbHits": 60,
+                                  "identifiers": [
+                                    "seed",
+                                    "s",
+                                    "candidate"
+                                  ],
+                                  "operatorType": "Filter@neo4j",
+                                  "rows": 20,
+                                  "pageCacheHitRatio": 0.0,
+                                  "pageCacheHits": 0
+                                },
+                                {
+                                  "args": {
+                                    "Details": "(candidate)-[anon_1:IN_GENRE]->(anon_2)",
+                                    "Id": 12,
+                                    "PageCacheMisses": 0,
+                                    "EstimatedRows": 0.041182995297852826,
+                                    "DbHits": 0,
+                                    "Rows": 0,
+                                    "PageCacheHits": 0
+                                  },
+                                  "pageCacheMisses": 0,
+                                  "children": [
+                                    {
+                                      "args": {
+                                        "Details": "UNIQUE anon_2:Genre(name) WHERE name = $genre",
+                                        "Id": 13,
+                                        "PageCacheMisses": 0,
+                                        "EstimatedRows": 0.345709299938411,
+                                        "DbHits": 0,
+                                        "Rows": 0,
+                                        "PageCacheHits": 0
+                                      },
+                                      "pageCacheMisses": 0,
+                                      "dbHits": 0,
+                                      "identifiers": [
+                                        "candidate",
+                                        "anon_2"
+                                      ],
+                                      "operatorType": "NodeUniqueIndexSeek@neo4j",
+                                      "rows": 0,
+                                      "pageCacheHitRatio": 0.0,
+                                      "pageCacheHits": 0
+                                    }
+                                  ],
+                                  "dbHits": 0,
+                                  "identifiers": [
+                                    "candidate",
+                                    "anon_2",
+                                    "anon_1"
+                                  ],
+                                  "operatorType": "Expand(Into)@neo4j",
+                                  "rows": 0,
+                                  "pageCacheHitRatio": 0.0,
+                                  "pageCacheHits": 0
+                                }
+                              ],
+                              "dbHits": 0,
+                              "identifiers": [
+                                "seed",
+                                "s",
+                                "candidate"
+                              ],
+                              "operatorType": "SelectOrSemiApply@neo4j",
+                              "rows": 20,
+                              "pageCacheHitRatio": 0.0,
+                              "pageCacheHits": 0
+                            }
+                          ],
+                          "dbHits": 40,
+                          "identifiers": [
+                            "seed",
+                            "s",
+                            "candidate"
+                          ],
+                          "operatorType": "CacheProperties@neo4j",
+                          "rows": 20,
+                          "pageCacheHitRatio": 0.0,
+                          "pageCacheHits": 0
+                        }
+                      ],
+                      "dbHits": 20,
+                      "identifiers": [
+                        "seed",
+                        "score",
+                        "s",
+                        "support",
+                        "movie_id",
+                        "candidate"
+                      ],
+                      "operatorType": "Projection@neo4j",
+                      "rows": 20,
+                      "pageCacheHitRatio": 0.0,
+                      "pageCacheHits": 0
+                    }
+                  ],
+                  "dbHits": 0,
+                  "identifiers": [
+                    "seed",
+                    "score",
+                    "s",
+                    "support",
+                    "movie_id",
+                    "candidate"
+                  ],
+                  "operatorType": "Top@neo4j",
+                  "rows": 10,
+                  "pageCacheHitRatio": 0.0,
+                  "pageCacheHits": 0
+                },
+                {
+                  "args": {
+                    "Details": "g.name AS anon_0",
+                    "Id": 4,
+                    "PageCacheMisses": 0,
+                    "EstimatedRows": 0.6149706572964779,
+                    "DbHits": 41,
+                    "Rows": 41,
+                    "PageCacheHits": 0
+                  },
+                  "pageCacheMisses": 0,
+                  "children": [
+                    {
+                      "args": {
+                        "Details": "g:Genre",
+                        "Id": 5,
+                        "PageCacheMisses": 0,
+                        "EstimatedRows": 0.6149706572964779,
+                        "DbHits": 41,
+                        "Rows": 41,
+                        "PageCacheHits": 0
+                      },
+                      "pageCacheMisses": 0,
+                      "children": [
+                        {
+                          "args": {
+                            "Details": "(candidate)-[anon_3:IN_GENRE]->(g)",
+                            "Id": 6,
+                            "PageCacheMisses": 0,
+                            "EstimatedRows": 0.6149706572964779,
+                            "DbHits": 71,
+                            "Rows": 41,
+                            "PageCacheHits": 0
+                          },
+                          "pageCacheMisses": 0,
+                          "children": [
+                            {
+                              "args": {
+                                "Details": "candidate",
+                                "Id": 7,
+                                "PageCacheMisses": 0,
+                                "EstimatedRows": 0.2717026822395595,
+                                "DbHits": 0,
+                                "Rows": 10,
+                                "PageCacheHits": 0
+                              },
+                              "pageCacheMisses": 0,
+                              "dbHits": 0,
+                              "identifiers": [
+                                "candidate"
+                              ],
+                              "operatorType": "Argument@neo4j",
+                              "rows": 10,
+                              "pageCacheHitRatio": 0.0,
+                              "pageCacheHits": 0
+                            }
+                          ],
+                          "dbHits": 71,
+                          "identifiers": [
+                            "candidate",
+                            "anon_3",
+                            "g"
+                          ],
+                          "operatorType": "Expand(All)@neo4j",
+                          "rows": 41,
+                          "pageCacheHitRatio": 0.0,
+                          "pageCacheHits": 0
+                        }
+                      ],
+                      "dbHits": 41,
+                      "identifiers": [
+                        "candidate",
+                        "anon_3",
+                        "g"
+                      ],
+                      "operatorType": "Filter@neo4j",
+                      "rows": 41,
+                      "pageCacheHitRatio": 0.0,
+                      "pageCacheHits": 0
+                    }
+                  ],
+                  "dbHits": 41,
+                  "identifiers": [
+                    "candidate",
+                    "anon_3",
+                    "g",
+                    "anon_0"
+                  ],
+                  "operatorType": "Projection@neo4j",
+                  "rows": 41,
+                  "pageCacheHitRatio": 0.0,
+                  "pageCacheHits": 0
+                }
+              ],
+              "dbHits": 0,
+              "identifiers": [
+                "seed",
+                "score",
+                "genres",
+                "s",
+                "support",
+                "movie_id",
+                "candidate"
+              ],
+              "operatorType": "RollUpApply@neo4j",
+              "rows": 10,
+              "pageCacheHitRatio": 0.0,
+              "pageCacheHits": 0
+            }
+          ],
+          "dbHits": 20,
+          "identifiers": [
+            "seed",
+            "score",
+            "genres",
+            "s",
+            "support",
+            "movie_id",
+            "candidate"
+          ],
+          "operatorType": "CacheProperties@neo4j",
+          "rows": 10,
+          "pageCacheHitRatio": 0.0,
+          "pageCacheHits": 0
+        }
+      ],
+      "dbHits": 0,
+      "identifiers": [
+        "seed",
+        "score",
+        "year",
+        "genres",
+        "title",
+        "s",
+        "support",
+        "movie_id",
+        "candidate"
+      ],
+      "operatorType": "Projection@neo4j",
+      "rows": 10,
+      "pageCacheHitRatio": 0.0,
+      "pageCacheHits": 0
+    }
+  ],
+  "dbHits": 0,
+  "identifiers": [
+    "seed",
+    "score",
+    "year",
+    "genres",
+    "title",
+    "s",
+    "support",
+    "movie_id",
+    "candidate"
+  ],
+  "operatorType": "ProduceResults@neo4j",
+  "rows": 10,
+  "pageCacheHitRatio": 0.0,
+  "pageCacheHits": 0
+}
