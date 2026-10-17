@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from app.agent.plans import QueryPlan
 from app.config import Settings
 from app.main import app, service
+from neo4j.exceptions import ServiceUnavailable
 from tests.fakes import fake_service
 
 
@@ -66,6 +67,14 @@ def test_bad_filters(client, path):
 def test_readiness_requires_seed(client):
     client[1].repository.seeded = False
     assert client[0].get("/health/ready").status_code == 503
+
+
+def test_readiness_returns_safe_dependency_error(client, monkeypatch):
+    monkeypatch.setattr(client[1].repository.store, "healthy", Mock(side_effect=ServiceUnavailable("private topology")))
+    response = client[0].get("/health/ready")
+    assert response.status_code == 503
+    assert response.json()["code"] == "database_unavailable"
+    assert "private topology" not in response.text
 
 
 def test_ask_auth_and_guardrail(client):

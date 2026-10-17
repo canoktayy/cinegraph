@@ -1,6 +1,7 @@
 """Short-lived Neo4j sessions and bounded database transactions."""
 
 from neo4j import GraphDatabase, Query, READ_ACCESS
+from neo4j.exceptions import ServiceUnavailable
 
 from app.config import Settings
 
@@ -23,8 +24,14 @@ class GraphStore:
 
     def read(self, text: str, parameters: dict | None = None) -> list[dict]:
         """Execute application-owned read Cypher, never unvalidated model text."""
-        with self.driver.session(database=self.settings.neo4j_database, default_access_mode=READ_ACCESS) as session:
-            return session.run(Query(text, timeout=self.settings.query_timeout_seconds), parameters or {}).data()
+        try:
+            with self.driver.session(database=self.settings.neo4j_database, default_access_mode=READ_ACCESS) as session:
+                return session.run(Query(text, timeout=self.settings.query_timeout_seconds), parameters or {}).data()
+        except ValueError as error:
+            # The pinned Neo4j driver reports Docker DNS loss as ValueError, not ServiceUnavailable.
+            if str(error).startswith("Cannot resolve address "):
+                raise ServiceUnavailable("Graph database address is temporarily unavailable") from error
+            raise
 
     def write(self, text: str, parameters: dict | None = None) -> list[dict]:
         """Run a trusted schema/import/batch statement outside the LLM surface."""

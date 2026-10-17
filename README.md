@@ -25,6 +25,8 @@ Project 4, **Movie Recommender in Production — Level 2**, AIDAMS 3A. See the [
 
 ## Start here
 
+[Türkçe başlangıç rehberi](docs/START_HERE_TR.md).
+
 Prerequisites: Python **3.12+**, Docker Desktop/Engine with Compose v2, Git and approximately 4–6 GB of Docker memory. Ports are deliberately nonstandard to avoid colliding with other local projects: UI **18080**, Neo4j Browser **17474**, Bolt **17687**. No cloud Neo4j account is required.
 
 ```bash
@@ -152,7 +154,7 @@ This is an educational/research project. MovieLens data and transformed distribu
 
 ## ML and performance evidence
 
-`make train` runs a chronological frozen-history experiment. G0 uses the earliest ~60%; later ~20/10/10% supply train/validation/test labels. Equal timestamps stay together. All features derive from G0; production full-data GDS output is never read. Train-only preprocessing and validation-only hyperparameter selection prevent target leakage. High future ratings are positive, low observed ratings negative, 3.5 excluded; missing pairs are not invented negatives.
+`make train` runs a chronological frozen-history experiment. G0 uses the earliest ~60%; later ~20/10/10% supply train/validation/test labels. Equal timestamps stay together. Rating-derived features use G0 only; static movie/genre catalog metadata is assumed available, and historical release-time availability is not simulated. Production full-data GDS output is never read. Train-only preprocessing and validation-only hyperparameter selection prevent target leakage. High future ratings are positive, low observed ratings negative, 3.5 excluded; missing pairs are not invented negatives.
 
 The experiment reports average precision, ROC-AUC, F1/confusion matrix, warm/cold cohorts and dummy/movie-mean baselines. Full-catalog Recall@10, NDCG@10, candidate recall and catalog coverage compare a Bayesian baseline with frozen item CF. Global chronology produces heavy cold-start conditions; interpret the cohort counts, not only one headline metric. The classifier is not promoted into serving just because it exists.
 
