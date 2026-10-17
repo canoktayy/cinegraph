@@ -101,6 +101,17 @@ ORDER BY score DESC, movie_id ASC LIMIT $limit
 """
 )
 
+USER_FAVOURITES = (
+    """
+MATCH (:User {user_id: $user_id})-[r:RATED]->(candidate:Movie)
+WHERE r.score >= 4
+RETURN """
+    + MOVIE_FIELDS
+    + """, r.score AS score, r.timestamp AS rated_at
+ORDER BY score DESC, rated_at DESC, movie_id ASC LIMIT $limit
+"""
+)
+
 EVIDENCE = """
 MATCH (u:User {user_id:$user_id})-[r:RATED]->(seed:Movie)
 WHERE r.score >= 4

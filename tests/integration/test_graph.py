@@ -165,3 +165,16 @@ def test_assistant_tool_switch_and_comedy_filter_use_real_graph(store):
     )
     assert result["items"]
     assert all(reason["seed_id"] == choices[0] for row in result["items"] for reason in row["reasons"])
+
+
+def test_rater_favourites_are_their_own_high_ratings_in_order(store):
+    service = RecommendationService(CatalogRepository(store))
+    items = service.favourites(42, 8).items
+    rated = {
+        row["movie_id"]: row["score"]
+        for row in store.read(
+            "MATCH (:User {user_id:42})-[r:RATED]->(m) RETURN m.movie_id AS movie_id, r.score AS score"
+        )
+    }
+    assert items and all(rated[movie.movie_id] == movie.score >= 4 for movie in items)
+    assert [movie.score for movie in items] == sorted((movie.score for movie in items), reverse=True)
