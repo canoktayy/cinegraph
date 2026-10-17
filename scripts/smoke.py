@@ -20,6 +20,8 @@ def main():
         "/api/users/42/recommendations",
         "/api/users/42/discover",
         "/api/movies/trending",
+        "/api/movies?offset=9736",
+        "/api/taste/rounds?seed=42",
         "/api/movies?limit=99999",
         "/api/users/999999/recommendations",
     ]
@@ -36,6 +38,29 @@ def main():
                     "passed": response.status_code == expected,
                 }
             )
+        options = client.get("/api/taste/rounds?seed=42").json().get("rounds", [])
+        picks = [group[0]["movie_id"] for group in options if group]
+        personal = client.post("/api/taste/recommendations", json={"movie_ids": picks})
+        items = personal.json().get("items", [])
+        passed = (
+            personal.status_code == 200
+            and len(options) == 10
+            and all(len(group) == 5 for group in options)
+            and len(set(picks)) == 10
+            and bool(items)
+            and not set(picks) & {item["movie_id"] for item in items}
+            and all(
+                item.get("reasons") and all(reason["seed_id"] in picks for reason in item["reasons"]) for item in items
+            )
+        )
+        results.append(
+            {
+                "path": "POST /api/taste/recommendations",
+                "status": personal.status_code,
+                "expected": 200,
+                "passed": passed,
+            }
+        )
         recommendations = client.get("/api/users/42/recommendations").json()
         if recommendations.get("items"):
             movie_id = recommendations["items"][0]["movie_id"]

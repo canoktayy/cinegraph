@@ -178,3 +178,47 @@ def test_missing_identity_requests_clarification(monkeypatch):
     with pytest.raises(HTTPException) as error:
         LLMClient(Settings()).plan(AskRequest(question="Recommend movies"), [])
     assert error.value.status_code == 422
+
+
+def test_conflicting_literal_user_and_context_fail_before_provider(monkeypatch):
+    post = Mock(return_value=response('{"intent":"recommend_movies","user_id":42}'))
+    monkeypatch.setattr("app.agent.client.httpx.post", post)
+    with pytest.raises(HTTPException) as error:
+        LLMClient(Settings()).plan(AskRequest(question="Recommend for user 1", user_id=42), [])
+    assert error.value.status_code == 422
+    post.assert_not_called()
+
+
+def test_multiple_movie_identities_require_clarification(monkeypatch):
+    post = Mock(return_value=response('{"intent":"similar_movies","movie_id":1}'))
+    monkeypatch.setattr("app.agent.client.httpx.post", post)
+    with pytest.raises(HTTPException) as error:
+        LLMClient(Settings()).plan(AskRequest(question="Compare movie 1 and movie 2"), [])
+    assert error.value.status_code == 422
+    post.assert_not_called()
+
+
+@pytest.mark.parametrize("description", ["Comedy", "science fiction", "bilim kurgu"])
+def test_explicit_count_with_genre_is_not_expanded(monkeypatch, description):
+    post = Mock(return_value=response('{"intent":"recommend_movies","user_id":42,"limit":50}'))
+    monkeypatch.setattr("app.agent.client.httpx.post", post)
+    result = LLMClient(Settings()).plan(
+        AskRequest(question=f"Recommend 3 {description} movies for user 42", limit=50), ["Comedy", "Sci-Fi"]
+    )
+    assert result.limit == 3
+
+
+def test_identity_number_and_time_window_are_not_result_counts(monkeypatch):
+    post = Mock(return_value=response('{"intent":"recommend_movies","user_id":1,"limit":10}'))
+    monkeypatch.setattr("app.agent.client.httpx.post", post)
+    result = LLMClient(Settings()).plan(AskRequest(question="For user 1 similar movies"), ["Drama"])
+    assert result.limit == 10
+    post.return_value = response('{"intent":"historical_trending","limit":10}')
+    result = LLMClient(Settings()).plan(AskRequest(question="Rank movies from the last 365 days"), [])
+    assert result.limit == 10
+
+
+@pytest.mark.parametrize("intent", ["historical_trending", "similar_movies"])
+def test_global_and_movie_queries_ignore_an_unused_unknown_user(intent):
+    _, _, parameters = compile_plan(QueryPlan(intent=intent, user_id=999, movie_id=1), fake_service())
+    assert parameters["user_id"] is None

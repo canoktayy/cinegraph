@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from app.agent.plans import QueryPlan
 from app.config import Settings
-from app.models import AskRequest
+from app.models import MAX_GRAPH_ID, AskRequest
 
 SYSTEM_PROMPT = """You translate movie catalog questions into one JSON QueryPlan.
 Only these intents exist: similar_movies, recommend_movies, discover_movies,
@@ -42,9 +42,16 @@ def explicit_entities(request: AskRequest) -> dict:
         ("user_id", r"\b(?:user|kullanıcı|kullanici)\s*(?:id\s*[:#]?\s*)?(\d+)\b"),
         ("movie_id", r"\b(?:movie|film)\s*(?:id\s*[:#]?\s*)?(\d+)\b"),
     ):
-        match = re.search(pattern, request.question, flags=re.I)
-        if match and entities.get(field) is None:
-            entities[field] = int(match.group(1))
+        values = {int(value) for value in re.findall(pattern, request.question, flags=re.I)}
+        if len(values) > 1:
+            raise HTTPException(422, f"Please specify a single {field.replace('_', ' ')}")
+        if values:
+            value = values.pop()
+            if not 1 <= value <= MAX_GRAPH_ID:
+                raise HTTPException(422, "Movie and user IDs must be positive signed 64-bit integers")
+            if entities.get(field) is not None and entities[field] != value:
+                raise HTTPException(422, "Question user ID conflicts with the selected demo user; make them match")
+            entities[field] = value
     return {key: value for key, value in entities.items() if value is not None}
 
 
@@ -64,7 +71,12 @@ def bind_explicit_fields(payload: dict, request: AskRequest, genres: list[str]) 
         payload["genre"] = "Sci-Fi"
     if "pagerank" in question and payload.get("metric", "rating") in {"rating", "pagerank"}:
         payload["metric"] = "pagerank"
-    count = re.search(r"\b(\d+)\s+(?:(?:similar|sci-fi|benzer)\s+)?(?:movies|films|film)\b", question)
+    modifiers = "|".join(
+        re.escape(word.casefold()) for word in [*genres, "similar", "benzer", "science fiction", "bilim kurgu"]
+    )
+    counts = re.finditer(r"\b(\d+)\s+(?:(?:" + modifiers + r")\s+)*(?:movies|films|film)\b", question)
+    identity_prefix = r"\b(?:movie|film|user|kullanıcı|kullanici)\s*(?:id\s*[:#]?\s*)?$"
+    count = next((match for match in counts if not re.search(identity_prefix, question[: match.start()])), None)
     if count and not 1 <= int(count.group(1)) <= 50:
         raise HTTPException(422, "Requested result count must be between 1 and 50")
     if isinstance(payload.get("limit", 10), int) and 1 <= payload.get("limit", 10) <= 50:

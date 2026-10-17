@@ -8,7 +8,7 @@ from time import monotonic
 from typing import Annotated, Literal
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Path as PathParameter, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from neo4j.exceptions import Neo4jError, ServiceUnavailable, SessionExpired
@@ -17,7 +17,7 @@ from app.agent.client import LLMClient
 from app.agent.workflow import answer
 from app.config import get_settings
 from app.database import GraphStore
-from app.models import AskRequest, AskResponse, ExplanationResponse, RankingResponse
+from app.models import MAX_GRAPH_ID, AskRequest, AskResponse, ExplanationResponse, RankingResponse
 from app.repository import CatalogRepository
 from app.services import RecommendationService
 from app.taste import TasteRequest, recommend as taste_recommend, rounds as taste_rounds
@@ -36,7 +36,7 @@ async def lifespan(application: FastAPI):
 
 app = FastAPI(
     title="MovieGraph",
-    version="1.0.0",
+    version="1.1.1",
     lifespan=lifespan,
     description="Evidence-backed movie recommendations. Scores are not confidence probabilities.",
 )
@@ -50,6 +50,7 @@ def service(request: Request) -> RecommendationService:
 
 Service = Annotated[RecommendationService, Depends(service)]
 Limit = Annotated[int, Query(ge=1, le=50)]
+Identifier = Annotated[int, PathParameter(gt=0, le=MAX_GRAPH_ID)]
 
 
 @app.middleware("http")
@@ -134,7 +135,7 @@ def movies(
     genre: str | None = None,
     year: Annotated[int | None, Query(ge=1800, le=2200)] = None,
     limit: Limit = 20,
-    offset: Annotated[int, Query(ge=0, le=1000)] = 0,
+    offset: Annotated[int, Query(ge=0, le=10000)] = 0,
 ):
     """Full-text catalog search with bounded stable pagination."""
     return {
@@ -156,13 +157,13 @@ def trending(
 
 
 @app.get("/api/movies/{movie_id}/similar", response_model=RankingResponse, tags=["Recommendations"])
-def similar(movie_id: int, recommender: Service, limit: Limit = 10):
+def similar(movie_id: Identifier, recommender: Service, limit: Limit = 10):
     """Find films liked by overlapping users, with support shrinkage."""
     return recommender.similar(movie_id, limit)
 
 
 @app.get("/api/users/{user_id}/recommendations", response_model=RankingResponse, tags=["Recommendations"])
-def recommendations(user_id: int, recommender: Service, genre: str | None = None, limit: Limit = 10):
+def recommendations(user_id: Identifier, recommender: Service, genre: str | None = None, limit: Limit = 10):
     """Weighted item-CF recommendations excluding every previously rated film."""
     if genre and genre not in recommender.repository.genres():
         raise HTTPException(422, "Unknown genre")
@@ -170,7 +171,7 @@ def recommendations(user_id: int, recommender: Service, genre: str | None = None
 
 
 @app.get("/api/users/{user_id}/discover", response_model=RankingResponse, tags=["Recommendations"])
-def discover(user_id: int, recommender: Service, limit: Limit = 10):
+def discover(user_id: Identifier, recommender: Service, limit: Limit = 10):
     """Community-based discovery using the active Louvain run."""
     return recommender.discover(user_id, limit)
 
@@ -178,7 +179,7 @@ def discover(user_id: int, recommender: Service, limit: Limit = 10):
 @app.get(
     "/api/users/{user_id}/recommendations/{movie_id}/explanation", response_model=ExplanationResponse, tags=["Evidence"]
 )
-def explanation(user_id: int, movie_id: int, recommender: Service):
+def explanation(user_id: Identifier, movie_id: Identifier, recommender: Service):
     """Return exact rating/similarity paths and their score contributions."""
     return recommender.explanation(user_id, movie_id)
 

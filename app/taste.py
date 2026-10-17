@@ -1,18 +1,20 @@
 """Stateless visitor taste discovery over the existing versioned movie graph."""
 
 from random import Random
+from typing import Annotated
 
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app import queries
+from app.models import MAX_GRAPH_ID
 
 
 class TasteRequest(BaseModel):
     """Positive selections only: unchosen alternatives are not negative ratings."""
 
     model_config = ConfigDict(extra="forbid")
-    movie_ids: list[int] = Field(min_length=1, max_length=10)
+    movie_ids: list[Annotated[int, Field(gt=0, le=MAX_GRAPH_ID, strict=True)]] = Field(min_length=1, max_length=10)
     genre: str | None = None
     limit: int = Field(default=8, ge=1, le=20)
 
@@ -41,7 +43,7 @@ UNWIND $movie_ids AS seed_id
 MATCH (seed:Movie {movie_id:seed_id})-[s:SIMILAR_TO]->(candidate:Movie)
 WHERE s.run_id=$run_id AND s.score>0 AND NOT candidate.movie_id IN $movie_ids
 AND ($genre IS NULL OR EXISTS { MATCH (candidate)-[:IN_GENRE]->(:Genre {name:$genre}) })
-WITH candidate, sum(s.score)/size($movie_ids) AS score,
+WITH candidate, round(sum(s.score)/size($movie_ids), 8) AS score,
 count(DISTINCT seed) AS supporting_seeds, sum(s.support) AS support,
 collect({seed_id:seed.movie_id, seed_title:seed.title, similarity:s.score, support:s.support}) AS reasons
 RETURN """

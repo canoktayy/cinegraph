@@ -5,6 +5,9 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
+MAX_GRAPH_ID = 2**63 - 1
+
+
 class Movie(BaseModel):
     """Catalog identity independent of a possibly ambiguous film title."""
 
@@ -65,7 +68,7 @@ class AskRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=1000)
-    user_id: int | None = Field(default=None, gt=0)
+    user_id: int | None = Field(default=None, gt=0, le=MAX_GRAPH_ID, strict=True)
     limit: int = Field(default=10, ge=1, le=50)
 
 

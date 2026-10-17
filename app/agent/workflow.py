@@ -11,10 +11,10 @@ from app.services import RecommendationService
 def answer(request: AskRequest, service: RecommendationService, client: LLMClient, trace_id: str):
     """Plan, validate, EXPLAIN, execute and render only verified result counts."""
     guard_question(request.question)
+    supplied = explicit_entities(request)
     plan = client.plan(request, service.repository.genres())
     # The caller's requested result budget cannot be expanded by the model.
     plan.limit = min(plan.limit, request.limit)
-    supplied = explicit_entities(request)
     if plan.movie_id and plan.movie_id != supplied.get("movie_id"):
         raise HTTPException(
             422, "Movie identity must be explicitly provided; title resolution needs a catalog selection"

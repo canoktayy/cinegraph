@@ -5,6 +5,9 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+from app.models import MAX_GRAPH_ID
+
+
 class QueryPlan(BaseModel):
     """Validated intermediate representation for natural language to Cypher."""
 
@@ -17,8 +20,8 @@ class QueryPlan(BaseModel):
         "explain_recommendation",
         "unsupported",
     ]
-    user_id: int | None = Field(default=None, gt=0)
-    movie_id: int | None = Field(default=None, gt=0)
+    user_id: int | None = Field(default=None, gt=0, le=MAX_GRAPH_ID, strict=True)
+    movie_id: int | None = Field(default=None, gt=0, le=MAX_GRAPH_ID, strict=True)
     genre: str | None = Field(default=None, max_length=40)
     limit: int = Field(default=10, ge=1, le=50)
     metric: Literal["rating", "pagerank"] = "rating"

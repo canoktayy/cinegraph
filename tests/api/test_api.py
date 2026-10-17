@@ -135,3 +135,31 @@ def test_taste_success_and_unknown_movie(client):
     assert response.status_code == 200
     assert response.json()["items"][0]["reasons"][0]["seed_id"] == 1
     assert client[0].post("/api/taste/recommendations", json={"movie_ids": [999]}).status_code == 404
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/movies/0/similar",
+        "/api/movies/-1/similar",
+        "/api/movies/99999999999999999999999/similar",
+        "/api/users/99999999999999999999999/recommendations",
+        "/api/users/0/discover",
+        "/api/users/42/recommendations/99999999999999999999999/explanation",
+    ],
+)
+def test_identity_overflow_and_nonpositive_paths_fail_before_database(client, path):
+    store = client[1].repository.store
+    assert client[0].get(path).status_code == 422
+    assert not store.calls
+
+
+@pytest.mark.parametrize("identifier", [2**63, True, 1.5, "1"])
+def test_invalid_taste_identity_types_do_not_reach_database(client, identifier):
+    assert client[0].post("/api/taste/recommendations", json={"movie_ids": [identifier]}).status_code == 422
+    assert not client[1].repository.store.calls
+
+
+def test_catalog_can_browse_the_full_small_snapshot(client):
+    assert client[0].get("/api/movies?offset=9736").status_code == 200
+    assert client[0].get("/api/movies?offset=10001").status_code == 422
