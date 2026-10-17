@@ -14,7 +14,7 @@ run: ## Run API on the host (Neo4j must already be running)
 	$(PYTHON) -m uvicorn app.main:app --host 127.0.0.1 --port 18081
 docker-build: ## Build the API image
 	docker compose build
-docker-run: ## Start the three services
+docker-run: setup ## Start the three services
 	docker compose up -d --build --wait --wait-timeout 300
 stop: ## Stop services without deleting data
 	docker compose down

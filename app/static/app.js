@@ -27,7 +27,7 @@ function setView(view){
   document.querySelectorAll('.nav-item').forEach(button=>button.classList.toggle('active',button.dataset.view===view));
   $('#breadcrumb').textContent=copy[view][0];$('#collection-title').textContent=copy[view][1].replace(/\.$/,'')+'.';
   $('#hero-title').innerHTML=copy[view][2];$('#show-more').hidden=view!=='catalog';
-  $('#genre').disabled=!['catalog','recommendations'].includes(view);loadFilms();
+  $('#genre').disabled=!['catalog','recommendations'].includes(view);if($('#genre').disabled)$('#genre').value='';loadFilms();
 }
 function card(movie,index){
   const palette=palettes[Math.abs(movie.movie_id)%palettes.length];
@@ -47,7 +47,7 @@ async function loadFilms(){
     else path=`/api/users/${user}/recommendations?limit=${state.limit}${genre?'&genre='+encodeURIComponent(genre):''}`;
     // An absent filter must remain absent, rather than the empty string genre.
     path=path.replace(/&genre=$/,'');
-    const result=await api(path);state.rows=result.items;
+    const result=await api(path);state.rows=result.items;$('#show-more').hidden=state.view!=='catalog'||result.items.length<state.limit;$('#show-previous').hidden=state.view!=='catalog'||state.offset===0;
     $('#movie-grid').innerHTML=result.items.length?result.items.map(card).join(''):'<div class="empty-state">No matching stories yet. Try another genre or user.</div>';
     const method=(result.method||'catalog').replaceAll('_',' ');
     $('#method-note').textContent=method.charAt(0).toUpperCase()+method.slice(1);
@@ -94,6 +94,7 @@ async function askGraph(){
 }
 document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>setView(button.dataset.view)));
 $('#filter-form').addEventListener('submit',event=>{event.preventDefault();state.offset=0;if($('#search').value.trim()&&state.view!=='catalog')setView('catalog');else loadFilms();});
+$('#show-previous').addEventListener('click',()=>{state.offset=Math.max(0,state.offset-state.limit);loadFilms();});
 $('#show-more').addEventListener('click',()=>{state.offset+=state.limit;if(state.offset>1000)state.offset=0;loadFilms();});
 document.addEventListener('click',event=>{const evidence=event.target.closest('[data-evidence]');const detail=event.target.closest('[data-detail]');if(evidence)showEvidence(Number(evidence.dataset.evidence));else if(detail)showSimilar(Number(detail.dataset.detail));});
 $('#close-detail').addEventListener('click',()=>$('#detail-dialog').close());

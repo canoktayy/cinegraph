@@ -55,11 +55,23 @@ def main():
         ids = random.Random(42).sample([row["movie_id"] for row in candidates], min(30, len(candidates)))
         before, after, overlaps = [], [], []
         for movie_id in ids[:5]:
-            params = {"movie_id": movie_id, "run_id": state["active_run_id"], "min_common": 3, "limit": 10}
+            params = {
+                "movie_id": movie_id,
+                "run_id": state["active_run_id"],
+                "min_common": 3,
+                "limit": 10,
+                "genre": None,
+            }
             timed(store, queries.DIRECT_SIMILAR, params)
             timed(store, queries.SIMILAR, params)
         for movie_id in ids:
-            params = {"movie_id": movie_id, "run_id": state["active_run_id"], "min_common": 3, "limit": 10}
+            params = {
+                "movie_id": movie_id,
+                "run_id": state["active_run_id"],
+                "min_common": 3,
+                "limit": 10,
+                "genre": None,
+            }
             elapsed, direct = timed(store, queries.DIRECT_SIMILAR, params)
             before.append(elapsed)
             elapsed, cached = timed(store, queries.SIMILAR, params)
@@ -67,7 +79,7 @@ def main():
             left = {row["movie_id"] for row in direct}
             right = {row["movie_id"] for row in cached}
             overlaps.append(len(left & right) / max(1, len(left)))
-        params = {"movie_id": 1, "run_id": state["active_run_id"], "min_common": 3, "limit": 10}
+        params = {"movie_id": 1, "run_id": state["active_run_id"], "min_common": 3, "limit": 10, "genre": None}
         report = {
             "query_source_sha256": hashlib.sha256((ROOT / "app/queries.py").read_bytes()).hexdigest(),
             "dataset_hash": state["data_version"],

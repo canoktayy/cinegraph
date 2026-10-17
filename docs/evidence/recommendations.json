@@ -1,6 +1,32 @@
 {
   "items": [
     {
+      "movie_id": 2948,
+      "title": "From Russia with Love (1963)",
+      "year": 1963,
+      "genres": [
+        "Adventure",
+        "Action",
+        "Thriller"
+      ],
+      "score": 5.0,
+      "support": 26,
+      "supporting_seeds": 5
+    },
+    {
+      "movie_id": 2949,
+      "title": "Dr. No (1962)",
+      "year": 1962,
+      "genres": [
+        "Thriller",
+        "Action",
+        "Adventure"
+      ],
+      "score": 5.0,
+      "support": 16,
+      "supporting_seeds": 3
+    },
+    {
       "movie_id": 3639,
       "title": "Man with the Golden Gun, The (1974)",
       "year": 1974,
@@ -9,7 +35,7 @@
         "Action",
         "Adventure"
       ],
-      "score": 5.000000000000001,
+      "score": 5.0,
       "support": 10,
       "supporting_seeds": 3
     },
@@ -22,22 +48,9 @@
         "Action",
         "Adventure"
       ],
-      "score": 5.000000000000001,
+      "score": 5.0,
       "support": 11,
       "supporting_seeds": 2
-    },
-    {
-      "movie_id": 2948,
-      "title": "From Russia with Love (1963)",
-      "year": 1963,
-      "genres": [
-        "Adventure",
-        "Action",
-        "Thriller"
-      ],
-      "score": 5.0,
-      "support": 26,
-      "supporting_seeds": 5
     },
     {
       "movie_id": 3635,
@@ -118,23 +131,11 @@
       "score": 5.0,
       "support": 29,
       "supporting_seeds": 1
-    },
-    {
-      "movie_id": 904,
-      "title": "Rear Window (1954)",
-      "year": 1954,
-      "genres": [
-        "Thriller",
-        "Mystery"
-      ],
-      "score": 5.0,
-      "support": 36,
-      "supporting_seeds": 1
     }
   ],
   "method": "item_cf",
   "data_version": "bb3c34d9a8f1e0cdff329186be42f1e78e49bc0385b3a1224a5a2d75c1a5b123",
-  "analytics_run_id": "gds-25d869f84e838a9b",
+  "analytics_run_id": "gds-246d37dafdab7423",
   "as_of": 1537799250,
   "fallback_reason": null,
   "score_type": "weighted_rating"

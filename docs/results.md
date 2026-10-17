@@ -4,7 +4,7 @@ Measured locally on 17 October 2026. These are observed results, not promised fu
 
 ## Quality gates
 
-- **92 tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
+- **93 tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
 - **79.01% combined statement/branch coverage**, minimum enforced: 60%.
 - **Pylint 9.88/10**, teacher configuration, minimum enforced: 9.5.
 - **40/40 reliability cases passed**. The 20 supported questions check intent, exact entity/filter/budget parameters and returned genre membership. Other cases distinguish scope/guardrail rejection from controlled malformed-provider fault injection.
@@ -37,8 +37,8 @@ Full-catalog item-CF Recall@10: 0.0503; NDCG@10: 0.2277. Bayesian baseline Recal
 
 | Method | p50 ms | p95 ms |
 |---|---:|---:|
-| Direct graph traversal | 22.433 | 41.212 |
-| Versioned precomputed lookup | 2.268 | 2.895 |
+| Direct graph traversal | 19.595 | 58.294 |
+| Versioned precomputed lookup | 1.692 | 2.737 |
 
 Thirty identical source-movie IDs, five warm-up calls, sequential local-client timings. Mean top-10 overlap: 0.973. The precomputed raw-candidate cap is approximate, so faster does not imply perfectly equivalent ranking. PROFILE captures are separate from normal latency timing. This is not a concurrency/SLA test.
 

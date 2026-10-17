@@ -9,3 +9,5 @@
 
 .mobile-nav{display:none}
 @media(max-width:560px){body{padding-bottom:78px}.mobile-nav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;bottom:10px;left:12px;right:12px;background:var(--navy);border-radius:9px;padding:5px;z-index:30;box-shadow:0 8px 25px #142c3740}.mobile-nav .nav-item{display:flex;flex-direction:column;align-items:center;font-size:8px;gap:4px;padding:9px 4px}.mobile-nav .nav-item>span{font-size:18px;height:21px}}
+
+.pager{display:flex;align-items:center;gap:18px}

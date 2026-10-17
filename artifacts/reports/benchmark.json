@@ -1,6 +1,7 @@
 {
+  "query_source_sha256": "63ffbb8ff5ae15e454ea3d1cdc78f8643e6fcfa21f5cbd997f1da605ede067b3",
   "dataset_hash": "bb3c34d9a8f1e0cdff329186be42f1e78e49bc0385b3a1224a5a2d75c1a5b123",
-  "analytics_run_id": "gds-25d869f84e838a9b",
+  "analytics_run_id": "gds-246d37dafdab7423",
   "platform": "macOS-15.6-arm64-arm-64bit",
   "seed": 42,
   "workload_ids": [
@@ -38,20 +39,20 @@
   "warmup_queries": 5,
   "direct_graph": {
     "samples": 30,
-    "p50_ms": 22.433,
-    "p95_ms": 41.212,
-    "min_ms": 7.756
+    "p50_ms": 19.595,
+    "p95_ms": 58.294,
+    "min_ms": 6.293
   },
   "precomputed_gds": {
     "samples": 30,
-    "p50_ms": 2.268,
-    "p95_ms": 2.895,
-    "min_ms": 1.369
+    "p50_ms": 1.692,
+    "p95_ms": 2.737,
+    "min_ms": 0.967
   },
   "mean_top10_overlap": 0.9733333333333332,
   "notes": [
     "Sequential local client workload; not a concurrent load or SLA test",
     "Precomputed top-40 raw Jaccard candidates can differ from exhaustive shrunk ranking"
   ],
-  "commit": "b2b732986ee355a9511d9372c321c36dc680db87"
+  "commit": "988bd4be3ee27b4263561da1fc3ee93dfe1257d4"
 }

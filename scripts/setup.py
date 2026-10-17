@@ -7,6 +7,9 @@ from app.config import ROOT
 
 def main():
     """Create .env only when it does not already exist."""
+    # Pre-create bind sources as the host user; Docker would otherwise create root-owned paths on Linux.
+    for folder in ("data", "artifacts"):
+        (ROOT / folder).mkdir(parents=True, exist_ok=True)
     path = ROOT / ".env"
     if path.exists():
         print("Existing .env preserved")
