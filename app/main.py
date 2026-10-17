@@ -20,6 +20,7 @@ from app.database import GraphStore
 from app.models import AskRequest, AskResponse, ExplanationResponse, RankingResponse
 from app.repository import CatalogRepository
 from app.services import RecommendationService
+from app.taste import TasteRequest, recommend as taste_recommend, rounds as taste_rounds
 
 STATIC = Path(__file__).parent / "static"
 
@@ -186,3 +187,15 @@ def explanation(user_id: int, movie_id: int, recommender: Service):
 def ask(body: AskRequest, request: Request, recommender: Service):
     """Use a real configured local LLM; invalid output is never executed."""
     return answer(body, recommender, LLMClient(get_settings()), request.state.trace_id)
+
+
+@app.get("/api/taste/rounds", tags=["Personal taste"])
+def taste_options(recommender: Service, seed: Annotated[int, Query(ge=0, le=2147483647)] = 42):
+    """Offer ten rounds of five distinct films for a new visitor."""
+    return taste_rounds(recommender, seed)
+
+
+@app.post("/api/taste/recommendations", tags=["Personal taste"])
+def personal_recommendations(body: TasteRequest, recommender: Service):
+    """Recommend from visitor-selected seeds without modifying research data."""
+    return taste_recommend(recommender, body)

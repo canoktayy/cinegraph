@@ -1,0 +1,16 @@
+{
+  "rounds": 10,
+  "options_per_round": 5,
+  "ten_round_browser_flow": "passed; each round number asserted before selection",
+  "recommendation_count": 8,
+  "loaded_recommendation_posters": 8,
+  "back_navigation": "returned to round 1 and removed the previous answer",
+  "all_skipped": "requires at least one selection; no fabricated personalized results",
+  "mobile_viewport_width": 390,
+  "mobile_document_width": 390,
+  "actual_personal_explanation": "seed titles, active-run similarities and shared positive raters shown",
+  "api_key_required_for_personal_flow": false,
+  "research_source_mutated": false,
+  "poster_references": 9586,
+  "unmatched_movie_covers": 156
+}

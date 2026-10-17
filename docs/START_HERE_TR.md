@@ -23,3 +23,12 @@ Kalite kontrolü: `make lint`, `make test`, `make demo`. Tüm sonuçlar ve sın�
 Kapatmak için `make stop`; veri saklanır. Normal kullanımda `docker compose down -v` çalıştırma. Başka bir bilgisayarda özel repoyu klonlamak için kendi GitHub yetkin gerekir; ek Neo4j veya ücretli LLM hesabı gerekmez.
 
 Repo ve image özel tutulur. Hocanın herkese açık registry ve bağımsız insan incelemesi/grup çalışması ölçütlerinin uygulanışı ayrıca netleştirilmelidir; tamamlanmış gibi gösterilmez.
+
+## Yeni ziyaretçi için kişisel öneri
+
+1. **Find my films** düğmesine bas.
+2. On tur boyunca her beşli gruptan en sevdiğin filmi seç. Tanımadığın grubu **skip round** ile geç; **Back** ile geri dönebilirsin.
+3. Son turdan sonra **Your next watch** listesi senin seçimlerinden hesaplanır. Tür filtresiyle daraltabilirsin.
+4. **Why this film?** hangi seçtiğin filmlerin öneriye katkı verdiğini ve kaç ortak olumlu puanlayan izleyici olduğunu gösterir.
+
+Bu akışta API anahtarı ve LLM gerekmez. Seçimler sayfa yenilenince sıfırlanır; kullanıcı hesabı açılmaz ve MovieLens verisine yeni puan yazılmaz. Seçmediğin filmler beğenmediğin varsayılmaz. Eski kullanıcı numarasıyla gösterim için **Explore the research demo instead** kullanılır. Doğal dil paneli hocaya gösterim için açılır menüdedir.
