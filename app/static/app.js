@@ -33,7 +33,7 @@ function card(movie,index){
   const palette=palettes[Math.abs(movie.movie_id)%palettes.length];
   const title=movie.title.replace(/\s*\(\d{4}\)\s*$/,'');
   const score=Number.isFinite(movie.score)?movie.score.toFixed(2):null;
-  const genres=(movie.genres||[]).slice(0,2).join(' / ')||'Unclassified';
+  const activeGenre=$('#genre').value;const genres=[...(movie.genres||[])].sort((a,b)=>a===activeGenre?-1:b===activeGenre?1:a.localeCompare(b)).slice(0,2).join(' / ')||'Unclassified';
   return `<article class="movie-card"><button class="movie-art variant-${movie.movie_id%5}" data-detail="${movie.movie_id}" aria-label="Explore ${escapeText(movie.title)}" style="--poster-bg:${palette[0]};--poster-color:${palette[1]};--poster-ink:${palette[2]}"><span class="art-stripes"></span><span class="film-number">FRAME / ${String(index+1+state.offset).padStart(2,'0')}</span><span class="film-year">${movie.year||'—'}</span><span class="poster-type ${title.length>50?'long-title':''}"><span class="poster-caption">A MOVIEGRAPH SELECTION</span>${escapeText(title)}</span></button><div class="movie-meta"><div><span class="movie-title">${escapeText(title)}</span><span class="movie-genre">${escapeText(genres)}</span></div>${score?`<span class="movie-score">✧ ${score}</span>`:''}</div><div class="movie-bottom"><button class="why-button" ${state.view==='recommendations'?'data-evidence':'data-detail'}="${movie.movie_id}">${state.view==='recommendations'?'Why this film?':'Follow the connection'} ↗</button><span class="support-label">${movie.support?escapeText(movie.support)+' signals':'CATALOG'}</span></div></article>`;
 }
 async function loadFilms(){
@@ -51,7 +51,7 @@ async function loadFilms(){
     $('#movie-grid').innerHTML=result.items.length?result.items.map(card).join(''):'<div class="empty-state">No matching stories yet. Try another genre or user.</div>';
     const method=(result.method||'catalog').replaceAll('_',' ');
     $('#method-note').textContent=method.charAt(0).toUpperCase()+method.slice(1);
-    $('#result-note').textContent=`${result.items.length} films · ${state.view==='catalog'?'catalog snapshot':'user '+user+' · '+method}`;
+    $('#result-note').textContent=`${result.items.length} films · ${state.view==='catalog'?'catalog snapshot':state.view==='trending'?'historical snapshot':'user '+user+' · '+method}`;
     if(result.fallback_reason)notice('Fallback: '+result.fallback_reason);
   }catch(error){notice(error.message);$('#movie-grid').innerHTML='<div class="empty-state">We couldn’t follow that connection.<br><small>Check the graph service or try another user.</small></div>';$('#result-note').textContent='Request could not be completed';}
   finally{state.loading=false;$('#movie-grid').classList.remove('loading');}

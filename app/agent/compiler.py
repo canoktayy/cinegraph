@@ -40,6 +40,8 @@ def compile_plan(plan: QueryPlan, service: RecommendationService) -> tuple[str, 
     if plan.genre and plan.genre not in service.repository.genres():
         raise HTTPException(422, {"code": "unknown_genre", "message": "Genre is not in the dataset vocabulary"})
     params = service.parameters(plan.model_dump(exclude_none=True))
+    if plan.intent == "historical_trending":
+        params["user_id"] = None  # Historical rankings are global, not filtered by incidental UI user context.
     params["since"] = max(0, params["as_of"] - plan.window_days * 86400)
     text = queries.PLAN_QUERIES[plan.intent]
     if plan.intent == "historical_trending" and plan.metric == "pagerank":

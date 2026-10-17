@@ -74,6 +74,12 @@ def test_cypher_common_support_matches_source(store):
     assert len(rows) == 5
 
 
+def test_natural_language_explanation_excludes_already_rated_target(store):
+    row = store.read("MATCH (:User {user_id:42})-[:RATED]->(m:Movie) RETURN m.movie_id AS movie_id LIMIT 1")[0]
+    params = RecommendationService(CatalogRepository(store)).parameters({"user_id": 42, "movie_id": row["movie_id"]})
+    assert store.read(queries.EVIDENCE, params) == []
+
+
 def test_fulltext_and_tag_provenance(store):
     repo = CatalogRepository(store)
     assert any(row["movie_id"] == 1 for row in repo.search({"q": "Toy Story"}))

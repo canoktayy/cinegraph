@@ -71,6 +71,11 @@ def test_pagerank_query_and_validation():
             validate_template(text)
 
 
+def test_historical_ranking_ignores_incidental_user_context():
+    _, _, parameters = compile_plan(QueryPlan(intent="historical_trending", user_id=42), fake_service())
+    assert parameters["user_id"] is None
+
+
 def test_entity_and_genre_fail_closed():
     for plan in [
         QueryPlan(intent="similar_movies", movie_id=999),

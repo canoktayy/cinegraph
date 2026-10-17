@@ -1,6 +1,6 @@
 {
-  "tests_passed": 93,
-  "coverage_percent": 79.01,
+  "tests_passed": 95,
+  "coverage_percent": 79.11,
   "pylint_score": 9.88,
   "llm_cases_passed": 40,
   "llm_cases_total": 40,
