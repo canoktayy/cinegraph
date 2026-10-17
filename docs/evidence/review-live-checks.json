@@ -12,10 +12,17 @@
   "personal_genre_filter": "8 Sci-Fi results verified in the real browser",
   "mobile_viewport_width": 390,
   "mobile_document_width": 390,
-  "python_tests": 150,
+  "python_tests": 154,
   "frontend_tests": 7,
-  "python_coverage_percent": 81.03,
+  "python_coverage_percent": 81.34,
   "pylint_score": 9.89,
   "real_model_evaluation": "40/40",
-  "executed_notebook_cells": 18
+  "executed_notebook_cells": 18,
+  "malformed_question_status": {
+    "Recommend for user -1": 422,
+    "Find movies similar to movie 1.5": 422,
+    "Find movies similar to movie 1e3": 422,
+    "Recommend -3 Comedy movies for user 42": 422
+  },
+  "burst_rate_limit_observed": 429
 }

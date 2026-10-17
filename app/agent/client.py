@@ -39,10 +39,13 @@ def explicit_entities(request: AskRequest) -> dict:
     """Resolve only literal typed identities in the human question/context, never guessed IDs."""
     entities = {"user_id": request.user_id}
     for field, pattern in (
-        ("user_id", r"\b(?:user|kullanıcı|kullanici)\s*(?:id\s*[:#]?\s*)?(\d+)\b"),
-        ("movie_id", r"\b(?:movie|film)\s*(?:id\s*[:#]?\s*)?(\d+)\b"),
+        ("user_id", r"\b(?:user|kullanıcı|kullanici)\s*(?:id\s*[:#]?\s*)?([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b"),
+        ("movie_id", r"\b(?:movie|film)\s*(?:id\s*[:#]?\s*)?([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b"),
     ):
-        values = {int(value) for value in re.findall(pattern, request.question, flags=re.I)}
+        literals = re.findall(pattern, request.question, flags=re.I)
+        if any(not re.fullmatch(r"\+?\d+", value) for value in literals):
+            raise HTTPException(422, "Movie and user IDs must be positive integers, without fractions or exponents")
+        values = {int(value) for value in literals}
         if len(values) > 1:
             raise HTTPException(422, f"Please specify a single {field.replace('_', ' ')}")
         if values:
@@ -74,10 +77,12 @@ def bind_explicit_fields(payload: dict, request: AskRequest, genres: list[str]) 
     modifiers = "|".join(
         re.escape(word.casefold()) for word in [*genres, "similar", "benzer", "science fiction", "bilim kurgu"]
     )
-    counts = re.finditer(r"\b(\d+)\s+(?:(?:" + modifiers + r")\s+)*(?:movies|films|film)\b", question)
+    counts = re.finditer(
+        r"(?<![\w.])([+-]?\d+(?:\.\d+)?)\s+(?:(?:" + modifiers + r")\s+)*(?:movies|films|film)\b", question
+    )
     identity_prefix = r"\b(?:movie|film|user|kullanıcı|kullanici)\s*(?:id\s*[:#]?\s*)?$"
     count = next((match for match in counts if not re.search(identity_prefix, question[: match.start()])), None)
-    if count and not 1 <= int(count.group(1)) <= 50:
+    if count and (not re.fullmatch(r"\+?\d+", count.group(1)) or not 1 <= int(count.group(1)) <= 50):
         raise HTTPException(422, "Requested result count must be between 1 and 50")
     if isinstance(payload.get("limit", 10), int) and 1 <= payload.get("limit", 10) <= 50:
         payload["limit"] = min(payload.get("limit", 10), request.limit, int(count.group(1)) if count else 50)

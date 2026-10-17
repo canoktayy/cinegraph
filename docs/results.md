@@ -4,8 +4,8 @@ Measured locally on 17 October 2026. These are observed results, not promised fu
 
 ## Quality gates
 
-- **150 Python tests and 7 frontend regression tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
-- **81.03% combined Python statement/branch coverage**, minimum enforced: 60%.
+- **154 Python tests and 7 frontend regression tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
+- **81.34% combined Python statement/branch coverage**, minimum enforced: 60%.
 - **Pylint 9.89/10**, teacher configuration, minimum enforced: 9.5.
 - **40/40 reliability cases passed**. The 20 supported questions check intent, exact entity/filter/budget parameters and returned genre membership. Other cases distinguish scope/guardrail rejection from controlled malformed-provider fault injection.
 - Every notebook cell executed; real model HTTP 200, exact Sci-Fi filtering and unsafe-operation HTTP 422 are assertions.

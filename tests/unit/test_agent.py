@@ -222,3 +222,21 @@ def test_identity_number_and_time_window_are_not_result_counts(monkeypatch):
 def test_global_and_movie_queries_ignore_an_unused_unknown_user(intent):
     _, _, parameters = compile_plan(QueryPlan(intent=intent, user_id=999, movie_id=1), fake_service())
     assert parameters["user_id"] is None
+
+
+@pytest.mark.parametrize("question", ["Recommend for user -1", "Similar to movie 1.5", "Similar to movie 1e3"])
+def test_malformed_literal_identity_never_reaches_provider(monkeypatch, question):
+    post = Mock(return_value=response('{"intent":"recommend_movies","user_id":42}'))
+    monkeypatch.setattr("app.agent.client.httpx.post", post)
+    with pytest.raises(HTTPException) as error:
+        LLMClient(Settings()).plan(AskRequest(question=question, user_id=42), ["Comedy"])
+    assert error.value.status_code == 422
+    post.assert_not_called()
+
+
+def test_negative_requested_count_is_not_silently_made_positive(monkeypatch):
+    post = Mock(return_value=response('{"intent":"recommend_movies","user_id":42,"limit":3}'))
+    monkeypatch.setattr("app.agent.client.httpx.post", post)
+    with pytest.raises(HTTPException) as error:
+        LLMClient(Settings()).plan(AskRequest(question="Recommend -3 Comedy movies for user 42"), ["Comedy"])
+    assert error.value.status_code == 422

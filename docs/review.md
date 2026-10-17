@@ -8,7 +8,7 @@ This review examined the visitor flow, catalog and research views, request lifet
 | Old film results/errors could append into another or closed dialog; loading text remained after success | Dialog generation/close checks and complete result replacement | Three delayed-response dialog regressions; real detail/evidence interaction |
 | Optional poster loading blocked graph startup | Initialize graph statistics independently, bound optional metadata loading, enrich existing cards afterwards | Pending-poster regression; real film-image loading |
 | Catalog page offset silently wrapped at 1,000 | Continue within an explicit 10,000-row browsing budget and stop at the bound/end | Node pagination regression, API boundary checks and live last-page request |
-| A literal user ID could conflict with context, or several IDs could silently reduce to the first | Reject ambiguous/conflicting input before calling the provider | Provider-not-called assertions and typed input tests |
+| A literal user ID could conflict with context, or several IDs could silently reduce to the first | Reject ambiguous/conflicting identities and malformed signed/decimal/exponent literals before calling the provider | Provider-not-called assertions and typed input tests |
 | Genre-containing result counts could expand; role IDs might be mistaken for counts | Bind canonical genre/count phrases and exclude identity-number positions | Comedy/science-fiction/Turkish count cases; identity/time-window counterexamples |
 | Global/movie queries could fail due to an unrelated unknown user | Resolve only identities used by the selected query | Compiler regressions for global rankings and movie similarity |
 | Very large IDs could reach Neo4j's signed integer packing; boolean/fractional IDs could be coerced | Bound every public identity path/body and the model plan; strict JSON ID types | Invalid-path/body tests assert rejection before database access |
@@ -17,8 +17,8 @@ This review examined the visitor flow, catalog and research views, request lifet
 
 ## Recorded results
 
-- 150 Python tests, including real Neo4j/Cypher/GDS; 7 Node UI behavioral regressions.
-- 81.03% Python statement/branch coverage; teacher-config Pylint 9.89/10.
+- 154 Python tests, including real Neo4j/Cypher/GDS; 7 Node UI behavioral regressions.
+- 81.34% Python statement/branch coverage; teacher-config Pylint 9.89/10.
 - The initial five frontend reproduction tests and five agent reproduction cases failed before their corresponding fixes. Their corrected scenarios pass; the final suites include additional boundary cases.
 - The real local-model evaluation was repeated: 40/40 cases. Its unchanged JSON content is a deterministic result, not a new claimed dataset/model.
 - Real source re-seed, source counts, rating uniqueness and tag-event cardinalities passed. ML/GDS numerical snapshots remain explicitly recorded historical measurements; the graph-building algorithm and offline feature code were not rewritten in this review.
