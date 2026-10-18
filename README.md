@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎬 MovieGraph
+# 🎬 Reelpath
 
 ### Pick films you love. See what to watch next, and exactly why.
 
@@ -17,7 +17,7 @@ with **Graph Data Science** algorithms, a guarded **natural-language → Cypher*
 **Can Oktay** · Student no. B00818187 · AIDAMS 3A, Graph Databases
 Project 4 · *Movie Recommender in Production* (Level 2)
 
-<img src="docs/screenshots/ui-home.jpg" alt="MovieGraph home page" width="900">
+<img src="docs/screenshots/ui-home.jpg" alt="Reelpath home page" width="900">
 
 </div>
 
@@ -27,17 +27,18 @@ Project 4 · *Movie Recommender in Production* (Level 2)
 
 1. [What it does](#what-it-does)
 2. [Tour of the application](#tour-of-the-application)
-3. [Quick start](#quick-start)
-4. [Architecture](#architecture)
-5. [Graph model](#graph-model)
-6. [How recommendations are computed](#how-recommendations-are-computed)
-7. [Language-model components and guardrails](#language-model-components-and-guardrails)
-8. [API reference](#api-reference)
-9. [Quality, evaluation and performance](#quality-evaluation-and-performance)
-10. [Commands](#commands)
-11. [Repository layout](#repository-layout)
-12. [Data sources and attribution](#data-sources-and-attribution)
-13. [Limitations](#limitations)
+3. [Design choices](#design-choices)
+4. [Quick start](#quick-start)
+5. [Architecture](#architecture)
+6. [Graph model](#graph-model)
+7. [How recommendations are computed](#how-recommendations-are-computed)
+8. [Language-model components and guardrails](#language-model-components-and-guardrails)
+9. [API reference](#api-reference)
+10. [Quality, evaluation and performance](#quality-evaluation-and-performance)
+11. [Commands](#commands)
+12. [Repository layout](#repository-layout)
+13. [Data sources and attribution](#data-sources-and-attribution)
+14. [Limitations](#limitations)
 
 ---
 
@@ -124,6 +125,22 @@ The deterministic controller runs the ten rounds itself; the local model is only
 
 ---
 
+## Design choices
+
+**Name.** *Reelpath* joins a film reel and a path: every recommendation is literally a path through the graph, from a film you picked, through the people who loved it, to the next film. (The repository keeps its original name, `moviegraph`.)
+
+**Two colours, teal and orange.** The interface uses one hue for surfaces and its complement for actions, and lets the posters carry every other colour.
+
+| Role | Colour | Why |
+|---|---|---|
+| Surfaces | Teal-tinted near-black `#0b1619` to `#1a2f37` | Dark, low-saturation surfaces recede, so colourful posters stand out. A tinted dark grey instead of pure black reduces halation of light text, which mostly affects readers with astigmatism. |
+| Actions and highlights | Orange `#ff8f4d` | Orange is the complement of teal, the largest hue contrast for buttons and links. It is the same *orange and teal* pairing used in film colour grading, where warm skin tones are separated from cool backgrounds. |
+| Text | Off-white `#e9f1f1`, muted `#9fb4b7` | Softer than pure white on dark backgrounds. |
+
+Measured WCAG contrast on the page background: body text 16:1, muted text 8.5:1, orange 8.1:1, and dark text on orange buttons 8.4:1, all above the AA threshold of 4.5:1. Sources: [PetaPixel on the orange and teal look](https://petapixel.com/2017/02/23/orange-teal-look-popular-hollywood/), [Adobe on why orange and teal grading works](https://www.adobe.com/creativecloud/video/hub/features/why-use-orange-teal-grading), [overview of polarity and halation research](https://a11ywithdiana.substack.com/p/and).
+
+---
+
 ## Quick start
 
 **Requirements:** Python 3.12+, Docker with Compose v2, Git, Node.js 20+ (frontend tests only). Allow 4–6 GB of Docker memory.
@@ -141,7 +158,7 @@ make demo           # live HTTP smoke checks
 
 | Service | URL |
 |---|---|
-| **MovieGraph** | http://localhost:18080 |
+| **Reelpath** | http://localhost:18080 |
 | Swagger / OpenAPI | http://localhost:18080/docs |
 | Neo4j Browser | http://localhost:17474 (Bolt `17687`, credentials in your `.env`) |
 
