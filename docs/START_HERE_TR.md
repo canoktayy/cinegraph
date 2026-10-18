@@ -41,7 +41,12 @@ Ardından [siteyi aç](http://localhost:18080). [API belgeleri (Swagger)](http:/
 2. **Film assistant** sayfasını aç. Anahtar girmen gerekmez. Sayfadaki gösterge modelin durumunu söyler: yeşil **Local model ready** ise hazırsın; değilse LM Studio'da neyi açman gerektiğini yazar, **check again** ile yeniden kontrol edebilirsin.
 3. **Start the conversation** ile başla. Film kartına tıklayarak seç ya da turu atla. Kart tıklamaları sunucu tarafından yönetilir, bu yüzden hızlıdır. Modeli yalnızca yazdığın mesajlar kullanır.
 4. On turdan sonra ya da **Recommend now** ile öneriler gelir. Bir afişe tıklarsan **Why?** penceresi açılır.
-5. “Bana sadece komedi öner”, “All genres” ya da seçtiğin bir filmin adını yazarak sonuçları değiştir.
+5. İstediğini yaz, asistan sonuçları değiştirir. Örnekler:
+   - “Scarface en sevdiğim film” → Scarface'i sevenlerin sevdiği filmler (seçtiğin filmlerden olması gerekmez).
+   - “Bana sadece komedi öner”, “korku olmasın”, “90'lar”, “2000 öncesi” → filtreler; yazmadığın filtreler aynı kalır.
+   - “favorilerime göre öner” → tekrar tüm seçimlerine göre; “All genres” → tür filtresini kaldırır.
+
+Asistan iki katmanlı çalışır. Önce model ne istediğini anlar ve hangi aramanın yapılacağına karar verir. Sunucu bunu kontrol eder ve Neo4j'de tek bir sorgu çalıştırır. Son olarak model gerçek sonuçları kısa bir cümleyle anlatır. Filmler her zaman veritabanından gelir; model film uyduramaz. Anlamadığı bir şey olursa soru sorar ve ekrandaki sonuçlar değişmez.
 
 Model kapalıysa açık bir hata mesajı görürsün; **Try that step again** seçimlerini kaybetmeden yeniden dener. İstek sınırına takılırsan bir dakika bekle.
 
