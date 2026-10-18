@@ -49,10 +49,10 @@ Project 4 · *Movie Recommender in Production* (Level 2)
 | 🎯 | **Quick picks** | Ten rounds of five well-known films; click or press <kbd>1</kbd>–<kbd>5</kbd>. Pick favourites, get matches, filter by genre. No account, no model. |
 | 💬 | **Film assistant** | The same flow as a conversation. Say *“Scarface is my favourite film”*, *“only 90s thrillers”* or *“no horror”*: a local LLM understands the request, the graph returns the films, and the LLM describes them. |
 | 🔍 | **“Why this film?”** | Every recommendation shows the picks it is linked to and how many raters loved both films. |
-| 📚 | **Catalog** | Full-text search over 9,742 films, genre filter, and “fans also liked” for any film. |
+| 📚 | **Catalog** | Full-text search over 9,742 films, genre filter, “fans also liked”, and the **shortest connection** between any two films. |
 | 🏆 | **Top films** | The highest rated films in the data’s final year (adjusted so a film with few ratings cannot win by luck), or the most connected films by **PageRank**. |
 | 👥 | **Dataset users** | Pick any of the 610 anonymous MovieLens raters: see the films they loved, then what the graph recommends for them (similar films, or films from their **Louvain** taste communities) with the exact path behind each one. |
-| 🧪 | **Query lab** | Ask a question in plain English; it becomes a small plan, then a reviewed Cypher query, then real rows. Unsafe requests are rejected with HTTP 422. |
+| 🧪 | **Query lab** | Ask a question in plain English. Either the model picks a plan that maps to a reviewed Cypher template, or it writes the Cypher itself and the server proves it read-only before running it. Unsafe requests are rejected with HTTP 422. |
 
 **Design principle:** the language model never invents films, scores or explanations. All titles, counts and paths come from Neo4j and are shown with their provenance.
 
@@ -83,6 +83,10 @@ Results are ranked by how strongly they are linked to your picks. Each genre chi
 </tr>
 </table>
 
+**Pathfinding:** in any film’s dialog, type another title to see the shortest chain of “people who loved this also loved that” links between them (`shortestPath` in Neo4j).
+
+<img src="docs/screenshots/ui-path.jpg" alt="Shortest connection between Star Wars and Toy Story" width="700">
+
 ### 3 · Film assistant: conversation on top of the graph
 
 The server runs the ten rounds itself. For typed requests the local model works in two layers: an **orchestrator** decides what to run (all favourites or one named film, plus genre, excluded genre and years), the server checks it and runs one graph query, and a **verbaliser** describes the real results in the visitor’s language.
@@ -106,16 +110,20 @@ The server runs the ten rounds itself. For typed requests the local model works 
 
 ### 5 · Query lab: natural language to safe Cypher
 
+Two modes. **Templates:** the model picks a plan that maps to a reviewed query. **Model-written:** the model writes the Cypher itself, and it only runs after every read-only check passes, including Neo4j’s own EXPLAIN.
+
 <table>
 <tr>
-<td width="50%"><img src="docs/screenshots/ui-lab.jpg" alt="Successful natural-language query"></td>
-<td width="50%"><img src="docs/screenshots/ui-lab-blocked.jpg" alt="Rejected unsafe query"></td>
+<td width="50%"><img src="docs/screenshots/ui-lab.jpg" alt="Template mode query"></td>
+<td width="50%"><img src="docs/screenshots/ui-lab-generated.jpg" alt="Model-written Cypher with safety checks"></td>
 </tr>
 <tr>
-<td align="center"><sub>Question → model plan → checked template → Neo4j rows</sub></td>
-<td align="center"><sub>“DELETE all nodes” is rejected before any database call</sub></td>
+<td align="center"><sub>Templates: question → plan → reviewed Cypher → Neo4j rows</sub></td>
+<td align="center"><sub>Model-written: the query the model wrote, the checks it passed, the rows</sub></td>
 </tr>
 </table>
+
+<p align="center"><img src="docs/screenshots/ui-lab-blocked.jpg" alt="Rejected unsafe query" width="600"><br><sub>“DELETE all nodes” is rejected before any database call</sub></p>
 
 ### 6 · Mobile
 
@@ -165,6 +173,8 @@ make demo           # live HTTP smoke checks
 | **Cinegraph** | http://localhost:18080 |
 | Swagger / OpenAPI | http://localhost:18080/docs |
 | Neo4j Browser | http://localhost:17474 (Bolt `17687`, credentials in your `.env`) |
+
+**Prebuilt image:** `docker pull ghcr.io/canoktayy/cinegraph:latest` ([package page](https://github.com/canoktayy/cinegraph/pkgs/container/cinegraph)). Set `MOVIEGRAPH_IMAGE=ghcr.io/canoktayy/cinegraph:latest` in `.env` to run the published image instead of building locally.
 
 **Optional local model** (Film assistant and Query lab): load `qwen2.5-7b-instruct` in [LM Studio](https://lmstudio.ai) and start its server on port `1234`. No key is needed: the Film assistant and Query lab show a live status (“Local model ready” or how to start it). Everything else works without a model.
 
@@ -231,6 +241,28 @@ The API never runs GDS per request: it reads the results of the active `Analytic
 
 Full rationale: [ADR 001: graph model](docs/adr/001-graph-model.md) · [ADR 002: versioned analytics](docs/adr/002-analytics-runs.md) · [anti-genericity comparison with an AI-generated baseline](docs/modeling-comparison.md) · editable [draw.io sources](docs/diagrams/).
 
+### Appendix: our schema vs. a generic AI-generated schema
+
+To check that the model is deliberate and not generic, the same project brief was given to a local LLM (`qwen2.5-7b-instruct`) and its answer was saved unedited in [`modeling-baseline.json`](docs/evidence/modeling-baseline.json). It proposed only `User`, `Movie` and `Genre` with `RATED` and `IN_GENRE`.
+
+| Topic | Generic AI schema | Cinegraph | Why we differ |
+|---|---|---|---|
+| Identities | `userId`/`movieId` as strings, plus an invented `username` | Integer source IDs with uniqueness constraints; no invented fields | MovieLens has no usernames; titles are not identities (“Scarface” is two films) |
+| Tags | Not modelled | `TagApplication` event node linking user, film, tag and time | Two separate User–Tag and Movie–Tag edges would lose who tagged which film, and when |
+| Similarity | Computed live from shared genres | Shared positive raters (GDS Node Similarity), shrunk for low support, stored as `SIMILAR_TO` | Genre overlap says *Toy Story* is like every animated film; shared fans capture taste |
+| Analytics | Not modelled | `SIMILAR_TO` and `ANALYZED_IN` carry a `run_id`; one `SystemState` points at the active run | A failed GDS job can never leave half-written results in what the API serves |
+| Time | Ratings as one undated graph | Snapshot `as_of`; ML features frozen before every label | “Trending” and the ML evaluation would otherwise use the future |
+| Language interface | Not addressed | Plans compiled to reviewed templates, or model-written Cypher proved read-only | An LLM must never run unchecked queries |
+
+**Alternatives we considered and rejected**
+
+- **Rating as a node** `(:User)-[:GAVE]->(:Rating)-[:FOR]->(:Movie)`: one more hop on every recommendation query for no benefit, since the snapshot keeps one rating per user and film.
+- **Genres as a list property** (or both property and node): faster single-film filters, but two sources of truth and no shared node to traverse through; we keep nodes only and filter with `EXISTS { … }`.
+- **Analytics written as `Movie` properties**: simplest, but a new run overwrites the live one; versioned relationships allow atomic switching.
+- **Actors and directors from another dataset**: not in MovieLens small; adding them would mean entity matching we could not verify, so they are left out rather than invented.
+
+The full comparison is in [docs/modeling-comparison.md](docs/modeling-comparison.md).
+
 ---
 
 ## How recommendations are computed
@@ -254,6 +286,7 @@ flowchart LR
 | Community discovery | Films from the rater’s 3 dominant Louvain communities | `GET /api/users/{id}/discover` |
 | Top films | Bayesian average over the last 365 days of data, or PageRank | `GET /api/movies/trending` |
 | Explanation | Exact `User-RATED->Movie-SIMILAR_TO->Movie` paths and contributions | `GET /api/users/{u}/recommendations/{m}/explanation` |
+| Connection between two films | `shortestPath` over the active run’s `SIMILAR_TO` links (at most 6 hops) | `GET /api/movies/{a}/path/{b}` |
 
 Scores are graph affinities, not predicted stars or probabilities. “Trending” is relative to the snapshot’s last timestamp (September 2018), not today.
 
@@ -265,7 +298,9 @@ Scores are graph affinities, not predicted stars or probabilities. “Trending�
 
 Both components use a **local** model through an OpenAI-compatible API with JSON-schema output, temperature 0 and at most one format repair.
 
-### Query lab: constrained NL → Cypher
+### Query lab: two ways to turn a question into Cypher
+
+**1. Reviewed templates (default).**
 
 ```mermaid
 flowchart LR
@@ -280,8 +315,22 @@ flowchart LR
 
 - The model outputs a **plan**, never Cypher. Templates are matched by exact string against an allow-list.
 - User and movie IDs, genres and result counts written in the question are **bound from the text**; the model cannot change them.
-- Unknown identities → 404, unsafe or unsupported requests → 422, malformed model output → 502, model offline/timeout → 503/504, budget exceeded → 429.
-- The response exposes the plan, compiled Cypher, bound parameters, rows and a trace ID.
+
+**2. Model writes Cypher.** For questions the templates do not cover (“most common tags”, “top genres by number of films”), the model writes the query itself and the server proves it is safe before running it:
+
+```mermaid
+flowchart LR
+    Q[Question] --> W[LLM writes Cypher]
+    W --> S{Static checks<br/>one statement · no comments<br/>no write/CALL/APOC keywords<br/>schema labels and types only<br/>LIMIT ≤ request}
+    S -->|fail| F[Reason sent back once<br/>for one repair]
+    F --> W
+    S --> P{Neo4j EXPLAIN<br/>query type = read-only?}
+    P -->|no| X[422, nothing runs]
+    P -->|yes| R[READ transaction<br/>with timeout]
+```
+
+- Neo4j’s own planner has the last word: anything it does not classify as read-only (`r`) is refused, even if it slipped past the keyword checks.
+- Common to both modes: unknown identities → 404, unsafe or unsupported requests → 422, malformed model output → 502, model offline/timeout → 503/504, budget exceeded → 429. The response shows the Cypher that ran, its parameters, the rows and a trace ID.
 
 ### Film assistant: two model layers around one graph query
 
@@ -316,6 +365,8 @@ Interactive documentation: **http://localhost:18080/docs**
 | GET | `/api/genres` | Canonical genres |
 | GET | `/api/movies?q=&genre=&year=&limit=&offset=` | Full-text catalog search with pagination |
 | GET | `/api/movies/{id}/similar` | Similar films (GDS) |
+| GET | `/api/movies/{a}/path/{b}?max_hops=` | Shortest connection between two films (pathfinding) |
+| GET | `/api/movies/resolve?title=` | Catalog film for a typed title |
 | GET | `/api/movies/trending?metric=rating\|pagerank` | Historical top films / centrality |
 | GET | `/api/users/{id}/favorites` | The rater’s own 4★+ ratings (context for their recommendations) |
 | GET | `/api/users/{id}/recommendations?genre=` | Item-CF recommendations |
@@ -323,7 +374,7 @@ Interactive documentation: **http://localhost:18080/docs**
 | GET | `/api/users/{u}/recommendations/{m}/explanation` | Path evidence |
 | GET | `/api/taste/rounds?seed=` | Ten seeded rounds of five films |
 | POST | `/api/taste/recommendations` | Recommendations from visitor picks |
-| POST | `/api/ask` 🔑 | Natural-language query lab |
+| POST | `/api/ask` 🔑 | Query lab (`mode`: `template` or `generated`) |
 | POST | `/api/assistant/turn` 🔑 | Film assistant turn |
 
 🔑 model endpoints: always rate-limited by Nginx and the API; they additionally require the `X-API-Key` header when the server runs with `REQUIRE_API_KEY=true` (off by default because every port binds to `127.0.0.1`). `GET /api/model/status` tells the interface whether LM Studio answers.
@@ -343,11 +394,11 @@ curl -X POST 'http://localhost:18080/api/ask' -H 'Content-Type: application/json
 
 | Check | Result |
 |---|---|
-| Python tests (unit, API, real Neo4j/Cypher/GDS integration) | **207 passed** |
-| Frontend behavioural tests (Node test runner) | **21 passed** |
-| Statement + branch coverage (enforced ≥ 60 %) | **84.8 %** |
+| Python tests (unit, API, real Neo4j/Cypher/GDS integration) | **237 passed** |
+| Frontend behavioural tests (Node test runner) | **22 passed** |
+| Statement + branch coverage (enforced ≥ 60 %) | **84.6 %** |
 | Pylint with the course `.pylintrc` (enforced ≥ 9.5) | **9.90 / 10** |
-| Query-lab evaluation: 20 live model cases, 10 unsafe, 5 unsupported, 5 injected faults | **40 / 40** |
+| Query-lab evaluation: 20 live template cases, 6 live model-written Cypher queries, 10 unsafe, 5 unsupported, 6 injected unsafe Cypher drafts, 5 provider faults | **52 / 52** |
 | Assistant evaluation: real model + real Neo4j, 10 rounds, named films, decade and exclusion filters, guards | **23 / 23** |
 
 CI ([Quality workflow](.github/workflows/ci.yml)) starts the real three-service stack, imports MovieLens twice to prove idempotency, runs GDS and the whole suite. Integration tests fail loudly when the database is missing instead of skipping.
@@ -439,7 +490,7 @@ Import validation rejects invalid scores, missing foreign keys and conflicting i
 - Similarity uses a bounded top-K approximation; many catalog films have too few ratings to be connected.
 - Visitor picks live only in the browser tab and are never written to the graph.
 - The stack is built for one computer: ports bind to `127.0.0.1`. Before exposing it, set `REQUIRE_API_KEY=true` (the interface then asks for the key) and put real authentication in front.
-- The container image is published to GitHub Container Registry as **private** by the owner’s choice.
+- The repository is private; the container image is public on GitHub Container Registry.
 
 ---
 
