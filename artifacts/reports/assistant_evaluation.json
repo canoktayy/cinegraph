@@ -1,7 +1,7 @@
 {
-  "evaluated_at": "2026-10-17T22:56:34.572874+00:00",
+  "evaluated_at": "2026-10-18T15:32:30.525964+00:00",
   "model": "qwen2.5-7b-instruct",
-  "elapsed_seconds": 22.01,
+  "elapsed_seconds": 11.08,
   "actual_model_cases": 4,
   "deterministic_quiz_turns": 11,
   "guard_cases": 2,

@@ -1,6 +1,7 @@
 """Conversational taste discovery: model intent first, bounded graph retrieval second."""
 
 import json
+import re
 from typing import Annotated, Literal
 
 import httpx
@@ -142,6 +143,19 @@ def validate_plan(plan, selected, genres):
         plan.anchor_movie_id = None  # This tool has no single-film parameter.
 
 
+ARTICLE = re.compile(r"^(.*), (The|A|An|Les|La|Le|L'|Il|El|Der|Die|Das)$")
+
+
+def display_title(title: str) -> str:
+    """Show MovieLens titles as people say them: 'Godfather, The (1972)' -> 'The Godfather'."""
+    text = re.sub(r"\s*\(\d{4}(?:[–-]\d{4})?\)\s*$", "", title)
+    text = re.sub(r"^(.+?)\s+\((?:a\.k\.a\.\s+)?[^()]+\)$", r"\1", text)
+    article = ARTICLE.match(text)
+    if article:
+        text = article.group(2) + ("" if article.group(2).endswith("'") else " ") + article.group(1)
+    return text
+
+
 def card_plan(body: AssistantTurn, offered: dict, selected: list[int]) -> AssistantPlan:
     """Card clicks follow the fixed quiz, so their reply is factual and needs no model call."""
     done = len(body.choices)
@@ -158,7 +172,7 @@ def card_plan(body: AssistantTurn, offered: dict, selected: list[int]) -> Assist
         reply = f"Back to round {done + 1}. Choose again, or skip."
     elif body.choices and body.choices[-1] is not None:
         title = next(m["title"] for m in offered["rounds"][done - 1] if m["movie_id"] == body.choices[-1])
-        reply = f"Added {title}. Round {done + 1}: which of these do you like most?"
+        reply = f"Added {display_title(title)}. Round {done + 1}: which of these do you like most?"
     else:
         reply = f"Skipped. Round {done + 1}: which of these do you like most?"
     return AssistantPlan(

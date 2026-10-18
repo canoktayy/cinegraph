@@ -8,8 +8,10 @@ const assistant = {
   generation: 0,
   pending: null,
 };
-function assistantStatus(text) {
+function assistantStatus(text, error = false) {
   $("#assistant-status").textContent = text;
+  // Before the first successful turn the chat is hidden, so errors must also appear on the start panel.
+  $("#assistant-connect-status").textContent = error && !assistant.current ? text : "";
 }
 function assistantBusy(busy) {
   assistant.busy = busy;
@@ -75,10 +77,6 @@ function renderAssistant(result) {
 async function assistantTurn(message, event = "message", choices = assistant.choices) {
   if (assistant.busy) return;
   const key = $("#assistant-key").value.trim() || $("#api-key").value.trim();
-  if (!key) {
-    assistantStatus("Paste your local access key first. Quick picks works without a model or key.");
-    return;
-  }
   const generation = ++assistant.generation;
   const plan = assistant.current?.plan;
   const payload = {
@@ -102,7 +100,7 @@ async function assistantTurn(message, event = "message", choices = assistant.cho
   try {
     const result = await api("/api/assistant/turn", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-API-Key": key },
+      headers: modelHeaders(key),
       body: JSON.stringify(payload),
     });
     if (generation !== assistant.generation) return;
@@ -127,11 +125,16 @@ async function assistantTurn(message, event = "message", choices = assistant.cho
     );
   } catch (error) {
     if (generation !== assistant.generation) return;
+    if (error.status === 401) showKeyFields(true);
     assistantStatus(
       error.status === 401
-        ? "That access key was not accepted. Check APP_API_KEY in your .env file."
-        : error.message,
+        ? "This server asks for an access key. Paste APP_API_KEY from its .env file above, then try again."
+        : error.status === 503 || error.status === 504
+          ? `${error.message} Your choices are kept.`
+          : error.message,
+      true,
     );
+    if (error.status === 503 || error.status === 504) checkModel();
     $("#assistant-retry").hidden = false;
   } finally {
     if (generation === assistant.generation) assistantBusy(false);

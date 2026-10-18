@@ -7,7 +7,7 @@ import pytest
 from fastapi import HTTPException
 from pydantic import ValidationError
 
-from app.agent.assistant import AssistantClient, AssistantPlan, AssistantTurn, answer_turn
+from app.agent.assistant import AssistantClient, AssistantPlan, AssistantTurn, answer_turn, display_title
 from app.config import Settings
 from app.taste import ROUND_POOL, TASTE_RANKING, rounds
 from tests.fakes import fake_service
@@ -192,3 +192,17 @@ def test_tenth_card_recommends_with_preserved_filter_and_no_model(fixture):
     assert result["stage"] == "recommendations"
     assert result["plan"]["genre"] == "Comedy"
     assert service.repository.store.read.call_args.args[1]["genre"] == "Comedy"
+
+
+@pytest.mark.parametrize(
+    "raw,shown",
+    [
+        ("Godfather, The (1972)", "The Godfather"),
+        ("Independence Day (a.k.a. ID4) (1996)", "Independence Day"),
+        ("Femme Nikita, La (Nikita) (1990)", "La Femme Nikita"),
+        ("Toy Story (1995)", "Toy Story"),
+        ("(500) Days of Summer (2009)", "(500) Days of Summer"),
+    ],
+)
+def test_server_messages_use_natural_titles(raw, shown):
+    assert display_title(raw) == shown
