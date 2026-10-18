@@ -38,12 +38,14 @@ Ardından [siteyi aç](http://localhost:18080). [API belgeleri (Swagger)](http:/
 ## 3. Film assistant'ı kullanmak
 
 1. LM Studio'da **qwen2.5-7b-instruct** modelini yükle ve yerel sunucuyu **1234** portunda başlat.
-2. `.env` dosyasındaki **APP_API_KEY** değerini **Local access key** alanına yapıştır. Bu ücretli bir servis anahtarı değildir ve Neo4j şifresiyle aynı şey değildir. Anahtar yalnızca o sekmede kalır.
+2. **Film assistant** sayfasını aç. Anahtar girmen gerekmez. Sayfadaki gösterge modelin durumunu söyler: yeşil **Local model ready** ise hazırsın; değilse LM Studio'da neyi açman gerektiğini yazar, **check again** ile yeniden kontrol edebilirsin.
 3. **Start the conversation** ile başla. Film kartına tıklayarak seç ya da turu atla. Kart tıklamaları sunucu tarafından yönetilir, bu yüzden hızlıdır. Modeli yalnızca yazdığın mesajlar kullanır.
 4. On turdan sonra ya da **Recommend now** ile öneriler gelir. Bir afişe tıklarsan **Why?** penceresi açılır.
 5. “Bana sadece komedi öner”, “All genres” ya da seçtiğin bir filmin adını yazarak sonuçları değiştir.
 
-Model kapalıysa açık bir hata mesajı görürsün; **Try that step again** seçimlerini kaybetmeden yeniden dener. İstek sınırına takılırsan bir dakika bekle. Anahtarı ekran görüntüsüne ya da Git'e ekleme.
+Model kapalıysa açık bir hata mesajı görürsün; **Try that step again** seçimlerini kaybetmeden yeniden dener. İstek sınırına takılırsan bir dakika bekle.
+
+Siteyi başka bilgisayarlara açacaksan `.env` içinde `REQUIRE_API_KEY=true` yap. O zaman arayüz **APP_API_KEY** değerini ister. Bu değeri ekran görüntüsüne ya da Git'e ekleme.
 
 ## 4. Sunum ve kalite kontrolleri
 

@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from neo4j.exceptions import Neo4jError, ServiceUnavailable, SessionExpired
 
 from app.agent.assistant import AssistantClient, AssistantTurn, answer_turn
-from app.agent.client import LLMClient
+from app.agent.client import LLMClient, local_model_status
 from app.agent.workflow import answer
 from app.config import get_settings
 from app.database import GraphStore
@@ -80,12 +80,13 @@ async def database_error(request: Request, _error):
 
 
 def protect_ask(request: Request, x_api_key: Annotated[str | None, Header()] = None):
-    """Protect costly model calls and apply a small per-client minute budget."""
-    expected = get_settings().app_api_key
-    if not expected:
-        raise HTTPException(503, "Set APP_API_KEY before enabling the natural-language endpoint")
-    if not x_api_key or not compare_digest(x_api_key, expected):
-        raise HTTPException(401, "A valid X-API-Key is required")
+    """Optionally require a key, and always apply a small per-client minute budget to model calls."""
+    settings = get_settings()
+    if settings.require_api_key:
+        if not settings.app_api_key:
+            raise HTTPException(503, "Set APP_API_KEY before enabling the natural-language endpoint")
+        if not x_api_key or not compare_digest(x_api_key, settings.app_api_key):
+            raise HTTPException(401, "A valid X-API-Key is required")
     address = request.client.host if request.client else "local"
     budget = request.app.state.budgets[address]
     now = monotonic()
@@ -190,6 +191,12 @@ def discover(user_id: Identifier, recommender: Service, limit: Limit = 10):
 def explanation(user_id: Identifier, movie_id: Identifier, recommender: Service):
     """Return exact rating/similarity paths and their score contributions."""
     return recommender.explanation(user_id, movie_id)
+
+
+@app.get("/api/model/status", tags=["Natural language"])
+def model_status():
+    """Tell the interface whether the local model server answers, without sending any prompt."""
+    return local_model_status(get_settings())
 
 
 @app.post("/api/ask", response_model=AskResponse, dependencies=[Depends(protect_ask)], tags=["Natural language"])

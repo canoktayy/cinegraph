@@ -89,6 +89,24 @@ def bind_explicit_fields(payload: dict, request: AskRequest, genres: list[str]) 
     return payload
 
 
+def local_model_status(settings: Settings) -> dict:
+    """Probe the OpenAI-compatible model list; a reachable server does not prove answer quality."""
+    status = {"available": False, "model": settings.llm_model, "model_listed": False}
+    headers = {"Authorization": f"Bearer {settings.llm_api_key}"} if settings.llm_api_key else {}
+    try:
+        response = httpx.get(settings.llm_base_url.rstrip("/") + "/models", headers=headers, timeout=2)
+        response.raise_for_status()
+        listed = [item.get("id") for item in response.json().get("data", []) if isinstance(item, dict)]
+    except (httpx.HTTPError, ValueError, AttributeError):
+        return {**status, "requires_key": settings.require_api_key}
+    return {
+        **status,
+        "available": True,
+        "model_listed": settings.llm_model in listed,
+        "requires_key": settings.require_api_key,
+    }
+
+
 class LLMClient:
     """Bound provider time, output size and schema repair attempts."""
 

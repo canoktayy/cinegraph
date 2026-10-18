@@ -207,19 +207,20 @@
         </div>
 
         <div id="assistant-connect" class="panel connect">
-          <div>
-            <h2>Connect your local model</h2>
-            <ol class="checklist">
-              <li>Open LM Studio, load <code>qwen2.5-7b-instruct</code> and start the server on port 1234.</li>
-              <li>Copy <code>APP_API_KEY</code> from the <code>.env</code> file in the project folder.</li>
-              <li>Paste it below. It stays in this tab only.</li>
-            </ol>
+          <div class="connect-text">
+            <h2>Ready when you are</h2>
+            <p class="muted">I’ll show you five films per round. Click the one you like most, then ask for changes such as “only comedies” or “more like Fargo”.</p>
+            <div class="model-status" data-model-status="assistant" role="status" aria-live="polite"></div>
           </div>
           <form id="assistant-connect-form" class="connect-form">
-            <label for="assistant-key">Local access key</label>
-            <input id="assistant-key" class="model-key" type="password" autocomplete="off" placeholder="Paste APP_API_KEY" />
-            <button id="assistant-start" class="button primary" type="submit">Start the conversation →</button>
-            <p class="muted small">No model? <button class="link" type="button" data-view="picks">Use quick picks instead</button> — same results, no setup.</p>
+            <div id="assistant-key-field" class="key-field" hidden>
+              <label for="assistant-key">Access key</label>
+              <input id="assistant-key" class="model-key" type="password" autocomplete="off" placeholder="APP_API_KEY from the server’s .env" />
+              <p class="muted small">This server was started with <code>REQUIRE_API_KEY=true</code>.</p>
+            </div>
+            <button id="assistant-start" class="button primary large" type="submit">Start the conversation →</button>
+            <p id="assistant-connect-status" class="error-text small" role="alert"></p>
+            <p class="muted small">No local model? <button class="link" type="button" data-view="picks">Use quick picks instead</button> — same graph, no setup.</p>
           </form>
         </div>
 
@@ -345,8 +346,11 @@
         </div>
         <div class="lab-layout">
           <form id="lab-form" class="panel lab-form">
-            <label for="api-key">Local access key</label>
-            <input id="api-key" class="model-key" type="password" autocomplete="off" placeholder="Paste APP_API_KEY from .env" />
+            <div class="model-status compact" data-model-status role="status" aria-live="polite"></div>
+            <div id="lab-key-field" class="key-field" hidden>
+              <label for="api-key">Access key</label>
+              <input id="api-key" class="model-key" type="password" autocomplete="off" placeholder="APP_API_KEY from the server’s .env" />
+            </div>
             <label for="question">Your question</label>
             <textarea id="question" rows="3" maxlength="1000" placeholder="Recommend 5 Sci-Fi movies for user 42"></textarea>
             <div class="chips small-chips">

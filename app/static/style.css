@@ -202,6 +202,19 @@ kbd { font-family: var(--mono); font-size: 0.78rem; background: var(--surface-2)
 .chip.static { cursor: default; color: var(--text); }
 
 /* ---------- Assistant ---------- */
+.connect-text { display: grid; gap: 12px; align-content: start; }
+.model-status { display: flex; gap: 10px; align-items: baseline; padding: 12px 14px; border-radius: var(--radius-sm); background: var(--bg-2); border: 1px solid var(--border); font-size: 0.92rem; color: var(--muted); }
+.model-status .dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--faint); transform: translateY(-1px); }
+.model-status[data-tone="ready"] { color: var(--text); border-color: rgba(95, 211, 160, 0.4); }
+.model-status[data-tone="ready"] .dot { background: var(--green); box-shadow: 0 0 0 4px rgba(95, 211, 160, 0.15); }
+.model-status[data-tone="warn"] .dot, .model-status[data-tone="off"] .dot { background: var(--accent); }
+.model-status[data-tone="off"] { border-color: rgba(245, 184, 75, 0.35); }
+.model-status[data-tone="checking"] .dot { animation: pulse 1s ease-in-out infinite; }
+.model-status.compact { margin-bottom: 4px; }
+.model-status .link { font-size: inherit; }
+.model-status code { white-space: nowrap; }
+.key-field { display: grid; gap: 6px; }
+#assistant-connect-status:empty { display: none; }
 .connect { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; }
 .connect h2 { margin-bottom: 14px; }
 .checklist { margin: 0; padding-left: 20px; color: var(--muted); display: grid; gap: 8px; }

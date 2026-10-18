@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     neo4j_password: str = ""
     neo4j_database: str = "neo4j"
     app_api_key: str = ""
+    # Local use needs no key: ports bind to 127.0.0.1 and Nginx budgets model calls. Enable before exposing the app.
+    require_api_key: bool = False
     llm_base_url: str = "http://localhost:1234/v1"
     llm_model: str = "qwen2.5-7b-instruct"
     llm_api_key: str = ""

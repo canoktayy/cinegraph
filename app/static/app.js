@@ -150,6 +150,7 @@ function setView(view, updateAddress = true) {
     window.scrollTo({ top: 0, behavior: "instant" });
     document.title = view === "home" ? "MovieGraph — find your next film" : `${$("#screen-" + view + " h1")?.textContent || "MovieGraph"} · MovieGraph`;
   }
+  if (changed && ["assistant", "lab"].includes(view)) checkModel();
   if (LIST_VIEWS.includes(view) && (changed || !state.loaded[view])) return loadFilms();
 }
 window.addEventListener("hashchange", () => setView(location.hash.slice(1), false));
@@ -475,6 +476,52 @@ async function loadPicks() {
   }
 }
 
+/* ---------- Local model status ---------- */
+const model = { requiresKey: false, requestId: 0 };
+/* The key is optional: only servers started with REQUIRE_API_KEY=true ask for it. */
+function modelHeaders(key) {
+  const headers = { "Content-Type": "application/json" };
+  if (String(key || "").trim()) headers["X-API-Key"] = String(key).trim();
+  return headers;
+}
+function showKeyFields(show) {
+  model.requiresKey = model.requiresKey || show;
+  $("#assistant-key-field").hidden = !model.requiresKey;
+  $("#lab-key-field").hidden = !model.requiresKey;
+}
+function renderModelStatus(status) {
+  const name = `<code>${escapeText(status?.model || "qwen2.5-7b-instruct")}</code>`;
+  let tone = "off";
+  let html;
+  if (!status) html = "Checking the local model…";
+  else if (status.available && status.model_listed) {
+    tone = "ready";
+    html = `Local model ready · ${name}`;
+  } else if (status.available) {
+    tone = "warn";
+    html = `LM Studio is running, but ${name} is not loaded. Load it, then <button type="button" class="link" data-check-model>check again</button>.`;
+  } else
+    html = `The local model is off. Open LM Studio, load ${name} and start the server on port 1234, then <button type="button" class="link" data-check-model>check again</button>.`;
+  $$("[data-model-status]").forEach((node) => {
+    node.dataset.tone = status ? tone : "checking";
+    // Card rounds never call the model, so the assistant stays usable while only typed requests wait for it.
+    const extra = tone !== "ready" && status && node.dataset.modelStatus === "assistant" ? " You can still choose films now; typed requests need the model." : "";
+    node.innerHTML = `<span class="dot" aria-hidden="true"></span><span>${html}${extra}</span>`;
+  });
+}
+async function checkModel() {
+  const requestId = ++model.requestId;
+  renderModelStatus(null);
+  try {
+    const status = await api("/api/model/status");
+    if (requestId !== model.requestId) return;
+    renderModelStatus(status);
+    showKeyFields(Boolean(status.requires_key));
+  } catch {
+    if (requestId === model.requestId) renderModelStatus({ available: false });
+  }
+}
+
 /* ---------- Query lab ---------- */
 function syncKeys(source) {
   $$(".model-key").forEach((input) => {
@@ -490,10 +537,9 @@ function labTable(rows) {
 }
 async function askGraph() {
   const question = $("#question").value.trim();
-  const key = $("#api-key").value.trim();
   const output = $("#ask-result");
-  if (!question || !key) {
-    output.innerHTML = `<p class="error-text">${!key ? "Paste your local access key first." : "Type a question first."}</p>`;
+  if (!question) {
+    output.innerHTML = '<p class="error-text">Type a question first, or click one of the examples.</p>';
     return;
   }
   const button = $("#ask-button");
@@ -503,7 +549,7 @@ async function askGraph() {
   try {
     const result = await api("/api/ask", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-API-Key": key },
+      headers: modelHeaders($("#api-key").value),
       body: JSON.stringify({ question, limit: 10 }),
     });
     const plan = Object.entries(result.interpreted_intent).filter(([, value]) => value !== null && value !== undefined);
@@ -513,9 +559,10 @@ async function askGraph() {
       `<div class="stage"><span class="stage-n">3</span><div><h3>Checked Cypher template <small class="muted">#${escapeText(result.query_id)}</small></h3><pre>${escapeText(result.compiled_cypher)}</pre><details><summary>Bound parameters</summary><pre>${escapeText(JSON.stringify(result.parameters, null, 2))}</pre></details></div></div>` +
       `<div class="stage ok"><span class="stage-n">4</span><div><h3>Results from Neo4j</h3><p>${escapeText(result.explanation)}</p>${result.warnings.length ? `<p class="muted small">${escapeText(result.warnings.join(" "))}</p>` : ""}${labTable(result.rows)}</div></div>`;
   } catch (error) {
+    if (error.status === 401) showKeyFields(true);
     output.innerHTML =
       `<div class="stage"><span class="stage-n">1</span><div><h3>Question</h3><p>${escapeText(question)}</p></div></div>` +
-      `<div class="stage blocked"><span class="stage-n">✕</span><div><h3>${error.status === 422 ? "Rejected by a guardrail" : error.status === 401 ? "Access key not accepted" : "Could not run"}${error.status ? ` <small>HTTP ${error.status}</small>` : ""}</h3><p>${escapeText(error.message)}</p>${error.status === 422 ? "<p class=\"muted small\">Nothing was sent to the database. Only reviewed, read-only query templates can run.</p>" : ""}</div></div>`;
+      `<div class="stage blocked"><span class="stage-n">✕</span><div><h3>${error.status === 422 ? "Rejected by a guardrail" : error.status === 401 ? "This server needs an access key" : error.status >= 503 ? "The local model is not responding" : "Could not run"}${error.status ? ` <small>HTTP ${error.status}</small>` : ""}</h3><p>${escapeText(error.message)}</p>${error.status === 422 ? "<p class=\"muted small\">Nothing was sent to the database. Only reviewed, read-only query templates can run.</p>" : ""}</div></div>`;
   } finally {
     button.disabled = false;
     button.textContent = "Run question";
@@ -581,6 +628,10 @@ document.addEventListener("click", (event) => {
   const detail = target.closest("[data-detail]");
   const genre = target.closest("[data-pick-genre]");
   const question = target.closest("[data-question]");
+  if (target.closest("[data-check-model]")) {
+    checkModel();
+    return;
+  }
   if (pick) advanceTaste(Number(pick.dataset.pick));
   else if (why) showTasteEvidence(Number(why.dataset.whyPick));
   else if (evidence) showEvidence(Number(evidence.dataset.evidence));

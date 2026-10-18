@@ -53,6 +53,7 @@ function page({ posters = Promise.resolve(response({})) } = {}) {
   const nodes = new Map();
   const requests = [];
   const bodies = new Map();
+  const headers = new Map();
   const pending = new Map();
   const documentEvents = {};
   const element = (selector) => {
@@ -83,7 +84,8 @@ function page({ posters = Promise.resolve(response({})) } = {}) {
     window: { addEventListener() {}, scrollTo() {} },
     document: {
       querySelector: element,
-      querySelectorAll: (selector) => (selector === "[data-screen]" ? screens : []),
+      querySelectorAll: (selector) =>
+        selector === "[data-screen]" ? screens : selector === "[data-model-status]" ? [element("[data-model-status]")] : [],
       addEventListener(name, fn) {
         (documentEvents[name] ??= []).push(fn);
       },
@@ -92,6 +94,7 @@ function page({ posters = Promise.resolve(response({})) } = {}) {
     fetch: (path, options = {}) => {
       requests.push(path);
       bodies.set(path, options.body);
+      headers.set(path, options.headers);
       if (path === "/static/posters.json") return posters;
       if (path === "/api/system/status")
         return Promise.resolve(response({ movies: 10, ratings: 20, users: 3 }));
@@ -106,6 +109,7 @@ function page({ posters = Promise.resolve(response({})) } = {}) {
     element,
     requests,
     bodies,
+    headers,
     pending,
     run: (code) => vm.runInContext(code, context),
     key: (key, target = { matches: () => false }) => {
@@ -298,7 +302,6 @@ test("MovieLens titles are shown in natural reading order", () => {
 test("the query lab shows a guardrail rejection without database results", async () => {
   const browser = page();
   await tick();
-  browser.element("#api-key").value = "local-test-key";
   browser.element("#question").value = "DELETE all nodes";
   const ask = browser.run("askGraph()");
   browser.pending
@@ -361,12 +364,44 @@ test("assistant success escapes model text and can finish after navigation witho
   assert.doesNotMatch(browser.element("#assistant-transcript").innerHTML, /<script>/);
   assert.match(browser.element("#assistant-transcript").innerHTML, /&lt;script&gt;/);
 });
-test("a rejected access key explains where to find the local key", async () => {
+test("a server that requires a key reveals the key fields and explains where to find it", async () => {
   const browser = conversationPage();
+  browser.element("#assistant-key-field").hidden = true;
+  browser.element("#lab-key-field").hidden = true;
   const request = browser.run("assistantTurn('', 'start', [])");
   browser.pending.get("/api/assistant/turn").resolve(response({ detail: "A valid X-API-Key is required" }, false, 401));
   await request;
   assert.match(browser.element("#assistant-status").textContent, /APP_API_KEY/);
+  assert.match(browser.element("#assistant-connect-status").textContent, /APP_API_KEY/, "visible before the chat opens");
+  assert.equal(browser.element("#assistant-key-field").hidden, false);
+  assert.equal(browser.element("#lab-key-field").hidden, false);
+});
+test("the assistant works without any key on a local install", async () => {
+  const browser = page();
+  browser.run(assistantSource);
+  const request = browser.run("assistantTurn('', 'start', [])");
+  assert.ok(browser.requests.includes("/api/assistant/turn"), "no key is required before sending");
+  assert.equal(browser.headers.get("/api/assistant/turn")["X-API-Key"], undefined);
+  browser.pending.get("/api/assistant/turn").resolve(response(assistantResult()));
+  await request;
+  assert.equal(browser.element("#assistant-workspace").hidden, false);
+});
+test("the model status says plainly whether the local model is ready", async () => {
+  const browser = page();
+  await tick();
+  const offline = browser.run("checkModel()");
+  assert.match(browser.element("[data-model-status]").innerHTML, /Checking/);
+  browser.pending.get("/api/model/status").resolve(response({ available: false, model: "qwen", requires_key: false }));
+  await offline;
+  const node = browser.element("[data-model-status]");
+  assert.match(node.innerHTML, /local model is off/);
+  assert.match(node.innerHTML, /data-check-model/);
+  assert.equal(node.dataset.tone, "off");
+  const ready = browser.run("checkModel()");
+  browser.pending.get("/api/model/status").resolve(response({ available: true, model_listed: true, model: "qwen", requires_key: true }));
+  await ready;
+  assert.match(node.innerHTML, /Local model ready/);
+  assert.equal(browser.element("#lab-key-field").hidden, false, "a key-protected server shows the key field up front");
 });
 
 test("number keys pick a film, S skips, and picks so far stay visible during the quiz", async () => {

@@ -145,7 +145,7 @@ make demo           # live HTTP smoke checks
 | Swagger / OpenAPI | http://localhost:18080/docs |
 | Neo4j Browser | http://localhost:17474 (Bolt `17687`, credentials in your `.env`) |
 
-**Optional local model** (Film assistant and Query lab): load `qwen2.5-7b-instruct` in [LM Studio](https://lmstudio.ai) and start its server on port `1234`. In the app, paste `APP_API_KEY` from your `.env`; it stays in the browser tab only. Everything else works without a model.
+**Optional local model** (Film assistant and Query lab): load `qwen2.5-7b-instruct` in [LM Studio](https://lmstudio.ai) and start its server on port `1234`. No key is needed: the Film assistant and Query lab show a live status (“Local model ready” or how to start it). Everything else works without a model.
 
 A Turkish walkthrough is available in [docs/START_HERE_TR.md](docs/START_HERE_TR.md).
 
@@ -293,7 +293,7 @@ Interactive documentation: **http://localhost:18080/docs**
 | POST | `/api/ask` 🔑 | Natural-language query lab |
 | POST | `/api/assistant/turn` 🔑 | Film assistant turn |
 
-🔑 requires the `X-API-Key` header (`APP_API_KEY` from `.env`).
+🔑 model endpoints: always rate-limited by Nginx and the API; they additionally require the `X-API-Key` header when the server runs with `REQUIRE_API_KEY=true` (off by default because every port binds to `127.0.0.1`). `GET /api/model/status` tells the interface whether LM Studio answers.
 
 ```bash
 curl 'http://localhost:18080/api/movies/1/similar?limit=5'
@@ -301,7 +301,7 @@ curl 'http://localhost:18080/api/users/42/recommendations?genre=Sci-Fi&limit=10'
 curl -X POST 'http://localhost:18080/api/taste/recommendations' \
   -H 'Content-Type: application/json' -d '{"movie_ids":[1,260,296],"limit":8}'
 curl -X POST 'http://localhost:18080/api/ask' -H 'Content-Type: application/json' \
-  -H "X-API-Key: $APP_API_KEY" -d '{"question":"Recommend 5 Sci-Fi movies for user 42"}'
+  -d '{"question":"Recommend 5 Sci-Fi movies for user 42"}'
 ```
 
 ---
@@ -310,9 +310,9 @@ curl -X POST 'http://localhost:18080/api/ask' -H 'Content-Type: application/json
 
 | Check | Result |
 |---|---|
-| Python tests (unit, API, real Neo4j/Cypher/GDS integration) | **181 passed** |
-| Frontend behavioural tests (Node test runner) | **19 passed** |
-| Statement + branch coverage (enforced ≥ 60 %) | **83.2 %** |
+| Python tests (unit, API, real Neo4j/Cypher/GDS integration) | **190 passed** |
+| Frontend behavioural tests (Node test runner) | **21 passed** |
+| Statement + branch coverage (enforced ≥ 60 %) | **83.8 %** |
 | Pylint with the course `.pylintrc` (enforced ≥ 9.5) | **9.90 / 10** |
 | Query-lab evaluation: 20 live model cases, 10 unsafe, 5 unsupported, 5 injected faults | **40 / 40** |
 | Assistant evaluation: real model + real Neo4j, 10 rounds, Turkish genre filter, tool switch, guards | **17 / 17** |
@@ -405,7 +405,7 @@ Import validation rejects invalid scores, missing foreign keys and conflicting i
 - MovieLens is a historical, selection-biased research sample; “top films” are not live trends.
 - Similarity uses a bounded top-K approximation; many catalog films have too few ratings to be connected.
 - Visitor picks live only in the browser tab and are never written to the graph.
-- Authentication is a local development key; this deployment is not meant to be exposed publicly.
+- The stack is built for one computer: ports bind to `127.0.0.1`. Before exposing it, set `REQUIRE_API_KEY=true` (the interface then asks for the key) and put real authentication in front.
 - The container image is published to GitHub Container Registry as **private** by the owner’s choice.
 
 ---
