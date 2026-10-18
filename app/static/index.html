@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="dark" />
-    <title>MovieGraph — find your next film</title>
+    <title>MovieGraph: find your next film</title>
     <meta
       name="description"
       content="Pick films you love and get recommendations with a visible reason, built on a Neo4j graph of MovieLens ratings."
@@ -60,11 +60,11 @@
         <div class="hero">
           <div class="hero-text">
             <p class="kicker">Movie recommendations you can check</p>
-            <h1>Tell us a few films you love.<br /><span>We’ll show you what to watch next — and why.</span></h1>
+            <h1>Tell us a few films you love.<br /><span>We’ll show you what to watch next, and why.</span></h1>
             <p class="lead">
               MovieGraph connects films through 100,000 real ratings. When people
               who loved your favourites also loved another film, that link becomes
-              a recommendation — and you can see the exact connection behind it.
+              a recommendation, and you can see the exact connection behind it.
             </p>
             <div class="hero-actions">
               <button class="button primary large" data-view="picks">
@@ -80,10 +80,10 @@
         </div>
 
         <div class="stats" aria-label="Dataset at a glance">
-          <div><strong id="stat-movies">—</strong><span>films</span></div>
-          <div><strong id="stat-ratings">—</strong><span>ratings</span></div>
-          <div><strong id="stat-users">—</strong><span>anonymous raters</span></div>
-          <div><strong id="stat-date">—</strong><span>data snapshot</span></div>
+          <div><strong id="stat-movies">…</strong><span>films</span></div>
+          <div><strong id="stat-ratings">…</strong><span>ratings</span></div>
+          <div><strong id="stat-users">…</strong><span>anonymous raters</span></div>
+          <div><strong id="stat-date">…</strong><span>data snapshot</span></div>
         </div>
 
         <section class="block" aria-labelledby="how-title">
@@ -180,7 +180,7 @@
           <div class="quiz-actions">
             <button id="taste-back" class="button ghost">← Previous round</button>
             <button id="taste-finish" class="button ghost" hidden>Show my matches now</button>
-            <button id="taste-skip" class="button subtle">I don’t know these — skip →</button>
+            <button id="taste-skip" class="button subtle">I don’t know these, skip →</button>
           </div>
         </div>
 
@@ -203,7 +203,7 @@
         <div class="page-head">
           <p class="kicker">Film assistant</p>
           <h1>Find films by chatting</h1>
-          <p class="lead">The assistant shows you real films to choose from, then lets you refine the results in plain language. The language model only understands your request — the films always come from the graph.</p>
+          <p class="lead">The assistant shows you real films to choose from, then lets you refine the results in plain language. The language model only understands your request; the films always come from the graph.</p>
         </div>
 
         <div id="assistant-connect" class="panel connect">
@@ -220,7 +220,7 @@
             </div>
             <button id="assistant-start" class="button primary large" type="submit">Start the conversation →</button>
             <p id="assistant-connect-status" class="error-text small" role="alert"></p>
-            <p class="muted small">No local model? <button class="link" type="button" data-view="picks">Use quick picks instead</button> — same graph, no setup.</p>
+            <p class="muted small">No local model? <button class="link" type="button" data-view="picks">Use quick picks instead</button>: same graph, no setup.</p>
           </form>
         </div>
 
@@ -292,7 +292,7 @@
         <div class="page-head">
           <p class="kicker">Explore · Top films</p>
           <h1>Top films in the dataset</h1>
-          <p class="lead">MovieLens is a historical snapshot ending in September 2018 — this is not what’s trending today.</p>
+          <p class="lead">MovieLens is a historical snapshot ending in September 2018, so this is not what’s trending today.</p>
         </div>
         <div class="segmented" role="tablist" aria-label="Ranking">
           <button class="segment active" role="tab" aria-selected="true" data-metric="rating">Highest rated · final year</button>
@@ -368,7 +368,7 @@
                 <li><strong>Question</strong><span>Plain English or Turkish</span></li>
                 <li><strong>Plan</strong><span>The model picks one of six allowed intents</span></li>
                 <li><strong>Checked query</strong><span>A reviewed Cypher template with bound parameters</span></li>
-                <li><strong>Results</strong><span>Real rows from Neo4j — nothing invented</span></li>
+                <li><strong>Results</strong><span>Real rows from Neo4j, nothing invented</span></li>
               </ol>
             </div>
           </div>

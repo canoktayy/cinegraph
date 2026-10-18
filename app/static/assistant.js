@@ -59,7 +59,7 @@ function renderAssistant(result) {
   $("#assistant-results").innerHTML =
     `<div class="panel-head"><h2>${heading}</h2><p class="muted">${escapeText(help)}</p></div>` +
     `<div class="film-grid ${choosing ? "five compact" : "compact"}">${movies.map((movie) => assistantCard(movie, choosing)).join("")}</div>` +
-    (choosing ? '<button id="assistant-skip" class="button subtle">I don’t know these — skip →</button>' : "") +
+    (choosing ? '<button id="assistant-skip" class="button subtle">I don’t know these, skip →</button>' : "") +
     (result.stage === "recommendations" && !movies.length
       ? '<div class="empty">No connected films for this request. Try “All genres” or choose more favourites. Nothing was invented.</div>'
       : "");
@@ -190,7 +190,7 @@ document.addEventListener("click", (event) => {
     const movie = assistant.current.options.find((row) => row.movie_id === id);
     if (movie) assistantTurn(`I choose ${cleanTitle(movie.title)}.`, "pick", [...assistant.choices, id]);
   } else if (skip && !assistant.busy)
-    assistantTurn("I don’t know these films — skip this round.", "pick", [...assistant.choices, null]);
+    assistantTurn("I don’t know these films, so skip this round.", "pick", [...assistant.choices, null]);
   else if (evidence) assistantEvidence(Number(evidence.dataset.assistantEvidence));
   else if (suggestion) assistantTurn(suggestion.dataset.assistantMessage);
 });
