@@ -47,7 +47,7 @@ Project 4 · *Movie Recommender in Production* (Level 2)
 | | Feature | How it works |
 |---|---|---|
 | 🎯 | **Quick picks** | Ten rounds of five well-known films; click or press <kbd>1</kbd>–<kbd>5</kbd>. Pick favourites, get matches, filter by genre. No account, no model. |
-| 💬 | **Film assistant** | The same flow as a conversation. Say *“Scarface is my favourite film”*, *“only 90s thrillers”* or *“korku olmasın”*: a local LLM understands the request, the graph returns the films, and the LLM describes them. |
+| 💬 | **Film assistant** | The same flow as a conversation. Say *“Scarface is my favourite film”*, *“only 90s thrillers”* or *“no horror”*: a local LLM understands the request, the graph returns the films, and the LLM describes them. |
 | 🔍 | **“Why this film?”** | Every recommendation shows the picks it is linked to and how many raters loved both films. |
 | 📚 | **Catalog** | Full-text search over 9,742 films, genre filter, and “fans also liked” for any film. |
 | 🏆 | **Top films** | The highest rated films in the data’s final year (adjusted so a film with few ratings cannot win by luck), or the most connected films by **PageRank**. |
@@ -89,7 +89,7 @@ The server runs the ten rounds itself. For typed requests the local model works 
 
 <img src="docs/screenshots/ui-assistant-scarface.jpg" alt="Film assistant following Scarface with filters" width="900">
 
-<sub>After “Bana sadece komedi öner”, the visitor wrote “Scarface en sevdiğim film”, “only 80s and 90s please” and “korku olmasın”. Filters add up, and the chips show exactly what ran.</sub>
+<sub>The visitor wrote “Scarface is my favourite film”, then “only 80s and 90s please” and “no horror please”. Each new filter is added to the ones before, and the chips show exactly what ran.</sub>
 
 ### 4 · Explore the data
 
@@ -168,7 +168,7 @@ make demo           # live HTTP smoke checks
 
 **Optional local model** (Film assistant and Query lab): load `qwen2.5-7b-instruct` in [LM Studio](https://lmstudio.ai) and start its server on port `1234`. No key is needed: the Film assistant and Query lab show a live status (“Local model ready” or how to start it). Everything else works without a model.
 
-A Turkish walkthrough is available in [docs/START_HERE_TR.md](docs/START_HERE_TR.md).
+A short walkthrough is available in [docs/START_HERE.md](docs/START_HERE.md).
 
 ---
 
@@ -296,7 +296,7 @@ flowchart LR
 ```
 
 - **Orchestrator:** returns a typed intent (action, tool, the film title as written, filters). It never returns IDs, films or scores.
-- **Server:** uses a film title only if the visitor wrote it, and looks it up in the whole catalog (exact title, else the most rated match). Filters the visitor typed (English or Turkish genre names, “no …”, “80s”, “90'lar”) override the model. A question changes nothing.
+- **Server:** uses a film title only if the visitor wrote it, and looks it up in the whole catalog (exact title, else the most rated match). Filters the visitor typed (genre names, “no …”, “80s”, “before 2000”) override the model. A question changes nothing.
 - **Verbaliser:** one sentence from the real results. A reply that names other films, lists too many, asks a needless question or uses the wrong language is replaced by a factual template.
 - Card clicks never call the model, and picks are re-checked against the seeded rounds, so a client cannot forge preferences. Mutation requests and unsupported data (actors, plots) are rejected before any model call.
 - This fixes a real logged bug: *“Scarface is my favourite”* used to return films similar to *The Lion King*, because the model had to pick an ID from the visitor’s picks.
@@ -348,7 +348,7 @@ curl -X POST 'http://localhost:18080/api/ask' -H 'Content-Type: application/json
 | Statement + branch coverage (enforced ≥ 60 %) | **84.8 %** |
 | Pylint with the course `.pylintrc` (enforced ≥ 9.5) | **9.90 / 10** |
 | Query-lab evaluation: 20 live model cases, 10 unsafe, 5 unsupported, 5 injected faults | **40 / 40** |
-| Assistant evaluation: real model + real Neo4j, 10 rounds, named films, decade and exclusion filters in English and Turkish, guards | **23 / 23** |
+| Assistant evaluation: real model + real Neo4j, 10 rounds, named films, decade and exclusion filters, guards | **23 / 23** |
 
 CI ([Quality workflow](.github/workflows/ci.yml)) starts the real three-service stack, imports MovieLens twice to prove idempotency, runs GDS and the whole suite. Integration tests fail loudly when the database is missing instead of skipping.
 
@@ -420,7 +420,7 @@ cinegraph/
 └── Makefile
 ```
 
-Further reading: [requirement-to-evidence map](docs/requirements.md) · [demo runbook](docs/demo-runbook.md) · [reliability review](docs/review.md) · [project guide (PDF, Turkish)](proje_guide.pdf).
+Further reading: [requirement-to-evidence map](docs/requirements.md) · [demo runbook](docs/demo-runbook.md) · [reliability review](docs/review.md) · [start here](docs/START_HERE.md).
 
 ---
 
