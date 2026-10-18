@@ -1,6 +1,6 @@
 # Buradan başla
 
-**MovieGraph, sevdiğin filmleri seçmeni ister; ardından ne izleyebileceğini önerir ve her önerinin nedenini gösterir.** Hesap açman gerekmez. Seçimlerin yalnızca açık tarayıcı sekmesinde tutulur.
+**Reelpath, sevdiğin filmleri seçmeni ister; ardından ne izleyebileceğini önerir ve her önerinin nedenini gösterir.** Hesap açman gerekmez. Seçimlerin yalnızca açık tarayıcı sekmesinde tutulur.
 
 ## 1. Uygulamayı çalıştır
 

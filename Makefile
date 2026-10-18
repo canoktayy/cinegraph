@@ -3,7 +3,7 @@ PIP = .venv/bin/pip
 
 .PHONY: help venv install setup run docker-run docker-build stop download profile seed validate-data analytics test test-unit lint format clean train evaluate benchmark llm-eval demo
 help: ## Show commands
-	@awk 'BEGIN {FS=":.*## "; print "MovieGraph commands:"} /^[a-zA-Z-]+:.*## / {printf "  %-18s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS=":.*## "; print "Reelpath commands:"} /^[a-zA-Z-]+:.*## / {printf "  %-18s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 venv: ## Create an isolated Python 3.12+ environment
 	@test -d .venv || python3 -m venv .venv
 install: venv ## Install pinned application and development dependencies
