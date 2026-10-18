@@ -1,4 +1,4 @@
-/* MovieGraph interface. Every title, score, path and count is read from the API; nothing is invented here. */
+/* Reelpath interface. Every title, score, path and count is read from the API; nothing is invented here. */
 "use strict";
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -99,8 +99,18 @@ function posterArt(movie, size = "w342") {
   const hue = (Number(movie.movie_id) * 47) % 360;
   return `<span class="poster" data-size="${size}" style="--hue:${hue}">${posterImage(movie.movie_id, size)}<span class="poster-fallback">${escapeText(cleanTitle(movie.title))}</span></span>`;
 }
+/* The genre a visitor filtered by is always listed first, so a filtered result visibly matches it. */
+function activeGenre() {
+  if (state.view === "picks") return taste.genre;
+  if (state.view === "assistant") return typeof assistant === "object" ? assistant.current?.plan?.genre : "";
+  if (state.view === "users") return $("#user-genre").value;
+  if (state.view === "catalog") return $("#genre").value;
+  return "";
+}
 function genreLine(movie, limit = 3) {
-  return escapeText((movie.genres || []).slice(0, limit).join(" · ") || "No genre listed");
+  const preferred = activeGenre();
+  const genres = [...(movie.genres || [])].sort((a, b) => (b === preferred) - (a === preferred));
+  return escapeText(genres.slice(0, limit).join(" · ") || "No genre listed");
 }
 function card(movie, mode = "catalog") {
   const title = escapeText(cleanTitle(movie.title));
@@ -148,7 +158,7 @@ function setView(view, updateAddress = true) {
     notice("");
     if ($("#detail-dialog").open) $("#detail-dialog").close();
     window.scrollTo({ top: 0, behavior: "instant" });
-    document.title = view === "home" ? "MovieGraph: find your next film" : `${$("#screen-" + view + " h1")?.textContent || "MovieGraph"} · MovieGraph`;
+    document.title = view === "home" ? "Reelpath: find your next film" : `${$("#screen-" + view + " h1")?.textContent || "Reelpath"} · Reelpath`;
   }
   if (changed && ["assistant", "lab"].includes(view)) checkModel();
   if (LIST_VIEWS.includes(view) && (changed || !state.loaded[view])) return loadFilms();
@@ -726,8 +736,17 @@ async function loadExample() {
     const result = await api("/api/movies/1/similar?limit=1");
     const top = result.items[0];
     if (!top) return;
-    const short = (text) => (text.length > 15 ? text.slice(0, 14) + "…" : text);
-    $("#example-rec").textContent = short(cleanTitle(top.title));
+    // Wrap the title onto at most two short lines inside the diagram box.
+    const lines = [""];
+    for (const word of cleanTitle(top.title).split(" ")) {
+      const line = lines.at(-1);
+      if (line && (line + " " + word).length > 15) lines.push(word);
+      else lines[lines.length - 1] = line ? line + " " + word : word;
+    }
+    if (lines.length > 2) lines.splice(1, lines.length - 1, lines.slice(1).join(" ").slice(0, 14) + "…");
+    $("#example-rec").innerHTML = lines.map((line, index) => `<tspan x="562" dy="${index ? 17 : 0}">${escapeText(line)}</tspan>`).join("");
+    $("#example-rec").setAttribute("y", lines.length > 1 ? "70" : "78");
+    $("#example-rec-label").setAttribute("y", lines.length > 1 ? "110" : "98");
     $("#example-fans").textContent = `${formatNumber(top.support)} loved both`;
     $("#graph-caption").textContent = `A real link from the graph: ${formatNumber(top.support)} MovieLens raters gave both Toy Story and ${cleanTitle(top.title)} 4★ or more.`;
   } catch {
