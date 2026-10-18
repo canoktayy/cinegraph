@@ -277,6 +277,9 @@ def test_input_bounds(body):
         ("romantik filmler 2000 öncesi", {"genre": "Romance", "year_to": 1999}),
         ("all genres", {"genre": None, "exclude_genre": None}),
         ("Scarface en sevdiğim film", {}),
+        ("something warm and actionable", {}),
+        ("komedileri göster", {"genre": "Comedy"}),
+        ("no war films", {"exclude_genre": "War"}),
     ],
 )
 def test_explicit_filters(message, expected):
