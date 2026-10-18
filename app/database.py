@@ -33,6 +33,12 @@ class GraphStore:
                 raise ServiceUnavailable("Graph database address is temporarily unavailable") from error
             raise
 
+    def query_type(self, text: str, parameters: dict | None = None) -> str:
+        """EXPLAIN without executing; Neo4j reports 'r' only for read-only queries."""
+        with self.driver.session(database=self.settings.neo4j_database, default_access_mode=READ_ACCESS) as session:
+            query = Query("EXPLAIN " + text, timeout=self.settings.query_timeout_seconds)
+            return session.run(query, parameters or {}).consume().query_type
+
     def write(self, text: str, parameters: dict | None = None) -> list[dict]:
         """Run a trusted schema/import/batch statement outside the LLM surface."""
         with self.driver.session(database=self.settings.neo4j_database) as session:
