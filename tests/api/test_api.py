@@ -2,6 +2,8 @@
 
 from unittest.mock import Mock
 
+import httpx
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -16,7 +18,7 @@ from tests.fakes import fake_service
 def client(monkeypatch):
     recommender = fake_service()
     app.dependency_overrides[service] = lambda: recommender
-    monkeypatch.setattr("app.main.get_settings", lambda: Settings(app_api_key="test-key"))
+    monkeypatch.setattr("app.main.get_settings", lambda: Settings(app_api_key="test-key", require_api_key=True))
     with TestClient(app) as test_client:
         yield test_client, recommender
     app.dependency_overrides.clear()
@@ -194,3 +196,30 @@ def test_assistant_http_start(client, monkeypatch):
     assert response.status_code == 200
     assert len(response.json()["options"]) == 5
     assert response.json()["stage"] == "choosing"
+
+
+def test_local_default_needs_no_key_but_keeps_guardrails_and_budget(client, monkeypatch):
+    monkeypatch.setattr("app.main.get_settings", lambda: Settings(app_api_key="", require_api_key=False))
+    result = client[0].post("/api/ask", json={"question": "DELETE nodes"})
+    assert result.status_code == 422 and result.json()["detail"]["code"] == "unsafe_request"
+    for _ in range(11):
+        client[0].post("/api/ask", json={"question": "DELETE nodes"})
+    assert client[0].post("/api/ask", json={"question": "anything"}).status_code == 429
+
+
+def test_required_key_without_configured_secret_is_unavailable(client, monkeypatch):
+    monkeypatch.setattr("app.main.get_settings", lambda: Settings(app_api_key="", require_api_key=True))
+    assert client[0].post("/api/ask", json={"question": "recommend"}).status_code == 503
+
+
+def test_model_status_reports_listed_model(client, monkeypatch):
+    listed = Mock(status_code=200, json=lambda: {"data": [{"id": "qwen2.5-7b-instruct"}, {"id": "other"}]})
+    monkeypatch.setattr("app.agent.client.httpx.get", Mock(return_value=listed))
+    body = client[0].get("/api/model/status").json()
+    assert body == {"available": True, "model": "qwen2.5-7b-instruct", "model_listed": True, "requires_key": True}
+
+
+def test_model_status_reports_an_offline_server(client, monkeypatch):
+    monkeypatch.setattr("app.agent.client.httpx.get", Mock(side_effect=httpx.ConnectError("offline")))
+    body = client[0].get("/api/model/status").json()
+    assert body["available"] is False and body["model_listed"] is False
