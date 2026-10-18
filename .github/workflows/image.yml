@@ -23,10 +23,10 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/canoktayy/moviegraph:latest
-            ghcr.io/canoktayy/moviegraph:${{ github.sha }}
+            ghcr.io/canoktayy/cinegraph:latest
+            ghcr.io/canoktayy/cinegraph:${{ github.sha }}
           labels: |
-            org.opencontainers.image.source=https://github.com/canoktayy/moviegraph
+            org.opencontainers.image.source=https://github.com/canoktayy/cinegraph
             org.opencontainers.image.description=Evidence-backed movie recommendations
           cache-from: type=gha
           cache-to: type=gha,mode=max

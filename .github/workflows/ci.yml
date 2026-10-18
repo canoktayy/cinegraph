@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: moviegraph-quality-${{ github.ref }}
+  group: cinegraph-quality-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   lint:
