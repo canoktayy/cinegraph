@@ -1,68 +1,67 @@
-# Conversational film assistant
+# Film assistant
 
-The navigation has two groups. **Get recommendations** contains **Quick picks** (no language model) and **Film assistant**. **Explore the data** contains **Catalog**, **Top films**, **Dataset users** and **Query lab**, which work on the MovieLens dataset rather than the visitor’s picks.
+The film assistant lets a visitor find films by chatting. It shows real films to choose from, then follows requests such as “Scarface is my favourite film”, “only 90s thrillers” or “korku olmasın”. The language model helps understand and phrase things; **every film always comes from the Neo4j graph**.
 
-## Visitor journey
-
-1. Start LM Studio with `qwen2.5-7b-instruct` and the local server on port 1234. Open Film assistant: a status line shows whether the local model answers (`GET /api/model/status`). No key is needed on a local install.
-2. Start a conversation. The server shows five real catalog films with a fixed prompt. Choose a card or skip. The server verifies that the chosen ID belongs to that round. Card clicks never call the model.
-3. Repeat for ten rounds. Back revisits the previous round. A completed choice is committed in browser state only after a successful response; retry preserves a pending choice when the model is unavailable.
-4. The graph algorithm returns recommendations, excluding selected favourites. Open **Why this film?** to see the contributing selected film, shared positive raters and similarity.
-5. Send `Bana sadece komedi öner` or `Only comedies, please`. The model chooses the candidate genre filter, and the graph query runs again. `All genres, please` removes the filter. `Recommend now` can request matches before ten rounds when at least one favourite has been selected.
-6. Name one selected film to request recommendations similar to that favourite. The tool uses that one seed instead of combining all favourites. Unresolved or unsupported requests ask for clarification rather than inventing a result.
-
-Selected preferences and the transcript stay in browser memory. Reload clears them; navigation between screens preserves them. Starting over clears the conversation. Neither flow creates MovieLens users or ratings. Unselected alternatives are not negative labels.
-
-## Two layers and a fixed quiz controller
+## How one message is handled
 
 ```mermaid
-flowchart TD
-    Visitor[Visitor message or film-card selection] --> Context[Bounded preference context]
-    Context --> Validate[Reconstruct rounds and validate selected IDs]
-    Validate --> Model[Real local LLM: typed AssistantPlan]
-    Model --> Plan[Validate tool, canonical genre and selected reference film]
-    Plan --> Quiz{Quiz still in progress?}
-    Quiz -->|Card selection / continue| Options[Next five real films]
-    Quiz -->|Recommendations requested| Tool{Allowed graph tool}
-    Tool -->|graph_affinity| All[Combine all selected favourites]
-    Tool -->|similar_movies| One[Follow one selected favourite]
-    All --> Filter[Apply genre filter and exclude favourites]
-    One --> Filter
-    Filter --> Results[Real Neo4j rows with evidence]
-    Results --> Visitor
-    Options --> Visitor
+flowchart LR
+    M[Visitor message] --> O[1. Orchestrator<br/>local model]
+    O -->|typed intent| C[2. Server checks]
+    C -->|one graph query| G[(Neo4j)]
+    G --> V[3. Verbaliser<br/>local model]
+    V -->|checked reply| R[Reply + film cards]
+    C -->|question| R
 ```
 
-The LLM interprets free-text intent and produces a short conversational acknowledgement. It does **not** generate result films, queries or scores. A deterministic controller owns the ten-round sequence: `start`, `pick` and `back` events are answered by the server with factual messages (for example “Added Fargo. Round 4: …”), keep the current tool and filter, and never reach the model. This keeps card clicks fast and prevents the model from claiming searches that did not happen. Only `message` events call the model, which chooses `continue_quiz`, `recommend` or `clarify`.
+1. **Orchestrator (model).** Reads the message and returns a small typed intent: what to do (`recommend`, `continue_quiz`, `clarify`), which tool to use (`favourites` or `film`), the film title *exactly as the visitor wrote it*, and filters (genre, excluded genre, year range). It never returns film IDs, film lists or scores.
+2. **Server checks and runs.**
+   - A film title is used only if the visitor really wrote it. The server finds it in the catalog itself: exact title first, otherwise the best match that most people rated (“Star Wars” becomes *Episode IV*, “Scarface” the 1983 film).
+   - Filters the visitor typed literally (genre names in English or Turkish, “no …”, “… olmasın”, “80s”, “90'lar”, “before 2000”) are read by the server and override the model, so a small model cannot flip “no comedy” into “only comedy”. Filters the visitor did not mention stay as they were.
+   - A question (unknown film, vague request) changes nothing: the films on screen stay.
+   - Then exactly one parameterised graph query runs: films similar to all favourites, or to the one named film, with the filters applied.
+3. **Verbaliser (model).** Writes one short sentence in the visitor’s language from the real results only. The server rejects the reply if it names a film that was not returned, lists more than three results, asks a needless question, uses the wrong language or leaves out the followed film. Then a factual template answers instead. Questions and empty results are always written by the server.
 
-`graph_affinity` executes the existing parameterized `TASTE_RANKING` query for all selected seeds. `similar_movies` executes the same graph-neighbor retrieval for exactly one validated selected seed. This is an explicit single-favourite mode, not a new trained model or a claim of improved accuracy. Unused single-film fields are normalized away for the all-favourites tool. Other selected favourites are also excluded from the final display, so fewer than eight results can remain.
+Card clicks (start, choose, skip, back) never call the model: the server runs the ten-round quiz itself, so these steps are fast and cannot claim searches that did not happen.
 
-No generic Cypher executor is exposed. Canonical genres, tool names, identities, input/output sizes and result limits are checked. The model adapter permits one formatting repair. Unsafe mutations and unsupported credits/plot questions fail before model retrieval. Schema validation does not guarantee perfect semantic interpretation; the real-model evaluation records the tested cases rather than claiming universal language understanding.
+## The bug this design fixes
+
+Earlier, the model returned a film **ID** and could only choose among the visitor’s picks. When a visitor wrote “Scarface is my favourite film”, Scarface was not among the picks, so the model replaced it with a picked film (*The Lion King*, and once *Heat*) and the server could not tell. Now the model passes the title as text, the server checks that the visitor wrote it and looks it up in the whole catalog. A regression test and the real-model evaluation both cover this case.
+
+## What the visitor sees
+
+- Chips above the results show what ran: *Like Scarface*, *Only Comedy*, *No Horror*, *1980 to 1999*.
+- Each card says what it is linked to (*Linked to Scarface* or *Linked to 2 of your picks*), and **Why?** lists the connecting films and how many people loved both.
+- *What did the assistant decide?* shows the validated decision and whether the reply came from the model or the template.
+
+Choices, chat and filters live only in the browser tab. Nothing is written to the MovieLens data.
 
 ## API
 
-`POST /api/assistant/turn` (with `X-API-Key` only when the server runs with `REQUIRE_API_KEY=true`):
+`POST /api/assistant/turn`
 
 ```json
 {
   "seed": 42,
-  "choices": [],
-  "event": "start",
-  "message": "",
+  "choices": [296, null, 2571],
+  "event": "message",
+  "message": "Scarface en sevdiğim film",
   "genre": null,
+  "exclude_genre": null,
+  "year_from": null,
+  "year_to": null,
   "algorithm": "graph_affinity",
   "anchor_movie_id": null
 }
 ```
 
-`choices` contains up to ten entries, one per completed round: a positive strict integer movie ID or `null` for a skipped round. A server-reconstructed seeded offer validates each position. Events are `start`, `pick`, `message` and `back`. Free text is limited to 1,000 characters. The genre, algorithm and anchor carry forward the last validated response. These are bounded stateless context, not a server-stored conversation or a general long-term chat memory.
+`choices` has one entry per completed round (a film ID or `null` for a skip); the server rebuilds the seeded rounds and rejects any ID that was not offered. The other fields carry the previous validated plan, so filters and the followed film persist between messages. The response contains `stage` (`choosing`, `recommendations` or `clarify`), `message`, `options` or `items` (each with its graph `reasons`), the validated `plan`, a plain `summary`, and `layers` (which parts used the model).
 
-Responses contain `stage` (`choosing`, `recommendations`, `clarify`), short `message`, `options`, `items`, current/completed round counts, selected IDs/titles, validated `plan`, active analytics run and trace ID. Each recommendation includes actual graph reasons. An empty result remains empty and is explained in the interface; it does not silently switch to invented or unrelated films.
-
-The model endpoint is protected by a 24-turn/minute application budget (plus the optional key described above), with a dedicated Nginx budget and a 70-second proxy timeout for the two bounded provider attempts. The query lab retains its separate proxy budget. The application minute history is shared per client address; multiple local tabs can consume the same budget. A 429 asks the visitor to wait; retries preserve choices. A missing or wrong key on a key-protected server is 401 (the interface then reveals the key field), invalid state/intent 422, invalid model format 502, offline model 503, and model timeout 504. The models and their server must remain locally reachable from Docker.
+Errors: 422 for invalid state or input, 502 when the orchestrator returns invalid output twice, 503 when the model server is off, 504 on timeout, 429 when the per-minute budget is used up. Choices are kept for a retry. A key (`X-API-Key`) is required only when the server runs with `REQUIRE_API_KEY=true`.
 
 ## Verification
 
-`make test` covers real graph filtering/tool behavior plus isolated provider/HTTP/UI boundary cases. The frontend checks pending-turn serialization, retry state, escaping of model text, and no unexpected route changes after delayed responses.
+- `make test`: unit tests for every rule above (named film, swapped film, vague film, literal filters, unchanged state on questions, unsafe replies, model outage) plus a real Neo4j test for decade filters and Scarface.
+- `make assistant-eval`: the real local model and real Neo4j run ten quiz rounds and ten typed requests in English and Turkish, including Scarface, decade and exclusion filters, an unknown Turkish title and a vague request (23 checks). Results are in [`assistant_evaluation.json`](../artifacts/reports/assistant_evaluation.json).
 
-`make assistant-eval` uses the **actual configured local model and actual seeded Neo4j**, completes all ten rounds deterministically, tests Turkish comedy filtering, a follow-up retaining that filter, clearing the filter, switching to a named selected film, two deterministic scope rejections, and unchanged source cardinalities. The recorded [evaluation](../artifacts/reports/assistant_evaluation.json) separates real-model cases from deterministic guards. It is a small functional evaluation, not a recommendation-quality user study. Existing frozen-history ML and baseline comparisons remain separate.
+This is a functional evaluation of the conversation, not a user study of recommendation quality.

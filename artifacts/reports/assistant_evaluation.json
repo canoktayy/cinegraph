@@ -1,8 +1,9 @@
 {
-  "evaluated_at": "2026-10-18T15:32:30.525964+00:00",
+  "evaluated_at": "2026-10-18T17:24:08.952859+00:00",
   "model": "qwen2.5-7b-instruct",
-  "elapsed_seconds": 11.08,
-  "actual_model_cases": 4,
+  "elapsed_seconds": 72.72,
+  "actual_model_cases": 10,
+  "model_layers": "orchestrator + verbaliser (template fallback when unsafe)",
   "deterministic_quiz_turns": 11,
   "guard_cases": 2,
   "source_counts_unchanged": true,
@@ -13,8 +14,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -23,8 +28,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -33,8 +42,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -43,8 +56,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -53,8 +70,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -63,8 +84,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -73,8 +98,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -83,8 +112,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -93,8 +126,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -103,8 +140,12 @@
       "plan": {
         "action": "continue_quiz",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
@@ -113,19 +154,33 @@
       "plan": {
         "action": "recommend",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       }
     },
     {
       "case": "turkish-comedy",
+      "message": "Bana sadece komedi \u00f6ner",
       "passed": true,
       "plan": {
         "action": "recommend",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": "Comedy",
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       },
+      "layers": {
+        "orchestrator": "model",
+        "verbaliser": "model"
+      },
+      "reply": "Komedi filmlerinden favorilerinize g\u00f6re: Shrek, Monsters, Inc. ve Finding Nemo.",
       "movie_ids": [
         4306,
         4886,
@@ -139,13 +194,23 @@
     },
     {
       "case": "preserve-genre",
+      "message": "Bana ba\u015fka \u00f6neriler g\u00f6ster",
       "passed": true,
       "plan": {
         "action": "recommend",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": "Comedy",
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       },
+      "layers": {
+        "orchestrator": "model",
+        "verbaliser": "model"
+      },
+      "reply": "Favorilerinizden comedy t\u00fcr\u00fcnden filmler: Shrek, Monsters, Inc. ve Finding Nemo.",
       "movie_ids": [
         4306,
         4886,
@@ -159,13 +224,23 @@
     },
     {
       "case": "clear-genre",
+      "message": "All genres, please",
       "passed": true,
       "plan": {
         "action": "recommend",
         "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
         "genre": null,
-        "anchor_movie_id": null
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
       },
+      "layers": {
+        "orchestrator": "model",
+        "verbaliser": "model"
+      },
+      "reply": "All genres from your favourites: Fight Club, Eternal Sunshine of the Spotless Mind and Memento.",
       "movie_ids": [
         2959,
         7361,
@@ -178,24 +253,164 @@
       ]
     },
     {
-      "case": "single-favourite",
+      "case": "named-film-turkish",
+      "message": "Scarface en sevdi\u011fim film",
       "passed": true,
       "plan": {
         "action": "recommend",
         "algorithm": "similar_movies",
+        "anchor_movie_id": 4262,
         "genre": null,
-        "anchor_movie_id": 293
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": "Scarface"
       },
+      "layers": {
+        "orchestrator": "model",
+        "verbaliser": "model"
+      },
+      "reply": "Scarface'e benzeyen filmler: The Big Lebowski, 28 Days Later ve Gangs of New York.",
       "movie_ids": [
+        1732,
+        6502,
+        5956,
         1089,
-        2959,
-        6874,
-        47,
         7438,
-        1214,
-        296,
-        2571
+        3275,
+        16,
+        48516
       ]
+    },
+    {
+      "case": "decade-keeps-film",
+      "message": "only 80s and 90s please",
+      "passed": true,
+      "plan": {
+        "action": "recommend",
+        "algorithm": "similar_movies",
+        "anchor_movie_id": 4262,
+        "genre": null,
+        "exclude_genre": null,
+        "year_from": 1980,
+        "year_to": 1999,
+        "film_title": "Scarface"
+      },
+      "layers": {
+        "orchestrator": "model",
+        "verbaliser": "model"
+      },
+      "reply": "Films similar to Scarface from the 80s and 90s: The Big Lebowski, Reservoir Dogs and Casino.",
+      "movie_ids": [
+        1732,
+        1089,
+        16,
+        2502,
+        1222,
+        1213,
+        1704
+      ]
+    },
+    {
+      "case": "turkish-exclusion",
+      "message": "korku olmas\u0131n",
+      "passed": true,
+      "plan": {
+        "action": "recommend",
+        "algorithm": "similar_movies",
+        "anchor_movie_id": 4262,
+        "genre": null,
+        "exclude_genre": "Horror",
+        "year_from": 1980,
+        "year_to": 1999,
+        "film_title": "Scarface"
+      },
+      "layers": {
+        "orchestrator": "model",
+        "verbaliser": "template"
+      },
+      "reply": "Scarface filmine benzeyenler, Horror hari\u00e7, 1980 ile 1999: The Big Lebowski, Reservoir Dogs, Casino ve dahas\u0131.",
+      "movie_ids": [
+        1732,
+        1089,
+        16,
+        2502,
+        1222,
+        1213,
+        1704
+      ]
+    },
+    {
+      "case": "back-to-favourites",
+      "message": "all genres and any year, from all my favourites",
+      "passed": true,
+      "plan": {
+        "action": "recommend",
+        "algorithm": "graph_affinity",
+        "anchor_movie_id": null,
+        "genre": null,
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": null
+      },
+      "layers": {
+        "orchestrator": "model",
+        "verbaliser": "model"
+      },
+      "reply": "From your favourites, films in all genres and any year: Fight Club, Eternal Sunshine of the Spotless Mind and Memento.",
+      "movie_ids": [
+        2959,
+        7361,
+        4226,
+        4306,
+        7153,
+        2762,
+        6874,
+        1089
+      ]
+    },
+    {
+      "case": "named-film-english",
+      "message": "more like The Godfather",
+      "passed": true,
+      "plan": {
+        "action": "recommend",
+        "algorithm": "similar_movies",
+        "anchor_movie_id": 858,
+        "genre": null,
+        "exclude_genre": null,
+        "year_from": null,
+        "year_to": null,
+        "film_title": "The Godfather"
+      },
+      "layers": {
+        "orchestrator": "model",
+        "verbaliser": "model"
+      },
+      "reply": "Films similar to The Godfather: Part II, Goodfellas and Star Wars: Episode IV - A New Hope.",
+      "movie_ids": [
+        1221,
+        1213,
+        260,
+        296,
+        1193,
+        2858,
+        608,
+        1196
+      ]
+    },
+    {
+      "case": "unknown-film",
+      "message": "films like Esaretin Bedeli",
+      "passed": true,
+      "reply": "I couldn't find \u201cEsaretin Bedeli\u201d in the catalog. Could you try its original English title?"
+    },
+    {
+      "case": "vague",
+      "message": "something like that one movie",
+      "passed": true,
+      "reply": "Could you say that another way? For example a genre, a decade or a film title."
     },
     {
       "case": "scope-guard",

@@ -16,13 +16,18 @@ class TasteRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     movie_ids: list[Annotated[int, Field(gt=0, le=MAX_GRAPH_ID, strict=True)]] = Field(min_length=1, max_length=10)
     genre: str | None = None
+    exclude_genre: str | None = None
+    year_from: int | None = Field(default=None, ge=1870, le=2100)
+    year_to: int | None = Field(default=None, ge=1870, le=2100)
     limit: int = Field(default=8, ge=1, le=20)
 
     @model_validator(mode="after")
     def unique_ids(self):
-        """Reject duplicate/nonpositive identities before querying the graph."""
+        """Reject duplicate/nonpositive identities and impossible year ranges before querying the graph."""
         if any(identifier <= 0 for identifier in self.movie_ids) or len(set(self.movie_ids)) != len(self.movie_ids):
             raise ValueError("Choose distinct positive movie IDs")
+        if self.year_from and self.year_to and self.year_from > self.year_to:
+            raise ValueError("year_from must not be after year_to")
         return self
 
 
@@ -43,6 +48,9 @@ UNWIND $movie_ids AS seed_id
 MATCH (seed:Movie {movie_id:seed_id})-[s:SIMILAR_TO]->(candidate:Movie)
 WHERE s.run_id=$run_id AND s.score>0 AND NOT candidate.movie_id IN $movie_ids
 AND ($genre IS NULL OR EXISTS { MATCH (candidate)-[:IN_GENRE]->(:Genre {name:$genre}) })
+AND ($exclude_genre IS NULL OR NOT EXISTS { MATCH (candidate)-[:IN_GENRE]->(:Genre {name:$exclude_genre}) })
+AND ($year_from IS NULL OR candidate.year >= $year_from)
+AND ($year_to IS NULL OR candidate.year <= $year_to)
 WITH candidate, round(sum(s.score)/size($movie_ids), 8) AS score,
 count(DISTINCT seed) AS supporting_seeds, sum(s.support) AS support,
 collect({seed_id:seed.movie_id, seed_title:seed.title, similarity:s.score, support:s.support}) AS reasons
@@ -50,6 +58,20 @@ RETURN """
     + queries.MOVIE_FIELDS
     + """, score, supporting_seeds, support, reasons
 ORDER BY score DESC, supporting_seeds DESC, movie_id ASC LIMIT $limit
+"""
+)
+
+
+FILM_LOOKUP = (
+    """
+CALL db.index.fulltext.queryNodes('movie_title', $search) YIELD node AS candidate, score
+WITH candidate, score ORDER BY score DESC LIMIT 25
+OPTIONAL MATCH (:User)-[r:RATED]->(candidate)
+WITH candidate, score, count(r) AS votes
+RETURN """
+    + queries.MOVIE_FIELDS
+    + """, votes, score
+ORDER BY score DESC, votes DESC, movie_id ASC LIMIT 10
 """
 )
 
@@ -67,7 +89,8 @@ def rounds(recommender, seed: int):
 
 def recommend(recommender, body: TasteRequest):
     """Compute graph affinity without writing invented users or source ratings."""
-    if body.genre and body.genre not in recommender.repository.genres():
+    genres = recommender.repository.genres()
+    if any(value and value not in genres for value in (body.genre, body.exclude_genre)):
         raise HTTPException(422, "Unknown genre")
     params = recommender.parameters(body.model_dump())
     found = recommender.repository.store.read(

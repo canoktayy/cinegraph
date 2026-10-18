@@ -47,12 +47,12 @@ Project 4 · *Movie Recommender in Production* (Level 2)
 | | Feature | How it works |
 |---|---|---|
 | 🎯 | **Quick picks** | Ten rounds of five well-known films; click or press <kbd>1</kbd>–<kbd>5</kbd>. Pick favourites, get matches, filter by genre. No account, no model. |
-| 💬 | **Film assistant** | The same flow as a conversation. Say *“Bana sadece komedi öner”* or *“more like Fargo”*: a local LLM interprets the request, and the graph returns the films. |
+| 💬 | **Film assistant** | The same flow as a conversation. Say *“Scarface is my favourite film”*, *“only 90s thrillers”* or *“korku olmasın”*: a local LLM understands the request, the graph returns the films, and the LLM describes them. |
 | 🔍 | **“Why this film?”** | Every recommendation shows the picks it is linked to and how many raters loved both films. |
 | 📚 | **Catalog** | Full-text search over 9,742 films, genre filter, and “fans also liked” for any film. |
-| 🏆 | **Top films** | Bayesian-rated films from the snapshot’s final year, or the most central films by **PageRank**. |
-| 👥 | **Dataset users** | See what any of the 610 MovieLens raters loved, then their item-CF and **Louvain** community recommendations with path-level evidence. |
-| 🧪 | **Query lab** | A question in plain English becomes a typed plan → a reviewed Cypher template → real rows. Unsafe requests are rejected with HTTP 422. |
+| 🏆 | **Top films** | The highest rated films in the data’s final year (adjusted so a film with few ratings cannot win by luck), or the most connected films by **PageRank**. |
+| 👥 | **Dataset users** | Pick any of the 610 anonymous MovieLens raters: see the films they loved, then what the graph recommends for them (similar films, or films from their **Louvain** taste communities) with the exact path behind each one. |
+| 🧪 | **Query lab** | Ask a question in plain English; it becomes a small plan, then a reviewed Cypher query, then real rows. Unsafe requests are rejected with HTTP 422. |
 
 **Design principle:** the language model never invents films, scores or explanations. All titles, counts and paths come from Neo4j and are shown with their provenance.
 
@@ -66,7 +66,7 @@ Five films per round, ten rounds. Unpicked films are **not** treated as dislikes
 
 <img src="docs/screenshots/ui-picks-round.jpg" alt="Quick picks round" width="900">
 
-Results are ranked by graph affinity to your picks. Genre chips re-run the query in Neo4j.
+Results are ranked by how strongly they are linked to your picks. Each genre chip runs the query again in Neo4j.
 
 <img src="docs/screenshots/ui-picks-results.jpg" alt="Quick picks results" width="900">
 
@@ -85,9 +85,11 @@ Results are ranked by graph affinity to your picks. Genre chips re-run the query
 
 ### 3 · Film assistant: conversation on top of the graph
 
-The deterministic controller runs the ten rounds itself; the local model is only called for free-text requests, which it turns into a validated `AssistantPlan` (tool, genre, reference film).
+The server runs the ten rounds itself. For typed requests the local model works in two layers: an **orchestrator** decides what to run (all favourites or one named film, plus genre, excluded genre and years), the server checks it and runs one graph query, and a **verbaliser** describes the real results in the visitor’s language.
 
-<img src="docs/screenshots/ui-assistant-comedy.jpg" alt="Film assistant filtering to comedies" width="900">
+<img src="docs/screenshots/ui-assistant-scarface.jpg" alt="Film assistant following Scarface with filters" width="900">
+
+<sub>After “Bana sadece komedi öner”, the visitor wrote “Scarface en sevdiğim film”, “only 80s and 90s please” and “korku olmasın”. Filters add up, and the chips show exactly what ran.</sub>
 
 ### 4 · Explore the data
 
@@ -281,11 +283,23 @@ flowchart LR
 - Unknown identities → 404, unsafe or unsupported requests → 422, malformed model output → 502, model offline/timeout → 503/504, budget exceeded → 429.
 - The response exposes the plan, compiled Cypher, bound parameters, rows and a trace ID.
 
-### Film assistant
+### Film assistant: two model layers around one graph query
 
-- Card clicks (start, pick, skip, back) are handled **deterministically** by the server; the model is called only for free text.
-- The model may choose one of two read-only tools (`graph_affinity`, `similar_movies`), a canonical genre and a reference film **from the visitor’s own picks**. Every value is validated server-side; picks are re-checked against the seeded rounds so a client cannot forge preferences.
-- Mutation requests and unsupported data (actors, plots) are rejected before the model is called.
+```mermaid
+flowchart LR
+    M[Message] --> O[Orchestrator<br/>typed intent]
+    O --> C{Server checks}
+    C -->|question| R[Reply]
+    C -->|one query| G[(Neo4j)]
+    G --> V[Verbaliser<br/>checked reply]
+    V --> R
+```
+
+- **Orchestrator:** returns a typed intent (action, tool, the film title as written, filters). It never returns IDs, films or scores.
+- **Server:** uses a film title only if the visitor wrote it, and looks it up in the whole catalog (exact title, else the most rated match). Filters the visitor typed (English or Turkish genre names, “no …”, “80s”, “90'lar”) override the model. A question changes nothing.
+- **Verbaliser:** one sentence from the real results. A reply that names other films, lists too many, asks a needless question or uses the wrong language is replaced by a factual template.
+- Card clicks never call the model, and picks are re-checked against the seeded rounds, so a client cannot forge preferences. Mutation requests and unsupported data (actors, plots) are rejected before any model call.
+- This fixes a real logged bug: *“Scarface is my favourite”* used to return films similar to *The Lion King*, because the model had to pick an ID from the visitor’s picks.
 
 Details: [ADR 003: language safety](docs/adr/003-language-safety.md) · [assistant design](docs/film-assistant.md).
 
@@ -329,12 +343,12 @@ curl -X POST 'http://localhost:18080/api/ask' -H 'Content-Type: application/json
 
 | Check | Result |
 |---|---|
-| Python tests (unit, API, real Neo4j/Cypher/GDS integration) | **190 passed** |
+| Python tests (unit, API, real Neo4j/Cypher/GDS integration) | **207 passed** |
 | Frontend behavioural tests (Node test runner) | **21 passed** |
-| Statement + branch coverage (enforced ≥ 60 %) | **83.8 %** |
+| Statement + branch coverage (enforced ≥ 60 %) | **84.8 %** |
 | Pylint with the course `.pylintrc` (enforced ≥ 9.5) | **9.90 / 10** |
 | Query-lab evaluation: 20 live model cases, 10 unsafe, 5 unsupported, 5 injected faults | **40 / 40** |
-| Assistant evaluation: real model + real Neo4j, 10 rounds, Turkish genre filter, tool switch, guards | **17 / 17** |
+| Assistant evaluation: real model + real Neo4j, 10 rounds, named films, decade and exclusion filters in English and Turkish, guards | **23 / 23** |
 
 CI ([Quality workflow](.github/workflows/ci.yml)) starts the real three-service stack, imports MovieLens twice to prove idempotency, runs GDS and the whole suite. Integration tests fail loudly when the database is missing instead of skipping.
 

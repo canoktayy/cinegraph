@@ -11,7 +11,7 @@
 
 - Explain why shared ratings and multi-hop recommendations suit a graph.
 - Show `make help`, `make lint`, `make test`, `make docker-run`.
-- Open Home and explain the two ways to get recommendations. In **Film assistant**, complete the five-card rounds (card clicks are deterministic and fast), open a “Why?” reason, then ask `Bana sadece komedi öner` and show the genre-filtered graph results. Name one selected favourite to demonstrate the single-film tool.
+- Open Home and explain the two ways to get recommendations. In **Film assistant**, choose a few films (card clicks never call the model), open a “Why?” reason, then type `Scarface en sevdiğim film`, `only 80s and 90s please` and `korku olmasın`. Point at the chips (*Like Scarface*, *1980 to 1999*, *No Horror*) and open *What did the assistant decide?* to show the orchestrator decision and which layer wrote the reply. Type `something like that one movie` to show a clarifying question that leaves the results unchanged.
 - Show that **Quick picks** works without the model, including genre chips and “Why?”. Then open **Dataset users** for rater 42 (both methods and the path evidence), **Catalog** for title search and “Fans also liked”, and **Top films** for the rating/PageRank toggle.
 - In Swagger show similar, personalized, discover and historical trending/PageRank routes.
 - In **Query lab**, point at the green “Local model ready” status, then ask `Recommend 5 Sci-Fi movies for user 42`. No key is needed locally; explain that `REQUIRE_API_KEY=true` turns key protection on for an exposed deployment.
