@@ -36,7 +36,7 @@ async def lifespan(application: FastAPI):
 
 
 app = FastAPI(
-    title="Reelpath API",
+    title="Cinegraph API",
     version="1.1.1",
     lifespan=lifespan,
     description="Evidence-backed movie recommendations. Scores are not confidence probabilities.",

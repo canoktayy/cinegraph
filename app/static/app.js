@@ -1,4 +1,4 @@
-/* Reelpath interface. Every title, score, path and count is read from the API; nothing is invented here. */
+/* Cinegraph interface. Every title, score, path and count is read from the API; nothing is invented here. */
 "use strict";
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -158,7 +158,7 @@ function setView(view, updateAddress = true) {
     notice("");
     if ($("#detail-dialog").open) $("#detail-dialog").close();
     window.scrollTo({ top: 0, behavior: "instant" });
-    document.title = view === "home" ? "Reelpath: find your next film" : `${$("#screen-" + view + " h1")?.textContent || "Reelpath"} · Reelpath`;
+    document.title = view === "home" ? "Cinegraph: find your next film" : `${$("#screen-" + view + " h1")?.textContent || "Cinegraph"} · Cinegraph`;
   }
   if (changed && ["assistant", "lab"].includes(view)) checkModel();
   if (LIST_VIEWS.includes(view) && (changed || !state.loaded[view])) return loadFilms();

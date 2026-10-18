@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎬 Reelpath
+# 🎬 Cinegraph
 
 ### Pick films you love. See what to watch next, and exactly why.
 
@@ -17,7 +17,7 @@ with **Graph Data Science** algorithms, a guarded **natural-language → Cypher*
 **Can Oktay** · Student no. B00818187 · AIDAMS 3A, Graph Databases
 Project 4 · *Movie Recommender in Production* (Level 2)
 
-<img src="docs/screenshots/ui-home.jpg" alt="Reelpath home page" width="900">
+<img src="docs/screenshots/ui-home.jpg" alt="Cinegraph home page" width="900">
 
 </div>
 
@@ -127,17 +127,19 @@ The deterministic controller runs the ten rounds itself; the local model is only
 
 ## Design choices
 
-**Name.** *Reelpath* joins a film reel and a path: every recommendation is literally a path through the graph, from a film you picked, through the people who loved it, to the next film. (The repository keeps its original name, `moviegraph`.)
+**Name.** *Cinegraph* joins *cinema* and *graph*: the films and the Neo4j graph that connects them. Every recommendation is a path through that graph, from a film you picked, through the people who loved it, to the next film. (The repository keeps its original name, `moviegraph`.)
 
-**Two colours, teal and orange.** The interface uses one hue for surfaces and its complement for actions, and lets the posters carry every other colour.
+**Two colours, teal and IMDb yellow.** The interface uses one dark hue for surfaces and one bright accent for actions, and lets the posters carry every other colour.
 
 | Role | Colour | Why |
 |---|---|---|
-| Surfaces | Teal-tinted near-black `#0b1619` to `#1a2f37` | Dark, low-saturation surfaces recede, so colourful posters stand out. A tinted dark grey instead of pure black reduces halation of light text, which mostly affects readers with astigmatism. |
-| Actions and highlights | Orange `#ff8f4d` | Orange is the complement of teal, the largest hue contrast for buttons and links. It is the same *orange and teal* pairing used in film colour grading, where warm skin tones are separated from cool backgrounds. |
+| Surfaces | Teal-tinted near-black `#0b1619` to `#1a2f37` | Dark, low-saturation surfaces recede, so colourful posters stand out. A tinted dark grey instead of pure black reduces halation of light text, which mostly affects readers with astigmatism. Cool teal backgrounds are also the backdrop of the *orange and teal* look in film colour grading. |
+| Actions and highlights | IMDb yellow `#f5c518` | The colour people already associate with film ratings, so buttons, ratings and links read as "film" at a glance. It is warm against the cool teal surfaces. |
 | Text | Off-white `#e9f1f1`, muted `#9fb4b7` | Softer than pure white on dark backgrounds. |
 
-Measured WCAG contrast on the page background: body text 16:1, muted text 8.5:1, orange 8.1:1, and dark text on orange buttons 8.4:1, all above the AA threshold of 4.5:1. Sources: [PetaPixel on the orange and teal look](https://petapixel.com/2017/02/23/orange-teal-look-popular-hollywood/), [Adobe on why orange and teal grading works](https://www.adobe.com/creativecloud/video/hub/features/why-use-orange-teal-grading), [overview of polarity and halation research](https://a11ywithdiana.substack.com/p/and).
+**Typefaces.** Headings use [Fraunces](https://fonts.google.com/specimen/Fraunces), a high-contrast optical-size serif with the feel of classic film titles; interface text uses [Inter](https://fonts.google.com/specimen/Inter), designed for screen legibility at small sizes. Both load from Google Fonts with system fallbacks, so the app still works offline.
+
+Measured WCAG contrast on the page background: body text 16:1, muted text 8.5:1, yellow 11.3:1, and black text on yellow buttons 12.9:1, all above the AA threshold of 4.5:1. Sources: [PetaPixel on the orange and teal look](https://petapixel.com/2017/02/23/orange-teal-look-popular-hollywood/), [Adobe on why orange and teal grading works](https://www.adobe.com/creativecloud/video/hub/features/why-use-orange-teal-grading), [overview of polarity and halation research](https://a11ywithdiana.substack.com/p/and).
 
 ---
 
@@ -158,7 +160,7 @@ make demo           # live HTTP smoke checks
 
 | Service | URL |
 |---|---|
-| **Reelpath** | http://localhost:18080 |
+| **Cinegraph** | http://localhost:18080 |
 | Swagger / OpenAPI | http://localhost:18080/docs |
 | Neo4j Browser | http://localhost:17474 (Bolt `17687`, credentials in your `.env`) |
 
