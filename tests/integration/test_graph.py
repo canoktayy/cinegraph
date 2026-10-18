@@ -133,38 +133,35 @@ def test_visitor_taste_rounds_and_actual_graph_evidence(store):
     assert before == service.repository.statistics()
 
 
-def test_assistant_tool_switch_and_comedy_filter_use_real_graph(store):
-    """Only planning is controlled; filters, exclusions and reasons execute in Neo4j."""
+def test_assistant_filters_and_named_film_use_real_graph(store):
+    """Only the two model layers are controlled; title lookup, filters and reasons execute in Neo4j."""
     from unittest.mock import Mock
-    from app.agent.assistant import AssistantPlan, AssistantTurn, answer_turn
+    from fastapi import HTTPException
+    from app.agent.assistant import AssistantIntent, AssistantTurn, answer_turn
     from app.taste import rounds
 
     service = RecommendationService(CatalogRepository(store))
     choices = [group[0]["movie_id"] for group in rounds(service, 42)["rounds"]]
+    neutral = {"film_title": None, "exclude_genre": None, "year_from": None, "year_to": None, "clarify_reason": None}
     adapter = Mock()
-    adapter.plan.return_value = AssistantPlan(
-        action="recommend",
-        algorithm="graph_affinity",
-        genre="Comedy",
-        anchor_movie_id=None,
-        reply="I’ll find comedies.",
+    adapter.verbalise.side_effect = HTTPException(503, "offline")  # The factual template speaks instead.
+    adapter.plan.return_value = AssistantIntent(
+        **neutral | {"action": "recommend", "source": "favourites", "genre": None}
     )
-    result = answer_turn(AssistantTurn(choices=choices, message="Only comedies"), service, adapter, "integration")
-    assert result["items"]
-    assert all("Comedy" in row["genres"] and row["movie_id"] not in choices for row in result["items"])
+    result = answer_turn(AssistantTurn(choices=choices, message="Only comedies from the 90s"), service, adapter, "it")
+    assert result["items"] and result["plan"]["genre"] == "Comedy"
+    assert all("Comedy" in row["genres"] and 1990 <= row["year"] <= 1999 for row in result["items"])
+    assert all(row["movie_id"] not in choices for row in result["items"])
     assert all(reason["seed_id"] in choices for row in result["items"] for reason in row["reasons"])
-    adapter.plan.return_value = AssistantPlan(
-        action="recommend",
-        algorithm="similar_movies",
-        genre=None,
-        anchor_movie_id=choices[0],
-        reply="I’ll follow that favourite.",
+    adapter.plan.return_value = AssistantIntent(
+        **neutral | {"action": "recommend", "source": "film", "film_title": "Scarface", "genre": None}
     )
     result = answer_turn(
-        AssistantTurn(choices=choices, message="Like my first favourite"), service, adapter, "integration"
+        AssistantTurn(choices=choices, message="Scarface is my favourite film"), service, adapter, "it"
     )
-    assert result["items"]
-    assert all(reason["seed_id"] == choices[0] for row in result["items"] for reason in row["reasons"])
+    scarface = store.read("MATCH (m:Movie {title:'Scarface (1983)'}) RETURN m.movie_id AS id")[0]["id"]
+    assert result["plan"]["anchor_movie_id"] == scarface and result["items"]
+    assert all(reason["seed_id"] == scarface for row in result["items"] for reason in row["reasons"])
 
 
 def test_rater_favourites_are_their_own_high_ratings_in_order(store):
