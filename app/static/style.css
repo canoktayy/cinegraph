@@ -307,6 +307,11 @@ kbd { font-family: var(--mono); font-size: 0.78rem; background: var(--surface-2)
 .lab-layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
 .lab-form { display: grid; gap: 10px; }
 .small-chips { margin: 4px 0 6px; }
+.lab-mode { display: flex; }
+.lab-mode .segment { flex: 1; padding: 8px 10px; font-size: 0.85rem; white-space: nowrap; }
+.stage pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.checks { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.9rem; display: grid; gap: 2px; }
+.checks li::marker { content: "✓  "; color: var(--teal); }
 .small-chips button { background: var(--bg-2); border: 1px solid var(--border); border-radius: 999px; padding: 5px 11px; font-size: 0.8rem; color: var(--muted); }
 .small-chips button:hover { color: var(--text); }
 .small-chips button.danger { color: var(--red); border-color: var(--red-line); }
@@ -358,6 +363,17 @@ dialog::backdrop { background: rgba(4, 10, 12, 0.75); backdrop-filter: blur(4px)
 .edge::before { content: "→ "; color: var(--accent); }
 .edge::after { content: " →"; color: var(--accent); }
 .path-share { margin-left: auto; color: var(--faint); font-size: 0.8rem; }
+
+.path-form { display: grid; gap: 8px; border-top: 1px solid var(--border); padding-top: 14px; }
+.path-row { display: flex; gap: 8px; }
+.path-result { display: grid; gap: 8px; }
+.path-row input { flex: 1; min-width: 0; }
+.path-result:empty { display: none; }
+.path-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.path-film { display: flex; align-items: center; gap: 8px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px 4px 4px; font-size: 0.85rem; font-weight: 600; }
+.path-film .poster { width: 26px; border-radius: 50%; aspect-ratio: 1; flex: none; }
+.path-film .poster-fallback { display: none; }
+.path-link { color: var(--muted); font-size: 0.8rem; }
 
 /* ---------- Footer ---------- */
 .site-footer { border-top: 1px solid var(--border); padding: 26px 24px; max-width: var(--max); margin: 0 auto; width: 100%; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; font-size: 0.9rem; }

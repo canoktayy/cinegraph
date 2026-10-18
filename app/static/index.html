@@ -346,11 +346,16 @@
         <div class="page-head">
           <p class="kicker">Explore · Query lab</p>
           <h1>From a question to a safe database query</h1>
-          <p class="lead">Type a question about the dataset. A local language model turns it into a small plan; the server maps that plan to a reviewed Cypher template, checks it, and runs it. Unsafe requests are rejected.</p>
+          <p class="lead">Type a question about the dataset. A local language model either picks a plan that maps to a reviewed Cypher template, or writes the Cypher itself; the server checks it and only then runs it. Unsafe requests are rejected.</p>
         </div>
         <div class="lab-layout">
           <form id="lab-form" class="panel lab-form">
             <div class="model-status compact" data-model-status role="status" aria-live="polite"></div>
+            <div class="segmented lab-mode" role="radiogroup" aria-label="How the query is built">
+              <button type="button" class="segment active" role="radio" aria-checked="true" data-lab-mode="template">Templates</button>
+              <button type="button" class="segment" role="radio" aria-checked="false" data-lab-mode="generated">Model-written</button>
+            </div>
+            <p id="lab-mode-help" class="muted small">The model picks one of six plans; the server maps it to a reviewed Cypher template.</p>
             <div id="lab-key-field" class="key-field" hidden>
               <label for="api-key">Access key</label>
               <input id="api-key" class="model-key" type="password" autocomplete="off" placeholder="APP_API_KEY from the server’s .env" />

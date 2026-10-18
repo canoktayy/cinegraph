@@ -215,3 +215,29 @@ def test_model_status_reports_an_offline_server(client, monkeypatch):
     monkeypatch.setattr("app.agent.client.httpx.get", Mock(side_effect=httpx.ConnectError("offline")))
     body = client[0].get("/api/model/status").json()
     assert body["available"] is False and body["model_listed"] is False
+
+
+def test_film_path_contract(client):
+    path_row = {
+        "films": [
+            {"movie_id": 1, "title": "One (1995)", "year": 1995},
+            {"movie_id": 2, "title": "Two (2000)", "year": 2000},
+        ],
+        "links": [{"score": 0.3, "support": 12}],
+        "hops": 1,
+    }
+    client[1].repository.store.read = Mock(return_value=[path_row])
+    body = client[0].get("/api/movies/1/path/2").json()
+    assert body["found"] and body["hops"] == 1 and body["links"][0]["support"] == 12
+    assert client[0].get("/api/movies/1/path/2?max_hops=7").status_code == 422
+    assert client[0].get("/api/movies/1/path/999").status_code == 404
+
+
+def test_film_path_respects_the_hop_limit(client):
+    client[1].repository.store.read = Mock(return_value=[{"films": [], "links": [], "hops": 5}])
+    assert client[0].get("/api/movies/1/path/2?max_hops=4").json()["found"] is False
+
+
+def test_resolve_unknown_title_is_404(client):
+    client[1].repository.store.read = Mock(return_value=[])
+    assert client[0].get("/api/movies/resolve?title=Nothing").status_code == 404

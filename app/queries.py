@@ -112,6 +112,16 @@ ORDER BY score DESC, rated_at DESC, movie_id ASC LIMIT $limit
 """
 )
 
+# Pathfinding: the shortest chain of "people who loved A also loved B" links between two films.
+FILM_PATH = """
+MATCH (a:Movie {movie_id:$movie_id}), (b:Movie {movie_id:$other_id})
+MATCH p = shortestPath((a)-[:SIMILAR_TO*..6]-(b))
+WHERE all(link IN relationships(p) WHERE link.run_id = $run_id)
+RETURN [film IN nodes(p) | film {.movie_id, .title, .year}] AS films,
+       [link IN relationships(p) | link {.score, .support}] AS links,
+       length(p) AS hops
+"""
+
 EVIDENCE = """
 MATCH (u:User {user_id:$user_id})-[r:RATED]->(seed:Movie)
 WHERE r.score >= 4

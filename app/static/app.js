@@ -25,6 +25,7 @@ const state = {
   requestId: 0,
   genres: [],
   loaded: {},
+  labMode: "template",
 };
 let detailRequestId = 0;
 
@@ -319,6 +320,7 @@ async function showSimilar(movieId) {
             )
             .join("")}</ul>`
         : '<p class="muted">Not enough shared fans in this snapshot to link this film to others.</p>') +
+      `<form class="path-form" data-path-from="${movieId}"><label for="path-target">How is it connected to another film?</label><div class="path-row"><input id="path-target" autocomplete="off" maxlength="120" placeholder="e.g. Toy Story" /><button class="button primary small" type="submit">Find the path</button></div><div class="path-result" aria-live="polite"></div></form>` +
       (taste.posters[movieId] ? `<p class="small muted"><a href="https://www.themoviedb.org/movie/${Number(taste.posters[movieId][1])}" target="_blank" rel="noopener noreferrer">Poster source on TMDB ↗</a></p>` : "");
   } catch (error) {
     if (currentDetail(requestId))
@@ -383,6 +385,41 @@ function showTasteEvidence(movieId) {
       `<p>Because you picked ${movie.reasons?.length === 1 ? "this film" : `these ${movie.reasons?.length} films`}:</p>${reasonsHTML(movie)}<p class="small muted">“Loved” means rated 4★ or more by the same MovieLens rater. The bar shows how strong the link is. This is a connection in the data, not a guarantee you’ll like the film.</p>`,
   );
 }
+
+/* ---------- Pathfinding between two films ---------- */
+async function findPath(form) {
+  const from = Number(form.dataset.pathFrom);
+  const title = form.querySelector("input").value.trim();
+  const output = form.querySelector(".path-result");
+  if (!title) return;
+  const requestId = detailRequestId;
+  output.innerHTML = '<p class="muted small">Searching the graph…</p>';
+  try {
+    const target = await api(`/api/movies/resolve?title=${encodeURIComponent(title)}`);
+    const path = await api(`/api/movies/${from}/path/${target.movie_id}?max_hops=6`);
+    if (requestId !== detailRequestId) return;
+    if (!path.found) {
+      output.innerHTML = `<p class="muted small">No link within ${path.max_hops} steps between these films in this snapshot.</p>`;
+      return;
+    }
+    const steps = path.films
+      .map((film, index) => {
+        const link = path.links[index - 1];
+        const arrow = link ? `<span class="path-link">${formatNumber(link.support)} shared fans →</span>` : "";
+        return `${arrow}<button type="button" class="path-film" data-detail="${film.movie_id}">${posterArt(film, "w92")}<span>${escapeText(cleanTitle(film.title))}</span></button>`;
+      })
+      .join("");
+    output.innerHTML = `<p class="small">${path.hops === 0 ? "That is the same film." : `Connected in ${path.hops} ${path.hops === 1 ? "step" : "steps"}:`}</p><div class="path-chain">${steps}</div>`;
+  } catch (error) {
+    if (requestId === detailRequestId) output.innerHTML = `<p class="error-text small">${escapeText(error.message)}</p>`;
+  }
+}
+document.addEventListener("submit", (event) => {
+  const form = event.target.closest?.(".path-form");
+  if (!form) return;
+  event.preventDefault();
+  findPath(form);
+});
 
 /* ---------- Quick picks ---------- */
 function selectedPicks() {
@@ -560,19 +597,22 @@ async function askGraph() {
     const result = await api("/api/ask", {
       method: "POST",
       headers: modelHeaders($("#api-key").value),
-      body: JSON.stringify({ question, limit: 10 }),
+      body: JSON.stringify({ question, limit: 10, mode: state.labMode }),
     });
     const plan = Object.entries(result.interpreted_intent).filter(([, value]) => value !== null && value !== undefined);
     output.innerHTML =
       `<div class="stage"><span class="stage-n">1</span><div><h3>Question</h3><p>${escapeText(question)}</p></div></div>` +
-      `<div class="stage"><span class="stage-n">2</span><div><h3>Plan from the model</h3><div class="kv">${plan.map(([k, v]) => `<span><b>${escapeText(k)}</b> ${escapeText(v)}</span>`).join("")}</div></div></div>` +
-      `<div class="stage"><span class="stage-n">3</span><div><h3>Checked Cypher template <small class="muted">#${escapeText(result.query_id)}</small></h3><pre>${escapeText(result.compiled_cypher)}</pre><details><summary>Bound parameters</summary><pre>${escapeText(JSON.stringify(result.parameters, null, 2))}</pre></details></div></div>` +
+      (result.interpreted_intent.mode === "generated"
+        ? `<div class="stage"><span class="stage-n">2</span><div><h3>Cypher written by the model <small class="muted">#${escapeText(result.query_id)}</small></h3><pre>${escapeText(result.compiled_cypher)}</pre><p class="muted small">${escapeText(result.interpreted_intent.explanation || "")}</p></div></div>` +
+          `<div class="stage"><span class="stage-n">3</span><div><h3>Safety checks passed</h3><ul class="checks"><li>One statement, no comments</li><li>No write or procedure keywords</li><li>Only labels and relationships from the schema</li><li>LIMIT 10 or less</li><li>Neo4j EXPLAIN: read-only</li><li>Run in a READ transaction with a timeout</li></ul></div></div>`
+        : `<div class="stage"><span class="stage-n">2</span><div><h3>Plan from the model</h3><div class="kv">${plan.map(([k, v]) => `<span><b>${escapeText(k)}</b> ${escapeText(v)}</span>`).join("")}</div></div></div>` +
+          `<div class="stage"><span class="stage-n">3</span><div><h3>Checked Cypher template <small class="muted">#${escapeText(result.query_id)}</small></h3><pre>${escapeText(result.compiled_cypher)}</pre><details><summary>Bound parameters</summary><pre>${escapeText(JSON.stringify(result.parameters, null, 2))}</pre></details></div></div>`) +
       `<div class="stage ok"><span class="stage-n">4</span><div><h3>Results from Neo4j</h3><p>${escapeText(result.explanation)}</p>${result.warnings.length ? `<p class="muted small">${escapeText(result.warnings.join(" "))}</p>` : ""}${labTable(result.rows)}</div></div>`;
   } catch (error) {
     if (error.status === 401) showKeyFields(true);
     output.innerHTML =
       `<div class="stage"><span class="stage-n">1</span><div><h3>Question</h3><p>${escapeText(question)}</p></div></div>` +
-      `<div class="stage blocked"><span class="stage-n">✕</span><div><h3>${error.status === 422 ? "Rejected by a guardrail" : error.status === 401 ? "This server needs an access key" : error.status >= 503 ? "The local model is not responding" : "Could not run"}${error.status ? ` <small>HTTP ${error.status}</small>` : ""}</h3><p>${escapeText(error.message)}</p>${error.status === 422 ? "<p class=\"muted small\">Nothing was sent to the database. Only reviewed, read-only query templates can run.</p>" : ""}</div></div>`;
+      `<div class="stage blocked"><span class="stage-n">✕</span><div><h3>${error.status === 422 ? "Rejected by a guardrail" : error.status === 401 ? "This server needs an access key" : error.status >= 503 ? "The local model is not responding" : "Could not run"}${error.status ? ` <small>HTTP ${error.status}</small>` : ""}</h3><p>${escapeText(error.message)}</p>${error.status === 422 ? `<p class="muted small">Nothing was run on the database. ${state.labMode === "generated" ? "Only model-written queries that pass every read-only check can run." : "Only reviewed, read-only query templates can run."}</p>` : ""}</div></div>`;
   } finally {
     button.disabled = false;
     button.textContent = "Run question";
@@ -693,6 +733,19 @@ $("#picks-restart").addEventListener("click", () => {
   showPicksStage("intro");
   startTaste();
 });
+$$("[data-lab-mode]").forEach((button) =>
+  button.addEventListener("click", () => {
+    state.labMode = button.dataset.labMode;
+    $$("[data-lab-mode]").forEach((other) => {
+      other.classList.toggle("active", other === button);
+      other.setAttribute("aria-checked", String(other === button));
+    });
+    $("#lab-mode-help").textContent =
+      state.labMode === "generated"
+        ? "The model writes the Cypher itself; the server only runs it if every read-only check passes."
+        : "The model picks one of six plans; the server maps it to a reviewed Cypher template.";
+  }),
+);
 $("#lab-form").addEventListener("submit", (event) => {
   event.preventDefault();
   askGraph();
