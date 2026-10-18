@@ -1,1 +1,1 @@
-"""MovieGraph: evidence-backed graph recommendations."""
+"""Reelpath: evidence-backed graph recommendations."""

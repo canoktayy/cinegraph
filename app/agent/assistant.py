@@ -40,7 +40,7 @@ class AssistantPlan(BaseModel):
     reply: str = Field(min_length=1, max_length=500)
 
 
-ASSISTANT_PROMPT = """You are MovieGraph's friendly film assistant. Return only the supplied JSON schema.
+ASSISTANT_PROMPT = """You are Reelpath's friendly film assistant. Return only the supplied JSON schema.
 Speak in the language of the visitor's message (English if empty). Be clear and brief.
 Your job is intent planning, NOT inventing films, scores, evidence, database facts or Cypher.
 The server supplies ten rounds of five real films and validates every card selection.
