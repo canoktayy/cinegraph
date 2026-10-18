@@ -57,7 +57,7 @@ async function api(path, options = {}) {
   } catch {
     const error = new Error(
       response.status === 429
-        ? "Too many requests. Wait a minute and try again — your choices are kept."
+        ? "Too many requests. Wait a minute and try again. Your choices are kept."
         : "The service did not respond. Check that the local services are running.",
     );
     error.status = response.status;
@@ -148,7 +148,7 @@ function setView(view, updateAddress = true) {
     notice("");
     if ($("#detail-dialog").open) $("#detail-dialog").close();
     window.scrollTo({ top: 0, behavior: "instant" });
-    document.title = view === "home" ? "MovieGraph — find your next film" : `${$("#screen-" + view + " h1")?.textContent || "MovieGraph"} · MovieGraph`;
+    document.title = view === "home" ? "MovieGraph: find your next film" : `${$("#screen-" + view + " h1")?.textContent || "MovieGraph"} · MovieGraph`;
   }
   if (changed && ["assistant", "lab"].includes(view)) checkModel();
   if (LIST_VIEWS.includes(view) && (changed || !state.loaded[view])) return loadFilms();
@@ -428,7 +428,7 @@ async function advanceTaste(movieId) {
 }
 async function finishTaste() {
   if (!selectedPicks().length) {
-    $("#round-picks").textContent = " · Pick at least one film to get matches — go back or start over.";
+    $("#round-picks").textContent = " · Pick at least one film to get matches, then go back or start over.";
     return;
   }
   taste.personal = true;

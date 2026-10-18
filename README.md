@@ -2,7 +2,7 @@
 
 # 🎬 MovieGraph
 
-### Pick films you love. See what to watch next — and exactly why.
+### Pick films you love. See what to watch next, and exactly why.
 
 An explainable movie recommender built on a **Neo4j graph** of 100,836 real MovieLens ratings,
 with **Graph Data Science** algorithms, a guarded **natural-language → Cypher** lab and a **local-LLM film assistant**.
@@ -14,7 +14,7 @@ with **Graph Data Science** algorithms, a guarded **natural-language → Cypher*
 ![Neo4j](https://img.shields.io/badge/Neo4j-5.26%20%2B%20GDS%202.13-018bff?logo=neo4j&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.143-009688?logo=fastapi&logoColor=white)
 
-**Can Oktay** · Student no. B00818187 · AIDAMS 3A — Graph Databases
+**Can Oktay** · Student no. B00818187 · AIDAMS 3A, Graph Databases
 Project 4 · *Movie Recommender in Production* (Level 2)
 
 <img src="docs/screenshots/ui-home.jpg" alt="MovieGraph home page" width="900">
@@ -45,8 +45,8 @@ Project 4 · *Movie Recommender in Production* (Level 2)
 
 | | Feature | How it works |
 |---|---|---|
-| 🎯 | **Quick picks** | Ten rounds of five well-known films — click or press <kbd>1</kbd>–<kbd>5</kbd>. Pick favourites, get matches, filter by genre. No account, no model. |
-| 💬 | **Film assistant** | The same flow as a conversation. Say *“Bana sadece komedi öner”* or *“more like Fargo”* — a local LLM interprets the request, the graph returns the films. |
+| 🎯 | **Quick picks** | Ten rounds of five well-known films; click or press <kbd>1</kbd>–<kbd>5</kbd>. Pick favourites, get matches, filter by genre. No account, no model. |
+| 💬 | **Film assistant** | The same flow as a conversation. Say *“Bana sadece komedi öner”* or *“more like Fargo”*: a local LLM interprets the request, and the graph returns the films. |
 | 🔍 | **“Why this film?”** | Every recommendation shows the picks it is linked to and how many raters loved both films. |
 | 📚 | **Catalog** | Full-text search over 9,742 films, genre filter, and “fans also liked” for any film. |
 | 🏆 | **Top films** | Bayesian-rated films from the snapshot’s final year, or the most central films by **PageRank**. |
@@ -59,7 +59,7 @@ Project 4 · *Movie Recommender in Production* (Level 2)
 
 ## Tour of the application
 
-### 1 · Quick picks — no setup required
+### 1 · Quick picks: no setup required
 
 Five films per round, ten rounds. Unpicked films are **not** treated as dislikes.
 
@@ -82,7 +82,7 @@ Results are ranked by graph affinity to your picks. Genre chips re-run the query
 </tr>
 </table>
 
-### 3 · Film assistant — conversation on top of the graph
+### 3 · Film assistant: conversation on top of the graph
 
 The deterministic controller runs the ten rounds itself; the local model is only called for free-text requests, which it turns into a validated `AssistantPlan` (tool, genre, reference film).
 
@@ -101,7 +101,7 @@ The deterministic controller runs the ten rounds itself; the local model is only
 </tr>
 </table>
 
-### 5 · Query lab — natural language to safe Cypher
+### 5 · Query lab: natural language to safe Cypher
 
 <table>
 <tr>
@@ -133,7 +133,7 @@ git clone https://github.com/canoktayy/moviegraph.git
 cd moviegraph
 make install        # virtualenv + pinned dependencies
 make setup          # creates an untracked .env with unique secrets (never printed)
-make docker-run     # Neo4j + GDS, FastAPI, Nginx — waits until healthy
+make docker-run     # Neo4j + GDS, FastAPI, Nginx; waits until healthy
 make download seed  # MovieLens small: download, validate, import
 make analytics      # GDS similarity, Louvain, PageRank → versioned run
 make demo           # live HTTP smoke checks
@@ -194,9 +194,9 @@ The API never runs GDS per request: it reads the results of the active `Analytic
 | Relationship | Properties | Kind |
 |---|---|---|
 | `(:User)-[:RATED]->(:Movie)` | `score`, `timestamp` | observed |
-| `(:Movie)-[:IN_GENRE]->(:Genre)` | — | observed |
-| `(:User)-[:APPLIED]->(:TagApplication)-[:ON_MOVIE]->(:Movie)` | — | observed |
-| `(:TagApplication)-[:WITH_TAG]->(:Tag)` | — | observed |
+| `(:Movie)-[:IN_GENRE]->(:Genre)` | none | observed |
+| `(:User)-[:APPLIED]->(:TagApplication)-[:ON_MOVIE]->(:Movie)` | none | observed |
+| `(:TagApplication)-[:WITH_TAG]->(:Tag)` | none | observed |
 | `(:Movie)-[:SIMILAR_TO]->(:Movie)` | `score`, `support`, `run_id` | derived (GDS) |
 | `(:Movie)-[:ANALYZED_IN]->(:AnalyticsRun)` | `community_id`, `pagerank`, `vote_count`, `bayesian_rating` | derived (GDS) |
 
@@ -208,7 +208,7 @@ The API never runs GDS per request: it reads the results of the active `Analytic
 - **Derived data is versioned**: `SIMILAR_TO` and `ANALYZED_IN` carry a `run_id`; a new run is staged and activated atomically, so a failed job never changes what the API serves.
 - **No invented entities**: MovieLens small has no actors or directors, so none are modelled.
 
-Full rationale: [ADR 001 – graph model](docs/adr/001-graph-model.md) · [ADR 002 – versioned analytics](docs/adr/002-analytics-runs.md) · [anti-genericity comparison with an AI-generated baseline](docs/modeling-comparison.md) · editable [draw.io sources](docs/diagrams/).
+Full rationale: [ADR 001: graph model](docs/adr/001-graph-model.md) · [ADR 002: versioned analytics](docs/adr/002-analytics-runs.md) · [anti-genericity comparison with an AI-generated baseline](docs/modeling-comparison.md) · editable [draw.io sources](docs/diagrams/).
 
 ---
 
@@ -244,7 +244,7 @@ Scores are graph affinities, not predicted stars or probabilities. “Trending�
 
 Both components use a **local** model through an OpenAI-compatible API with JSON-schema output, temperature 0 and at most one format repair.
 
-### Query lab — constrained NL → Cypher
+### Query lab: constrained NL → Cypher
 
 ```mermaid
 flowchart LR
@@ -268,7 +268,7 @@ flowchart LR
 - The model may choose one of two read-only tools (`graph_affinity`, `similar_movies`), a canonical genre and a reference film **from the visitor’s own picks**. Every value is validated server-side; picks are re-checked against the seeded rounds so a client cannot forge preferences.
 - Mutation requests and unsupported data (actors, plots) are rejected before the model is called.
 
-Details: [ADR 003 – language safety](docs/adr/003-language-safety.md) · [assistant design](docs/film-assistant.md).
+Details: [ADR 003: language safety](docs/adr/003-language-safety.md) · [assistant design](docs/film-assistant.md).
 
 ---
 
@@ -329,7 +329,7 @@ CI ([Quality workflow](.github/workflows/ci.yml)) starts the real three-service 
 | Historical movie mean | 0.604 | 0.658 | 0.662 |
 | **Graph-feature logistic regression** | **0.617** | **0.669** | **0.677** |
 
-**Query performance** (same 30 films, after warm-up — see [`profile-*.json`](docs/evidence/) for `PROFILE` plans):
+**Query performance** (same 30 films after warm-up; see [`profile-*.json`](docs/evidence/) for `PROFILE` plans):
 
 | Method | p50 | p95 |
 |---|---:|---:|
@@ -393,7 +393,7 @@ Further reading: [requirement-to-evidence map](docs/requirements.md) · [demo ru
 
 ## Data sources and attribution
 
-- **Ratings:** [GroupLens MovieLens small](https://grouplens.org/datasets/movielens/) — 610 users, 9,742 movies, 100,836 ratings, 3,683 tag applications (1996–2018). F. Maxwell Harper and Joseph A. Konstan (2015), *The MovieLens Datasets: History and Context*, [DOI 10.1145/2827872](https://doi.org/10.1145/2827872). Used under the [MovieLens terms](https://files.grouplens.org/datasets/movielens/ml-latest-small-README.html); no endorsement implied.
+- **Ratings:** [GroupLens MovieLens small](https://grouplens.org/datasets/movielens/): 610 users, 9,742 movies, 100,836 ratings, 3,683 tag applications (1996–2018). F. Maxwell Harper and Joseph A. Konstan (2015), *The MovieLens Datasets: History and Context*, [DOI 10.1145/2827872](https://doi.org/10.1145/2827872). Used under the [MovieLens terms](https://files.grouplens.org/datasets/movielens/ml-latest-small-README.html); no endorsement implied.
 - **Posters:** 9,586 references joined on **both** TMDB and IMDb IDs from the [Full TMDB Movies Dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies); only URLs are stored. Images remain with their rights holders. This product uses TMDB data but is not endorsed or certified by TMDB. Posters are never used for ranking.
 
 Import validation rejects invalid scores, missing foreign keys and conflicting identities; per-file SHA-256 hashes are recorded in [`data_quality.json`](artifacts/reports/data_quality.json).
