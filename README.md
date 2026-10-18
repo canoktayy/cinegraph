@@ -7,8 +7,8 @@
 An explainable movie recommender built on a **Neo4j graph** of 100,836 real MovieLens ratings,
 with **Graph Data Science** algorithms, a guarded **natural-language → Cypher** lab and a **local-LLM film assistant**.
 
-[![Quality](https://github.com/canoktayy/moviegraph/actions/workflows/ci.yml/badge.svg)](https://github.com/canoktayy/moviegraph/actions/workflows/ci.yml)
-[![Container](https://github.com/canoktayy/moviegraph/actions/workflows/image.yml/badge.svg)](https://github.com/canoktayy/moviegraph/actions/workflows/image.yml)
+[![Quality](https://github.com/canoktayy/cinegraph/actions/workflows/ci.yml/badge.svg)](https://github.com/canoktayy/cinegraph/actions/workflows/ci.yml)
+[![Container](https://github.com/canoktayy/cinegraph/actions/workflows/image.yml/badge.svg)](https://github.com/canoktayy/cinegraph/actions/workflows/image.yml)
 ![Coverage](docs/evidence/coverage.svg)
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![Neo4j](https://img.shields.io/badge/Neo4j-5.26%20%2B%20GDS%202.13-018bff?logo=neo4j&logoColor=white)
@@ -129,7 +129,7 @@ The server runs the ten rounds itself. For typed requests the local model works 
 
 ## Design choices
 
-**Name.** *Cinegraph* joins *cinema* and *graph*: the films and the Neo4j graph that connects them. Every recommendation is a path through that graph, from a film you picked, through the people who loved it, to the next film. (The repository keeps its original name, `moviegraph`.)
+**Name.** *Cinegraph* joins *cinema* and *graph*: the films and the Neo4j graph that connects them. Every recommendation is a path through that graph, from a film you picked, through the people who loved it, to the next film.
 
 **Two colours, teal and IMDb yellow.** The interface uses one dark hue for surfaces and one bright accent for actions, and lets the posters carry every other colour.
 
@@ -150,8 +150,8 @@ Measured WCAG contrast on the page background: body text 16:1, muted text 8.5:1,
 **Requirements:** Python 3.12+, Docker with Compose v2, Git, Node.js 20+ (frontend tests only). Allow 4–6 GB of Docker memory.
 
 ```bash
-git clone https://github.com/canoktayy/moviegraph.git
-cd moviegraph
+git clone https://github.com/canoktayy/cinegraph.git
+cd cinegraph
 make install        # virtualenv + pinned dependencies
 make setup          # creates an untracked .env with unique secrets (never printed)
 make docker-run     # Neo4j + GDS, FastAPI, Nginx; waits until healthy
@@ -398,7 +398,7 @@ Mean top-10 overlap between the two: 0.97. More detail in [docs/results.md](docs
 ## Repository layout
 
 ```
-moviegraph/
+cinegraph/
 ├── app/
 │   ├── main.py            # FastAPI routes, auth, budgets, error handling
 │   ├── models.py          # Pydantic contracts
