@@ -4,13 +4,14 @@ Measured locally on 18 October 2026 after the interface redesign. These are obse
 
 ## Quality gates
 
-- **181 Python tests and 19 frontend behavioural tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
-- **83.15% combined Python statement/branch coverage**, minimum enforced: 60%.
+- **190 Python tests and 21 frontend behavioural tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
+- **83.76% combined Python statement/branch coverage**, minimum enforced: 60%.
 - **Pylint 9.90/10**, teacher configuration, minimum enforced: 9.5. Black reports no changes.
 - **40/40 query-lab reliability cases passed**. The 20 supported questions check intent, exact entity/filter/budget parameters and returned genre membership. Other cases distinguish scope/guardrail rejection from controlled malformed-provider fault injection.
 - **17/17 film-assistant checks passed** with the real local model and real Neo4j (ten deterministic quiz turns, Turkish comedy filter, filter retention and removal, single-favourite tool switch, two scope guards, unchanged source counts) in 22 s.
 - **14/14 live HTTP smoke checks passed** against the rebuilt container stack.
 - First-load transfer through Nginx: about 316 KB (HTML 7 KB, app.js 11.5 KB, poster metadata 298 KB gzip), down from about 3.1 MB. Posters display in Chrome and WebKit (Safari) on every screen.
+- The Film assistant and Query lab work without any key on a local install, in Chrome and WebKit. With the model server stopped, the status line explains how to start it, card rounds still work, and a typed request returns a clear 503 with retry.
 - Every notebook cell executed; real model HTTP 200, exact Sci-Fi filtering and unsafe-operation HTTP 422 are assertions.
 - The interface was driven end to end in Chrome at 1440 px and 390 px (all seven screens, dialogs, the assistant and the query lab). No screen has horizontal overflow at 375 px. Screenshots are in `docs/screenshots/`; no key appears in them.
 

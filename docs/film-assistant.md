@@ -4,14 +4,14 @@ The navigation has two groups. **Get recommendations** contains **Quick picks** 
 
 ## Visitor journey
 
-1. Start LM Studio with `qwen2.5-7b-instruct` and the local server on port 1234. Open Film assistant and enter the local application's `APP_API_KEY` from `.env`. This is not a paid-provider API key.
+1. Start LM Studio with `qwen2.5-7b-instruct` and the local server on port 1234. Open Film assistant: a status line shows whether the local model answers (`GET /api/model/status`). No key is needed on a local install.
 2. Start a conversation. The server shows five real catalog films with a fixed prompt. Choose a card or skip. The server verifies that the chosen ID belongs to that round. Card clicks never call the model.
 3. Repeat for ten rounds. Back revisits the previous round. A completed choice is committed in browser state only after a successful response; retry preserves a pending choice when the model is unavailable.
 4. The graph algorithm returns recommendations, excluding selected favourites. Open **Why this film?** to see the contributing selected film, shared positive raters and similarity.
 5. Send `Bana sadece komedi öner` or `Only comedies, please`. The model chooses the candidate genre filter, and the graph query runs again. `All genres, please` removes the filter. `Recommend now` can request matches before ten rounds when at least one favourite has been selected.
 6. Name one selected film to request recommendations similar to that favourite. The tool uses that one seed instead of combining all favourites. Unresolved or unsupported requests ask for clarification rather than inventing a result.
 
-Selected preferences, transcript and local key stay in browser memory. Reload clears them; navigation between screens preserves them. Starting over clears the conversation but leaves the tab's key available. Neither flow creates MovieLens users or ratings. Unselected alternatives are not negative labels.
+Selected preferences and the transcript stay in browser memory. Reload clears them; navigation between screens preserves them. Starting over clears the conversation. Neither flow creates MovieLens users or ratings. Unselected alternatives are not negative labels.
 
 ## Two layers and a fixed quiz controller
 
@@ -41,7 +41,7 @@ No generic Cypher executor is exposed. Canonical genres, tool names, identities,
 
 ## API
 
-`POST /api/assistant/turn`, authenticated with `X-API-Key`:
+`POST /api/assistant/turn` (with `X-API-Key` only when the server runs with `REQUIRE_API_KEY=true`):
 
 ```json
 {
@@ -59,7 +59,7 @@ No generic Cypher executor is exposed. Canonical genres, tool names, identities,
 
 Responses contain `stage` (`choosing`, `recommendations`, `clarify`), short `message`, `options`, `items`, current/completed round counts, selected IDs/titles, validated `plan`, active analytics run and trace ID. Each recommendation includes actual graph reasons. An empty result remains empty and is explained in the interface; it does not silently switch to invented or unrelated films.
 
-The model endpoint is protected by the existing local key and a 24-turn/minute application budget, with a dedicated Nginx budget and a 70-second proxy timeout for the two bounded provider attempts. The query lab retains its separate proxy budget. The application minute history is shared per client address; multiple local tabs can consume the same budget. A 429 asks the visitor to wait; retries preserve choices. Bad key is 401, invalid state/intent 422, invalid model format 502, offline model 503, and model timeout 504. The models and their server must remain locally reachable from Docker.
+The model endpoint is protected by a 24-turn/minute application budget (plus the optional key described above), with a dedicated Nginx budget and a 70-second proxy timeout for the two bounded provider attempts. The query lab retains its separate proxy budget. The application minute history is shared per client address; multiple local tabs can consume the same budget. A 429 asks the visitor to wait; retries preserve choices. A missing or wrong key on a key-protected server is 401 (the interface then reveals the key field), invalid state/intent 422, invalid model format 502, offline model 503, and model timeout 504. The models and their server must remain locally reachable from Docker.
 
 ## Verification
 

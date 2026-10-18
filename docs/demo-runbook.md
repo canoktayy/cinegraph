@@ -14,7 +14,7 @@
 - Open Home and explain the two ways to get recommendations. In **Film assistant**, complete the five-card rounds (card clicks are deterministic and fast), open a “Why?” reason, then ask `Bana sadece komedi öner` and show the genre-filtered graph results. Name one selected favourite to demonstrate the single-film tool.
 - Show that **Quick picks** works without the model, including genre chips and “Why?”. Then open **Dataset users** for rater 42 (both methods and the path evidence), **Catalog** for title search and “Fans also liked”, and **Top films** for the rating/PageRank toggle.
 - In Swagger show similar, personalized, discover and historical trending/PageRank routes.
-- In **Query lab**, enter the **local** APP_API_KEY only in the browser field, then ask `Recommend 5 Sci-Fi movies for user 42`.
+- In **Query lab**, point at the green “Local model ready” status, then ask `Recommend 5 Sci-Fi movies for user 42`. No key is needed locally; explain that `REQUIRE_API_KEY=true` turns key protection on for an exposed deployment.
 - Show the actual compiled Cypher, bound parameters and graph results.
 - Click “Try a blocked request” (`DELETE all nodes`): show the red 422 guardrail stage and verify the source counts remain unchanged.
 - Explain Movie→User projection direction, support shrinkage and canonical undirected weights.
