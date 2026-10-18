@@ -64,4 +64,4 @@ If you make the site reachable from other computers, set `REQUIRE_API_KEY=true` 
 
 More detail: [demo runbook](demo-runbook.md), [assistant design](film-assistant.md), [measured results](results.md) and `demo.ipynb`.
 
-`make stop` stops the services but keeps the data. The repository and the container image are private. No paid LLM or cloud Neo4j account is needed.
+`make stop` stops the services but keeps the data. The repository is private; the container image `ghcr.io/canoktayy/cinegraph` is public. No paid LLM or cloud Neo4j account is needed.

@@ -13,12 +13,14 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from neo4j.exceptions import Neo4jError, ServiceUnavailable, SessionExpired
 
-from app.agent.assistant import AssistantClient, AssistantTurn, answer_turn
+from app.agent.assistant import AssistantClient, AssistantTurn, answer_turn, resolve_film
 from app.agent.client import LLMClient, local_model_status
+from app.agent.compiler import guard_question
+from app.agent.generated import CypherWriter, generate_and_run
 from app.agent.workflow import answer
 from app.config import get_settings
 from app.database import GraphStore
-from app.models import MAX_GRAPH_ID, AskRequest, AskResponse, ExplanationResponse, RankingResponse
+from app.models import MAX_GRAPH_ID, AskRequest, AskResponse, ExplanationResponse, PathResponse, RankingResponse
 from app.repository import CatalogRepository
 from app.services import RecommendationService
 from app.taste import TasteRequest, recommend as taste_recommend, rounds as taste_rounds
@@ -165,6 +167,26 @@ def similar(movie_id: Identifier, recommender: Service, limit: Limit = 10):
     return recommender.similar(movie_id, limit)
 
 
+@app.get("/api/movies/resolve", tags=["Catalog"])
+def resolve(recommender: Service, title: Annotated[str, Query(min_length=1, max_length=120)]):
+    """Find the catalog film for a typed title: exact title first, then the most rated close match."""
+    film = resolve_film(recommender, title)
+    if film is None:
+        raise HTTPException(404, f"No film matches “{title}”")
+    return {key: film[key] for key in ("movie_id", "title", "year", "genres")}
+
+
+@app.get("/api/movies/{movie_id}/path/{other_id}", response_model=PathResponse, tags=["Recommendations"])
+def film_path(
+    movie_id: Identifier,
+    other_id: Identifier,
+    recommender: Service,
+    max_hops: Annotated[int, Query(ge=1, le=6)] = 4,
+):
+    """Pathfinding: the shortest chain of shared-fan links that connects two films."""
+    return recommender.path(movie_id, other_id, max_hops)
+
+
 @app.get("/api/users/{user_id}/favorites", response_model=RankingResponse, tags=["Recommendations"])
 def favourites(user_id: Identifier, recommender: Service, limit: Limit = 8):
     """Films the rater scored 4★ or more, highest and most recent first."""
@@ -202,6 +224,9 @@ def model_status():
 @app.post("/api/ask", response_model=AskResponse, dependencies=[Depends(protect_ask)], tags=["Natural language"])
 def ask(body: AskRequest, request: Request, recommender: Service):
     """Use a real configured local LLM; invalid output is never executed."""
+    if body.mode == "generated":
+        guard_question(body.question)  # Obvious mutation or out-of-scope requests never reach the model.
+        return generate_and_run(body, recommender, CypherWriter(get_settings()), request.state.trace_id)
     return answer(body, recommender, LLMClient(get_settings()), request.state.trace_id)
 
 

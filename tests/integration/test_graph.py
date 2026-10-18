@@ -175,3 +175,18 @@ def test_rater_favourites_are_their_own_high_ratings_in_order(store):
     }
     assert items and all(rated[movie.movie_id] == movie.score >= 4 for movie in items)
     assert [movie.score for movie in items] == sorted((movie.score for movie in items), reverse=True)
+
+
+def test_shortest_path_between_two_films_uses_real_similarity_links(store):
+    service = RecommendationService(CatalogRepository(store))
+    path = service.path(4262, 1, max_hops=6)  # Scarface (1983) to Toy Story
+    assert path.found and 1 <= path.hops <= 6
+    assert [path.films[0].movie_id, path.films[-1].movie_id] == [4262, 1]
+    assert len(path.links) == path.hops and all(link.support >= 3 for link in path.links)
+    for left, right in zip(path.films, path.films[1:]):
+        linked = store.read(
+            "MATCH (:Movie {movie_id:$a})-[s:SIMILAR_TO]-(:Movie {movie_id:$b}) RETURN count(s) AS n",
+            {"a": left.movie_id, "b": right.movie_id},
+        )[0]["n"]
+        assert linked >= 1
+    assert not service.path(4262, 1, max_hops=1).found

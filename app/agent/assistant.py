@@ -227,25 +227,26 @@ def resolve_film(recommender, film_title: str) -> dict | None:
     return max(exact or starts or close, key=lambda row: row["votes"])
 
 
+# English words must match whole ("warm" is not War); Turkish stems may take suffixes ("komedileri").
 GENRE_WORDS = {
-    "Action": r"action|aksiyon",
-    "Adventure": r"adventures?|macera",
-    "Animation": r"animat(?:ion|ed)|animasyon|cartoons?",
-    "Children": r"children'?s?|kids?|family|cocuk|aile",
-    "Comedy": r"comed(?:y|ies)|funny|komedi",
-    "Crime": r"crime|suc",
-    "Documentary": r"documentar(?:y|ies)|belgesel",
-    "Drama": r"dramas?|dram",
-    "Fantasy": r"fantasy|fantastik",
-    "Film-Noir": r"film noir|noir",
-    "Horror": r"horrors?|korku",
-    "Musical": r"musicals?|muzikal",
-    "Mystery": r"myster(?:y|ies)|gizem",
-    "Romance": r"romance|romantic|romantik",
-    "Sci-Fi": r"sci fi|scifi|science fiction|bilim kurgu",
-    "Thriller": r"thrillers?|gerilim",
-    "War": r"war|savas",
-    "Western": r"westerns?|kovboy",
+    "Action": (r"action", r"aksiyon"),
+    "Adventure": (r"adventures?", r"macera"),
+    "Animation": (r"animation|animated|cartoons?", r"animasyon"),
+    "Children": (r"children'?s?|kids?|family", r"cocuk|aile"),
+    "Comedy": (r"comedy|comedies|funny", r"komedi"),
+    "Crime": (r"crimes?", r"suc"),
+    "Documentary": (r"documentary|documentaries", r"belgesel"),
+    "Drama": (r"dramas?", r"dram"),
+    "Fantasy": (r"fantasy|fantasies", r"fantastik"),
+    "Film-Noir": (r"film noir|noir", r"kara film"),
+    "Horror": (r"horrors?", r"korku"),
+    "Musical": (r"musicals?", r"muzikal"),
+    "Mystery": (r"mystery|mysteries", r"gizem"),
+    "Romance": (r"romance|romances|romantic", r"romantik"),
+    "Sci-Fi": (r"sci fi|scifi|science fiction", r"bilim kurgu"),
+    "Thriller": (r"thrillers?", r"gerilim"),
+    "War": (r"wars?", r"savas"),
+    "Western": (r"westerns?", r"kovboy"),
 }
 NEGATION_BEFORE = r"(?:no|not|without|except|exclude|excluding|but not|hic|asla)\s+(?:\w+\s+){0,2}$"
 NEGATION_AFTER = r"^\w*\s*(?:olmasin|olmayan|haric|istemiyorum|disinda|degil|olmadan)"
@@ -257,10 +258,10 @@ def explicit_filters(message: str, genres: list[str], film_title: str | None = N
     if film_title and fold(film_title):
         text = text.replace(fold(film_title), " ")  # "Star Wars" names a film, not the War genre.
     found = {}
-    for genre, pattern in GENRE_WORDS.items():
+    for genre, (english, turkish_stem) in GENRE_WORDS.items():
         if genre not in genres:
             continue
-        for match in re.finditer(rf"\b(?:{pattern})\w*", text):
+        for match in re.finditer(rf"\b(?:{english})\b|\b(?:{turkish_stem})\w*", text):
             negated = re.search(NEGATION_BEFORE, text[: match.start()]) or re.search(
                 NEGATION_AFTER, text[match.end() :].lstrip()
             )

@@ -422,3 +422,28 @@ test("number keys pick a film, S skips, and picks so far stay visible during the
   browser.run("setView('catalog')");
   assert.equal(browser.key("1"), false, "shortcuts only work on the quick-picks screen");
 });
+test("model-written Cypher mode is sent to the server and shows the safety checks", async () => {
+  const browser = page();
+  await tick();
+  browser.run("state.labMode = 'generated'");
+  browser.element("#question").value = "Which 5 movies have the most ratings?";
+  const ask = browser.run("askGraph()");
+  await tick();
+  assert.equal(JSON.parse(browser.bodies.get("/api/ask")).mode, "generated");
+  browser.pending.get("/api/ask").resolve(
+    response({
+      interpreted_intent: { mode: "generated", explanation: "Most rated films." },
+      query_id: "abc",
+      compiled_cypher: "MATCH (:User)-[r:RATED]->(m:Movie) RETURN m.title AS title LIMIT 5",
+      parameters: {},
+      rows: [{ title: "Forrest Gump (1994)" }],
+      explanation: "Model-written query, checked and run on Neo4j: 1 rows.",
+      warnings: [],
+    }),
+  );
+  await ask;
+  const html = browser.element("#ask-result").innerHTML;
+  assert.match(html, /Cypher written by the model/);
+  assert.match(html, /EXPLAIN: read-only/);
+  assert.match(html, /Forrest Gump/);
+});

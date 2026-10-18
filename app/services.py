@@ -3,7 +3,7 @@
 from fastapi import HTTPException
 
 from app import queries
-from app.models import Evidence, ExplanationResponse, RankingResponse
+from app.models import Evidence, ExplanationResponse, PathResponse, RankingResponse
 from app.repository import CatalogRepository
 
 
@@ -72,6 +72,21 @@ class RecommendationService:
             queries.USER_FAVOURITES, self.parameters({"user_id": user_id, "limit": limit})
         )
         return self.envelope(rows, "observed_ratings", "rating")
+
+    def path(self, movie_id: int, other_id: int, max_hops: int = 4) -> PathResponse:
+        """Shortest path between two films through the active run's similarity links."""
+        self.require("movie", movie_id)
+        self.require("movie", other_id)
+        params = self.parameters({"movie_id": movie_id, "other_id": other_id})
+        if movie_id == other_id:
+            film = self.repository.store.read(
+                "MATCH (m:Movie {movie_id:$movie_id}) RETURN m {.movie_id, .title, .year} AS film", params
+            )[0]["film"]
+            return PathResponse(found=True, hops=0, films=[film], max_hops=max_hops, analytics_run_id=params["run_id"])
+        rows = self.repository.store.read(queries.FILM_PATH, params)
+        if not rows or rows[0]["hops"] > max_hops:
+            return PathResponse(found=False, max_hops=max_hops, analytics_run_id=params["run_id"])
+        return PathResponse(found=True, max_hops=max_hops, analytics_run_id=params["run_id"], **rows[0])
 
     def discover(self, user_id: int, limit: int = 10):
         """Discover unrated films from the user's dominant Louvain communities."""

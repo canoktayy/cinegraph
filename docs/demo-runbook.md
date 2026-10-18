@@ -19,7 +19,7 @@
 - Click “Try a blocked request” (`DELETE all nodes`): show the red 422 guardrail stage and verify the source counts remain unchanged.
 - Explain Movie→User projection direction, support shrinkage and canonical undirected weights.
 - Show the chronological split and cold-start cohort; explain why unrated pairs are not negative labels.
-- Show actual benchmark speed and ranking overlap, CI and private container publishing.
+- Show actual benchmark speed and ranking overlap, CI and the public container image.
 
 ## Questions to be able to answer
 

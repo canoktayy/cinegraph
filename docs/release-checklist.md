@@ -14,6 +14,6 @@ The local suite, data invariants, real GDS jobs, model evaluation and notebook a
 - [x] Executed notebook with real local-model success and rejection.
 - [x] Graph/architecture diagrams, editable sources and modeling comparison.
 - [x] [GitHub CI passed for the final application commit](https://github.com/canoktayy/cinegraph/actions/runs/39052798282).
-- [x] [Container publication succeeded](https://github.com/canoktayy/cinegraph/actions/runs/39053436880); the [package page](https://github.com/canoktayy/cinegraph/pkgs/container/cinegraph) visibly confirms **Private**. Digest and source revision are in [release evidence](evidence/github-release.json).
+- [x] [Container publication succeeded](https://github.com/canoktayy/cinegraph/actions/runs/39053436880); the [package page](https://github.com/canoktayy/cinegraph/pkgs/container/cinegraph) shows the image as **public**. Digest and source revision are in [release evidence](evidence/github-release.json).
 
-Independent human review, instructor solo approval and **public** image visibility are not claimed. Review observations posted by the owner account are self-review, not an external sign-off.
+Independent human review and instructor solo approval are not claimed. Review observations posted by the owner account are self-review, not an external sign-off.

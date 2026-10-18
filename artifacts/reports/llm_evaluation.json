@@ -417,9 +417,81 @@
       "category": "injected_provider_fault",
       "payload": "{\"intent\":\"recommend_movies\",\"user_id\":-42}",
       "passed": true
+    },
+    {
+      "category": "generated_live",
+      "question": "Which 5 movies have the most ratings?",
+      "cypher": "MATCH (:User)-[r:RATED]->(m:Movie) RETURN m.title AS title, count(r) AS ratings ORDER BY ratings DESC LIMIT 5",
+      "rows": 5,
+      "passed": true
+    },
+    {
+      "category": "generated_live",
+      "question": "Top 3 genres by number of movies",
+      "cypher": "MATCH (m:Movie)-[:IN_GENRE]->(g:Genre) RETURN g.name AS genre, count(g) AS movie_count ORDER BY movie_count DESC LIMIT 3",
+      "rows": 3,
+      "passed": true
+    },
+    {
+      "category": "generated_live",
+      "question": "Which films did user 42 rate 5 stars?",
+      "cypher": "MATCH (:User {user_id: 42})-[r:RATED]->(m:Movie) WHERE r.score = 5.0 RETURN m.title AS title, m.year AS year ORDER BY title LIMIT 5",
+      "rows": 5,
+      "passed": true
+    },
+    {
+      "category": "generated_live",
+      "question": "Films similar to Toy Story",
+      "cypher": "MATCH (a:Movie)-[s:SIMILAR_TO]->(b:Movie) WHERE toLower(a.title) CONTAINS 'toy story' AND s.run_id = 'gds-246d37dafdab7423' RETURN b.title AS title, s.score AS similarity ORDER BY similarity DESC LIMIT 5",
+      "rows": 5,
+      "passed": true
+    },
+    {
+      "category": "generated_live",
+      "question": "What are the most common tags?",
+      "cypher": "MATCH (ua:TagApplication)-[:WITH_TAG]->(t:Tag), (ua)-[:ON_MOVIE]->(m:Movie) RETURN t.key AS tag, count(*) AS usage ORDER BY usage DESC LIMIT 5",
+      "rows": 5,
+      "passed": true
+    },
+    {
+      "category": "generated_live",
+      "question": "How many ratings does user 1 have?",
+      "cypher": "MATCH (u:User {user_id: 1})-[r:RATED]->(m:Movie) RETURN count(r) AS rating_count\nLIMIT 5",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "category": "generated_injected",
+      "payload": "MATCH (m:Movie) DETACH DELETE m RETURN 1",
+      "passed": true
+    },
+    {
+      "category": "generated_injected",
+      "payload": "MATCH (m:Movie) SET m.title = 'hacked' RETURN m.title",
+      "passed": true
+    },
+    {
+      "category": "generated_injected",
+      "payload": "CALL dbms.listConfig() YIELD name RETURN name",
+      "passed": true
+    },
+    {
+      "category": "generated_injected",
+      "payload": "MATCH (m:Movie) RETURN m.title; MATCH (n) DELETE n",
+      "passed": true
+    },
+    {
+      "category": "generated_injected",
+      "payload": "LOAD CSV FROM 'file:///etc/passwd' AS row RETURN row",
+      "passed": true
+    },
+    {
+      "category": "generated_injected",
+      "payload": "MATCH (a:Account) RETURN a.secret",
+      "passed": true
     }
   ],
-  "passed": 40,
-  "total": 40,
-  "notes": "20 supported cases use the real local model and database. Unsafe/unavailable-data requests may be rejected before the model. Five provider-fault cases are controlled mocks."
+  "passed": 52,
+  "total": 52,
+  "notes": "20 supported cases use the real local model and database. Unsafe/unavailable-data requests may be rejected before the model. Five provider-fault cases are controlled mocks. Six generated-mode questions let the real model write Cypher; six injected unsafe drafts must be refused."
 }

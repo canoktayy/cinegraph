@@ -4,10 +4,10 @@ Measured locally on 18 October 2026 after the interface redesign. These are obse
 
 ## Quality gates
 
-- **207 Python tests and 21 frontend behavioural tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
-- **84.81% combined Python statement/branch coverage**, minimum enforced: 60%.
+- **237 Python tests and 22 frontend behavioural tests passed**, including real Neo4j, Cypher, projection and GDS algorithm jobs.
+- **84.63% combined Python statement/branch coverage**, minimum enforced: 60%.
 - **Pylint 9.90/10**, teacher configuration, minimum enforced: 9.5. Black reports no changes.
-- **40/40 query-lab reliability cases passed**. The 20 supported questions check intent, exact entity/filter/budget parameters and returned genre membership. Other cases distinguish scope/guardrail rejection from controlled malformed-provider fault injection.
+- **52/52 query-lab reliability cases passed**, including six questions where the real model wrote the Cypher itself and six injected unsafe drafts that never reached the database. The 20 supported questions check intent, exact entity/filter/budget parameters and returned genre membership. Other cases distinguish scope/guardrail rejection from controlled malformed-provider fault injection.
 - **23/23 film-assistant checks passed** with the real local model and real Neo4j: ten quiz rounds, then ten typed requests through the two model layers (orchestrator and verbaliser), including “Scarface is my favourite film”, decade and exclusion filters, a switch back to all favourites, a title that is not in the catalog and a vague request, plus two scope guards and unchanged source counts.
 - **14/14 live HTTP smoke checks passed** against the rebuilt container stack.
 - First-load transfer through Nginx: about 316 KB (HTML 7 KB, app.js 11.5 KB, poster metadata 298 KB gzip), down from about 3.1 MB. Posters display in Chrome and WebKit (Safari) on every screen.
@@ -48,7 +48,7 @@ Thirty identical source-movie IDs, five warm-up calls, sequential local-client t
 
 ## Boundaries that remain external
 
-The owner requested a private repository and private image; the public-registry rubric criterion is not claimed. Independent human peer review and solo-submission approval require the instructor/another person. No grade, external approval, collaboration balance or human review is fabricated.
+The repository is private; the container image is public. Independent human peer review and solo-submission approval require the instructor/another person. No grade, external approval, collaboration balance or human review is fabricated.
 
 ## New-visitor taste discovery
 

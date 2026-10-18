@@ -68,6 +68,8 @@ class AskRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=1000)
+    # "template": the model picks a plan mapped to reviewed Cypher. "generated": the model writes Cypher, then it is checked.
+    mode: Literal["template", "generated"] = "template"
     user_id: int | None = Field(default=None, gt=0, le=MAX_GRAPH_ID, strict=True)
     limit: int = Field(default=10, ge=1, le=50)
 
@@ -84,3 +86,22 @@ class AskResponse(BaseModel):
     explanation: str
     trace_id: str
     warnings: list[str] = Field(default_factory=list)
+
+
+class PathStep(BaseModel):
+    """One link of a path: how strongly two neighbouring films are connected."""
+
+    score: float
+    support: int
+
+
+class PathResponse(BaseModel):
+    """Shortest chain of similarity links between two films; `found` is false beyond the hop limit."""
+
+    found: bool
+    hops: int | None = None
+    films: list[Movie] = Field(default_factory=list)
+    links: list[PathStep] = Field(default_factory=list)
+    max_hops: int
+    analytics_run_id: str | None = None
+    note: str = "Each link means many people rated both films 4 stars or more. It is a connection, not a guarantee."
