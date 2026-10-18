@@ -32,7 +32,7 @@ function assistantCard(movie, choose) {
   const title = escapeText(cleanTitle(movie.title));
   if (choose)
     return `<button class="film-card pickable" data-assistant-pick="${movie.movie_id}" aria-label="Choose ${title}">${posterArt(movie)}<span class="film-info"><span class="film-title">${title}</span><span class="film-meta">${movie.year || ""} ${genreLine(movie, 2)}</span></span><span class="pick-badge" aria-hidden="true">I like this</span></button>`;
-  return `<article class="film-card"><button class="poster-button" data-assistant-evidence="${movie.movie_id}" aria-label="Why ${title}">${posterArt(movie)}</button><div class="film-info"><span class="film-title">${title}</span><span class="film-meta">${movie.year || ""} ${genreLine(movie, 2)}</span></div><div class="film-foot"><span class="signal">Linked to ${escapeText(movie.supporting_seeds)} of your picks</span><button class="link" data-assistant-evidence="${movie.movie_id}">Why? →</button></div></article>`;
+  return `<article class="film-card"><button class="poster-button" data-assistant-evidence="${movie.movie_id}" aria-label="Why ${title}">${posterArt(movie)}</button><div class="film-info"><span class="film-title">${title}</span><span class="film-meta">${movie.year || ""} ${genreLine(movie, 2)}</span></div><div class="film-foot"><span class="signal">${assistant.current?.plan?.film_title ? `Linked to ${escapeText(cleanTitle(assistant.current.plan.film_title))}` : `Linked to ${escapeText(movie.supporting_seeds)} of your picks`}</span><button class="link" data-assistant-evidence="${movie.movie_id}">Why? →</button></div></article>`;
 }
 function renderAssistant(result) {
   const choosing = result.stage === "choosing";
@@ -42,10 +42,16 @@ function renderAssistant(result) {
     ? `Round ${result.round} of 10 · ${picked} ${picked === 1 ? "favourite" : "favourites"}`
     : `${picked} ${picked === 1 ? "favourite" : "favourites"} chosen`;
   $("#assistant-back").hidden = !assistant.choices.length;
-  const anchor = result.selected_movies?.find((movie) => movie.movie_id === result.plan.anchor_movie_id);
-  $("#assistant-filters").innerHTML = choosing
-    ? `<span class="chip static">Choosing favourites</span>`
-    : `<span class="chip static">${escapeText(result.plan.genre || "All genres")}</span><span class="chip static">${result.plan.algorithm === "similar_movies" ? "Like " + escapeText(cleanTitle(anchor?.title || "one favourite")) : "Based on all favourites"}</span>`;
+  const plan = result.plan;
+  const chips = choosing
+    ? ["Choosing favourites"]
+    : [
+        plan.film_title ? `Like ${cleanTitle(plan.film_title)}` : "From your favourites",
+        plan.genre ? `Only ${plan.genre}` : "All genres",
+        ...(plan.exclude_genre ? [`No ${plan.exclude_genre}`] : []),
+        ...(plan.year_from || plan.year_to ? [`${plan.year_from || "any"} to ${plan.year_to || "now"}`] : []),
+      ];
+  $("#assistant-filters").innerHTML = chips.map((chip) => `<span class="chip static">${escapeText(chip)}</span>`).join("");
   const heading = choosing
     ? "Which one do you like most?"
     : result.stage === "recommendations"
@@ -65,6 +71,7 @@ function renderAssistant(result) {
       : "");
   $("#assistant-plan").textContent = JSON.stringify(
     {
+      layers: result.layers,
       decision: result.plan,
       method: result.method || "choosing favourites",
       analytics_run_id: result.analytics_run_id,
@@ -84,15 +91,14 @@ async function assistantTurn(message, event = "message", choices = assistant.cho
     choices: [...choices],
     message,
     event,
+    // The previous validated plan is handed back, so filters and the followed film carry over.
     genre: plan?.genre || null,
+    exclude_genre: plan?.exclude_genre || null,
+    year_from: plan?.year_from || null,
+    year_to: plan?.year_to || null,
     algorithm: plan?.algorithm || "graph_affinity",
     anchor_movie_id: plan?.anchor_movie_id || null,
   };
-  // Going back can remove the reference film; the next plan must resolve it again.
-  if (payload.anchor_movie_id !== null && !payload.choices.includes(payload.anchor_movie_id)) {
-    payload.anchor_movie_id = null;
-    payload.algorithm = "graph_affinity";
-  }
   assistant.pending = { message, event, choices: [...choices] };
   assistantBusy(true);
   assistantStatus("The assistant is thinking. Your choices are kept…");
@@ -105,7 +111,9 @@ async function assistantTurn(message, event = "message", choices = assistant.cho
     });
     if (generation !== assistant.generation) return;
     assistant.choices = [...choices];
-    assistant.current = result;
+    // A clarifying question keeps the films already on screen; only the conversation moves on.
+    const keepResults = result.stage === "clarify" && assistant.current && assistant.current.stage !== "clarify";
+    assistant.current = keepResults ? { ...assistant.current, plan: result.plan, layers: result.layers } : result;
     assistant.pending = null;
     $("#assistant-connect").hidden = true;
     $("#assistant-workspace").hidden = false;
@@ -116,7 +124,7 @@ async function assistantTurn(message, event = "message", choices = assistant.cho
         "Hi! I’ll show you five films per round for ten rounds. Click the one you like most, or skip. After that, ask me for changes like “only comedies” or “more like <one of your picks>”.",
       );
     assistantMessage("model", result.message);
-    renderAssistant(result);
+    if (!keepResults) renderAssistant(result);
     $("#assistant-message").value = "";
     assistantStatus(
       result.stage === "recommendations"
@@ -145,7 +153,7 @@ function assistantEvidence(movieId) {
   if (!movie) return;
   openDetail(
     dialogHead(movie, movieId, "Why this film?") +
-      `<p>Because you picked:</p>${reasonsHTML(movie)}<p class="small muted">“Loved” means rated 4★ or more by the same MovieLens rater. These are recorded connections, not a guarantee. Your choices did not create any MovieLens ratings.</p>`,
+      `<p>${assistant.current?.plan?.film_title ? `People who loved ${escapeText(cleanTitle(assistant.current.plan.film_title))} also loved this film:` : "Because you picked:"}</p>${reasonsHTML(movie)}<p class="small muted">“Loved” means rated 4★ or more by the same MovieLens rater. These are recorded connections, not a guarantee. Your choices did not create any MovieLens ratings.</p>`,
   );
 }
 $("#assistant-connect-form").addEventListener("submit", (event) => {
